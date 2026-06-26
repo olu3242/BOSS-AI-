@@ -13,6 +13,10 @@ import type {
   BusinessConstraint,
   ConstraintScore,
   ConstraintPriority,
+  BusinessRecommendation,
+  RecommendationScore,
+  RecommendationPriority,
+  TransformationRoadmap,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -26,6 +30,11 @@ import type {
   StoredConstraintEvidence,
   ConstraintScoreRepository,
   ConstraintPriorityRepository,
+  BusinessRecommendationRepository,
+  StoredRecommendationEvidence,
+  RecommendationScoreRepository,
+  RecommendationPriorityRepository,
+  TransformationRoadmapRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -304,6 +313,126 @@ export function createInMemoryConstraintPriorityRepository(
       return Array.from(items.values())
         .filter((item) => item.orgId === orgId && constraintIds.has(item.constraintId))
         .sort((a, b) => a.rank - b.rank);
+    },
+  };
+}
+
+export function createInMemoryBusinessRecommendationRepository(): BusinessRecommendationRepository {
+  const items = new Map<string, BusinessRecommendation>();
+  const evidence = new Map<string, StoredRecommendationEvidence[]>();
+  return {
+    async create(input) {
+      const recommendation: BusinessRecommendation = { id: randomUUID(), ...input, evidence: [], ...stamp() };
+      items.set(recommendation.id, recommendation);
+      evidence.set(recommendation.id, []);
+      return recommendation;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values())
+        .filter((item) => item.orgId === orgId && item.businessId === businessId)
+        .map((item) => ({ ...item, evidence: evidence.get(item.id) ?? [] }));
+    },
+    async findById(orgId, id) {
+      const found = items.get(id);
+      if (!found || found.orgId !== orgId) return null;
+      return { ...found, evidence: evidence.get(id) ?? [] };
+    },
+    async updateStatus(orgId, id, status) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`BusinessRecommendation ${id} not found`);
+      }
+      const updated: BusinessRecommendation = { ...existing, status, updatedAt: new Date().toISOString() };
+      items.set(id, updated);
+      return { ...updated, evidence: evidence.get(id) ?? [] };
+    },
+    async addEvidence(recommendationId, item) {
+      const stored: StoredRecommendationEvidence = {
+        id: randomUUID(),
+        recommendationId,
+        ...item,
+        createdAt: new Date().toISOString(),
+      };
+      const list = evidence.get(recommendationId) ?? [];
+      list.push(stored);
+      evidence.set(recommendationId, list);
+      return stored;
+    },
+    async listEvidence(recommendationId) {
+      return evidence.get(recommendationId) ?? [];
+    },
+    async recordHistory() {
+      // In-memory adapter does not persist history; Postgres adapter does.
+    },
+  };
+}
+
+export function createInMemoryRecommendationScoreRepository(): RecommendationScoreRepository {
+  const items = new Map<string, RecommendationScore>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find((item) => item.recommendationId === input.recommendationId);
+      const score: RecommendationScore = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(score.id, score);
+      return score;
+    },
+    async findByRecommendationId(orgId, recommendationId) {
+      return (
+        Array.from(items.values()).find(
+          (item) => item.orgId === orgId && item.recommendationId === recommendationId
+        ) ?? null
+      );
+    },
+  };
+}
+
+/**
+ * businessId is not denormalized onto RecommendationPriority, so the
+ * in-memory adapter is constructed with the recommendation repository it
+ * should consult to resolve which recommendation IDs belong to a business.
+ */
+export function createInMemoryRecommendationPriorityRepository(
+  recommendationRepository: BusinessRecommendationRepository
+): RecommendationPriorityRepository {
+  const items = new Map<string, RecommendationPriority>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (item) => item.recommendationId === input.recommendationId
+      );
+      const priority: RecommendationPriority = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(priority.id, priority);
+      return priority;
+    },
+    async listByBusinessId(orgId, businessId) {
+      const recommendations = await recommendationRepository.listByBusinessId(orgId, businessId);
+      const recommendationIds = new Set(recommendations.map((r) => r.id));
+      return Array.from(items.values())
+        .filter((item) => item.orgId === orgId && recommendationIds.has(item.recommendationId))
+        .sort((a, b) => a.rank - b.rank);
+    },
+  };
+}
+
+export function createInMemoryTransformationRoadmapRepository(): TransformationRoadmapRepository {
+  const items = new Map<string, TransformationRoadmap>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find((item) => item.businessId === input.businessId);
+      const roadmap: TransformationRoadmap = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(roadmap.id, roadmap);
+      return roadmap;
+    },
+    async findByBusinessId(orgId, businessId) {
+      return (
+        Array.from(items.values()).find((item) => item.orgId === orgId && item.businessId === businessId) ?? null
+      );
     },
   };
 }

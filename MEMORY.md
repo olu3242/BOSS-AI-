@@ -321,3 +321,101 @@ transform detected constraints into measurable, ranked, explainable
 recommendations with ROI forecasts and a transformation roadmap —
 diagnose/rank/explain/forecast only, no execution (deferred to a future
 Loop Runtime).
+
+## Goal 4 — Recommendation Intelligence Engine (complete)
+
+Full ADR: `docs/adr/0005-recommendation-intelligence-engine.md`.
+
+### Registries (`packages/registries`)
+- `recommendationCategory.ts` — `recommendationCategoryRegistry` (13
+  declarative category entries: sales, marketing, operations, customer
+  experience, finance, scheduling, communication, reporting, technology,
+  leadership, growth, compliance, productivity).
+- `recommendationDefinition.ts` — `recommendationDefinitionRegistry` and
+  the declarative `triggerConstraintKeys: string[]` matching contract,
+  fixed `RecommendationRoiModel`, and the Approval Model
+  (`auto`/`approval_required`/`executive_review`/`manual_only`). Reuses
+  `ImpactLevel` from `constraintDefinition.ts` (single source of truth).
+
+### Capability pack (`industry-packs/general-smb`)
+- `data/recommendationCategories.ts` / `data/recommendationLibrary.ts` —
+  seed the 13 categories and 15 General SMB Recommendation Library
+  definitions, each with `triggerConstraintKeys`, a fixed ROI model, and
+  a declared Transformation Roadmap stage. Pack version bumped to
+  `0.4.0`.
+
+### Intelligence (`packages/mcp`)
+- `intelligence/recommendationEngine.ts` — `generateRecommendations()`
+  matches active `BusinessConstraint[]` against each definition's
+  `triggerConstraintKeys`, scaling ROI/effort/cost by the same
+  `sizeFactor` pattern Goal 3 established; `prioritizeRecommendations()`
+  computes `priorityScore`, `businessValueScore`, `implementationScore`,
+  `strategicScore`, `overallScore` as fixed weighted sums, bucketed into
+  five priority levels via the same fixed thresholds as Goal 3;
+  `buildTransformationRoadmapStages()` groups recommendations into the
+  five fixed `RecommendationStage`s. No hallucinated values anywhere in
+  the ROI path.
+
+### Database (`packages/db`)
+- `migrations/0006_recommendation_intelligence.sql` — 11 tables
+  (`recommendation_categories`, `recommendation_definitions`,
+  `recommendation_instances`, `recommendation_constraint_links`,
+  `recommendation_evidence`, `recommendation_roi_estimates`,
+  `recommendation_scores`, `recommendation_priorities`,
+  `transformation_roadmaps`, `transformation_roadmap_stages`,
+  `recommendation_history`).
+- `migrations/0007_seed_recommendation_library.sql` — seeds the 13
+  categories and 15 definitions, mirroring the TypeScript registries
+  exactly (generated programmatically from the source files to avoid
+  transcription drift).
+- Both **executed and verified against a live local Postgres 16
+  instance** (`boss_dev`): `recommendation_categories`=13,
+  `recommendation_definitions`=15, all 11 tables present.
+- `businessRecommendationRepository`, `recommendationScoreRepository`,
+  `recommendationPriorityRepository`, `transformationRoadmapRepository`
+  — Postgres + in-memory adapters following the Goal 2/3 pattern. The
+  in-memory `RecommendationPriorityRepository` is constructed with a
+  reference to the in-memory `BusinessRecommendationRepository` for the
+  same reason Goal 3's `ConstraintPriorityRepository` was.
+
+### API (`apps/api`)
+- `services/businessRecommendationService.ts` — `analyze()` reads only
+  *active* constraints, runs derivation + prioritization, persists
+  recommendations + evidence + scores + priorities, builds and upserts
+  the `TransformationRoadmap`, and appends a `recommendations_generated`
+  timeline event; `list`, `getPriorities`, `getRoadmap`, `dismiss`,
+  `approve` (both with history recording) round out the service.
+- `controllers/businessRecommendationController.ts` — thin, zero
+  business logic, matching the Goal 2/3 controller pattern exactly.
+- `__tests__/recommendationFlow.test.ts` — full end-to-end test: create
+  business → complete MRI → derive DNA/Health/Capabilities → analyze
+  constraints → analyze recommendations → asserts
+  recommendations/scores/priorities/evidence/roadmap (5 stages, all
+  recommendations accounted for), `list`/`getPriorities`/`getRoadmap`,
+  `approve`, and the `recommendations_generated` timeline event. Passing.
+
+**Validation:** `pnpm -r typecheck`, `pnpm -r lint`, `pnpm -r build`,
+`pnpm -r test` (api: 3 integration tests/3 files, all other workspaces
+unchanged and passing) and `pnpm run arch:check` (no dependency
+violations, knip clean) all pass. Migrations executed and validated
+against `boss_dev`.
+
+**Explicitly NOT done in this goal (by design):** AI agents, workflow
+execution, Loop Runtime, Tool Fabric/provider calls — diagnosis,
+ranking, explanation, and forecasting only, per the goal's explicit
+scope. `apps/web` UI for the Recommendation Center/Transformation
+Roadmap is deferred. The Approval Model and Execution Blueprint concept
+are persisted as data only; nothing consumes or acts on them yet.
+
+**Known limitations / tech debt (see `docs/execution/TECH_DEBT.md`):**
+TD-011 (Transformation Roadmap/Approval Model persisted but not
+consumed by any runtime yet), TD-012 (`recommendation_instances.
+dependencies` is a flat `jsonb` array, not a dedicated relationship
+table like Goal 3's `constraint_relationships`).
+
+**Recommended next goal:** Goal 5 — `apps/web` Next.js UI for the
+Recommendation Center and Transformation Roadmap, plus HTTP transport
+for `apps/api`, so the Constraint/Recommendation intelligence built in
+Goals 3–4 has a real user-facing surface — though see the Goal 8/9
+redirect below for an architectural reordering proposed before AI
+Workforce work begins.

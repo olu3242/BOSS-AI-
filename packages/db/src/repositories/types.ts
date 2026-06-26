@@ -13,6 +13,12 @@ import type {
   ConstraintEvidenceItem,
   ConstraintScore,
   ConstraintPriority,
+  BusinessRecommendation,
+  RecommendationEvidenceItem,
+  RecommendationScore,
+  RecommendationPriority,
+  TransformationRoadmap,
+  TransformationRoadmapStageEntry,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -101,3 +107,40 @@ export interface ConstraintPriorityRepository {
   upsert(input: Omit<ConstraintPriority, "id" | "createdAt" | "updatedAt">): Promise<ConstraintPriority>;
   listByBusinessId(orgId: string, businessId: string): Promise<ConstraintPriority[]>;
 }
+
+export interface StoredRecommendationEvidence extends RecommendationEvidenceItem {
+  id: string;
+  recommendationId: string;
+  createdAt: string;
+}
+
+export interface BusinessRecommendationRepository {
+  create(
+    input: Omit<BusinessRecommendation, "id" | "createdAt" | "updatedAt" | "deletedAt" | "evidence">
+  ): Promise<BusinessRecommendation>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessRecommendation[]>;
+  findById(orgId: string, id: string): Promise<BusinessRecommendation | null>;
+  updateStatus(orgId: string, id: string, status: BusinessRecommendation["status"]): Promise<BusinessRecommendation>;
+  addEvidence(recommendationId: string, evidence: RecommendationEvidenceItem): Promise<StoredRecommendationEvidence>;
+  listEvidence(recommendationId: string): Promise<StoredRecommendationEvidence[]>;
+  recordHistory(recommendationId: string, previousStatus: string | null, newStatus: string, note: string): Promise<void>;
+}
+
+export interface RecommendationScoreRepository {
+  upsert(input: Omit<RecommendationScore, "id" | "createdAt" | "updatedAt">): Promise<RecommendationScore>;
+  findByRecommendationId(orgId: string, recommendationId: string): Promise<RecommendationScore | null>;
+}
+
+export interface RecommendationPriorityRepository {
+  upsert(input: Omit<RecommendationPriority, "id" | "createdAt" | "updatedAt">): Promise<RecommendationPriority>;
+  listByBusinessId(orgId: string, businessId: string): Promise<RecommendationPriority[]>;
+}
+
+export interface TransformationRoadmapRepository {
+  upsert(
+    input: Omit<TransformationRoadmap, "id" | "createdAt" | "updatedAt">
+  ): Promise<TransformationRoadmap>;
+  findByBusinessId(orgId: string, businessId: string): Promise<TransformationRoadmap | null>;
+}
+
+export type { TransformationRoadmapStageEntry };

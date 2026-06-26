@@ -6,6 +6,7 @@ import { createBusinessHealthService } from "./services/businessHealthService.js
 import { createBusinessCapabilityService } from "./services/businessCapabilityService.js";
 import { createBusinessTimelineService } from "./services/businessTimelineService.js";
 import { createBusinessConstraintService } from "./services/businessConstraintService.js";
+import { createBusinessRecommendationService } from "./services/businessRecommendationService.js";
 import { createBusinessController } from "./controllers/businessController.js";
 import { createBusinessMriController } from "./controllers/businessMriController.js";
 import { createBusinessDnaController } from "./controllers/businessDnaController.js";
@@ -13,6 +14,7 @@ import { createBusinessHealthController } from "./controllers/businessHealthCont
 import { createBusinessCapabilityController } from "./controllers/businessCapabilityController.js";
 import { createBusinessTimelineController } from "./controllers/businessTimelineController.js";
 import { createBusinessConstraintController } from "./controllers/businessConstraintController.js";
+import { createBusinessRecommendationController } from "./controllers/businessRecommendationController.js";
 
 export function createApi() {
   const repos = createPostgresContainer();
@@ -25,6 +27,7 @@ export function createApi() {
     businessCapability: createBusinessCapabilityController(createBusinessCapabilityService(repos)),
     businessTimeline: createBusinessTimelineController(createBusinessTimelineService(repos)),
     businessConstraint: createBusinessConstraintController(createBusinessConstraintService(repos)),
+    businessRecommendation: createBusinessRecommendationController(createBusinessRecommendationService(repos)),
   };
 }
 
@@ -36,3 +39,4 @@ export * from "./services/businessHealthService.js";
 export * from "./services/businessCapabilityService.js";
 export * from "./services/businessTimelineService.js";
 export * from "./services/businessConstraintService.js";
+export * from "./services/businessRecommendationService.js";

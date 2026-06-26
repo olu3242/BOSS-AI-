@@ -11,4 +11,8 @@ export * from "./repositories/postgres/businessTimelineRepository.js";
 export * from "./repositories/postgres/businessConstraintRepository.js";
 export * from "./repositories/postgres/constraintScoreRepository.js";
 export * from "./repositories/postgres/constraintPriorityRepository.js";
+export * from "./repositories/postgres/businessRecommendationRepository.js";
+export * from "./repositories/postgres/recommendationScoreRepository.js";
+export * from "./repositories/postgres/recommendationPriorityRepository.js";
+export * from "./repositories/postgres/transformationRoadmapRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";

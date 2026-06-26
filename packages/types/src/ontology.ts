@@ -328,7 +328,8 @@ export type TimelineEventType =
   | "business_dna_generated"
   | "business_health_updated"
   | "capability_updated"
-  | "constraint_analysis_completed";
+  | "constraint_analysis_completed"
+  | "recommendations_generated";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;
@@ -425,6 +426,107 @@ export interface ConstraintPriority extends TenantScoped, Timestamped {
   priority: ConstraintPriorityLevel;
   rank: number;
   computedAt: string;
+}
+
+export type RecommendationCategoryKey =
+  | "sales"
+  | "marketing"
+  | "operations"
+  | "customer_experience"
+  | "finance"
+  | "scheduling"
+  | "communication"
+  | "reporting"
+  | "technology"
+  | "leadership"
+  | "growth"
+  | "compliance"
+  | "productivity";
+
+export type RecommendationDifficulty = "low" | "medium" | "high";
+
+export type RecommendationStage = "quick_wins" | "short_term" | "medium_term" | "strategic" | "long_term";
+
+export type RecommendationApproval = "auto" | "approval_required" | "executive_review" | "manual_only";
+
+export type RecommendationStatus = "proposed" | "approved" | "rejected" | "in_progress" | "completed" | "dismissed";
+
+export type RecommendationPriorityLevel = "critical" | "high" | "medium" | "low" | "informational";
+
+export interface RecommendationEvidenceItem {
+  source: "constraint_analysis" | "business_health" | "capability_assessment" | "business_mri" | "configuration";
+  description: string;
+  data: Record<string, unknown>;
+}
+
+export interface RecommendationRoiEstimate {
+  revenueIncreaseAnnual: number;
+  timeSavedHoursWeekly: number;
+  administrativeReductionHours: number;
+  customerRetentionIncreasePct: number;
+  leadConversionImprovementPct: number;
+  profitImpactAnnual: number;
+  ownerTimeSavedHoursWeekly: number;
+  riskReduction: ImpactLevel;
+  confidence: number;
+}
+
+export interface BusinessRecommendation extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  definitionKey: string;
+  title: string;
+  description: string;
+  businessGoal: string;
+  category: RecommendationCategoryKey;
+  relatedCapabilities: string[];
+  relatedConstraintIds: string[];
+  relatedKpiKeys: string[];
+  expectedOutcome: string;
+  difficulty: RecommendationDifficulty;
+  estimatedEffortHours: number;
+  estimatedCost: number;
+  estimatedRoi: RecommendationRoiEstimate;
+  estimatedTimeToValueDays: number;
+  confidence: number;
+  evidence: RecommendationEvidenceItem[];
+  dependencies: string[];
+  approval: RecommendationApproval;
+  stage: RecommendationStage;
+  status: RecommendationStatus;
+  dateRecommended: string;
+  version: number;
+}
+
+export interface RecommendationScore extends TenantScoped, Timestamped {
+  id: ID;
+  recommendationId: ID;
+  priorityScore: number;
+  businessValueScore: number;
+  implementationScore: number;
+  strategicScore: number;
+  overallScore: number;
+}
+
+export interface RecommendationPriority extends TenantScoped, Timestamped {
+  id: ID;
+  recommendationId: ID;
+  priority: RecommendationPriorityLevel;
+  rank: number;
+  computedAt: string;
+}
+
+export interface TransformationRoadmapStageEntry {
+  stage: RecommendationStage;
+  recommendationIds: string[];
+}
+
+export interface TransformationRoadmap extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  stages: TransformationRoadmapStageEntry[];
+  generatedAt: string;
+  version: number;
 }
 
 export interface BossEventRecord extends TenantScoped {

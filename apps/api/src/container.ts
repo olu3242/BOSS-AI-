@@ -9,6 +9,10 @@ import {
   createPostgresBusinessConstraintRepository,
   createPostgresConstraintScoreRepository,
   createPostgresConstraintPriorityRepository,
+  createPostgresBusinessRecommendationRepository,
+  createPostgresRecommendationScoreRepository,
+  createPostgresRecommendationPriorityRepository,
+  createPostgresTransformationRoadmapRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -19,6 +23,10 @@ import {
   createInMemoryBusinessConstraintRepository,
   createInMemoryConstraintScoreRepository,
   createInMemoryConstraintPriorityRepository,
+  createInMemoryBusinessRecommendationRepository,
+  createInMemoryRecommendationScoreRepository,
+  createInMemoryRecommendationPriorityRepository,
+  createInMemoryTransformationRoadmapRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -29,6 +37,10 @@ import {
   type BusinessConstraintRepository,
   type ConstraintScoreRepository,
   type ConstraintPriorityRepository,
+  type BusinessRecommendationRepository,
+  type RecommendationScoreRepository,
+  type RecommendationPriorityRepository,
+  type TransformationRoadmapRepository,
 } from "@boss/db";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
@@ -43,6 +55,10 @@ export interface RepositoryContainer {
   businessConstraints: BusinessConstraintRepository;
   constraintScores: ConstraintScoreRepository;
   constraintPriorities: ConstraintPriorityRepository;
+  businessRecommendations: BusinessRecommendationRepository;
+  recommendationScores: RecommendationScoreRepository;
+  recommendationPriorities: RecommendationPriorityRepository;
+  transformationRoadmaps: TransformationRoadmapRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -58,12 +74,17 @@ export function createPostgresContainer(): RepositoryContainer {
     businessConstraints: createPostgresBusinessConstraintRepository(),
     constraintScores: createPostgresConstraintScoreRepository(),
     constraintPriorities: createPostgresConstraintPriorityRepository(),
+    businessRecommendations: createPostgresBusinessRecommendationRepository(),
+    recommendationScores: createPostgresRecommendationScoreRepository(),
+    recommendationPriorities: createPostgresRecommendationPriorityRepository(),
+    transformationRoadmaps: createPostgresTransformationRoadmapRepository(),
   };
 }
 
 export function createInMemoryContainer(): RepositoryContainer {
   installGeneralSmbPack();
   const businessConstraints = createInMemoryBusinessConstraintRepository();
+  const businessRecommendations = createInMemoryBusinessRecommendationRepository();
   return {
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),
@@ -75,5 +96,9 @@ export function createInMemoryContainer(): RepositoryContainer {
     businessConstraints,
     constraintScores: createInMemoryConstraintScoreRepository(),
     constraintPriorities: createInMemoryConstraintPriorityRepository(businessConstraints),
+    businessRecommendations,
+    recommendationScores: createInMemoryRecommendationScoreRepository(),
+    recommendationPriorities: createInMemoryRecommendationPriorityRepository(businessRecommendations),
+    transformationRoadmaps: createInMemoryTransformationRoadmapRepository(),
   };
 }

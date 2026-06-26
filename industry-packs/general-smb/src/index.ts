@@ -18,8 +18,10 @@ import { seedPainPoints } from "./data/painPoints.js";
 import { seedGoalOptions } from "./data/goalOptions.js";
 import { seedConstraintCategories } from "./data/constraintCategories.js";
 import { seedConstraintLibrary } from "./data/constraintLibrary.js";
+import { seedRecommendationCategories } from "./data/recommendationCategories.js";
+import { seedRecommendationLibrary } from "./data/recommendationLibrary.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.3.0";
+export const GENERAL_SMB_PACK_VERSION = "0.4.0";
 
 let installed = false;
 
@@ -41,6 +43,8 @@ export function installGeneralSmbPack(): void {
   seedGoalOptions();
   seedConstraintCategories();
   seedConstraintLibrary();
+  seedRecommendationCategories();
+  seedRecommendationLibrary();
 }
 
 export {
@@ -57,4 +61,6 @@ export {
   seedGoalOptions,
   seedConstraintCategories,
   seedConstraintLibrary,
+  seedRecommendationCategories,
+  seedRecommendationLibrary,
 };

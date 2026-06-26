@@ -5,6 +5,30 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 4: Recommendation Intelligence Engine
+- `packages/registries`: `recommendationCategoryRegistry` (13 categories)
+  and `recommendationDefinitionRegistry` with declarative
+  `triggerConstraintKeys`, fixed `RecommendationRoiModel`, and Approval
+  Model (`auto`/`approval_required`/`executive_review`/`manual_only`).
+- `industry-packs/general-smb`: 15-item General SMB Recommendation
+  Library across 13 categories; pack version bumped to `0.4.0`.
+- `packages/mcp`: `recommendationEngine.ts` — constraint-triggered
+  derivation (`generateRecommendations`), deterministic weighted scoring
+  (`prioritizeRecommendations`), and 5-stage Transformation Roadmap
+  grouping (`buildTransformationRoadmapStages`), with scaled,
+  non-hallucinated ROI estimation.
+- `packages/db`: raw SQL migrations (11 tables) for Recommendation
+  Registry/Instances/Evidence/ROI Estimates/Scores/Priorities/
+  Constraint Links/Transformation Roadmaps/Stages/History, executed and
+  verified against a live Postgres 16 instance; dual Postgres +
+  in-memory repository adapters.
+- `apps/api`: `businessRecommendationService`/
+  `businessRecommendationController` for analysis, scoring,
+  prioritization, roadmap retrieval, listing, dismissal, and approval;
+  end-to-end integration test.
+- `docs/adr/0005-recommendation-intelligence-engine.md`.
+- Tech Debt Register: TD-011, TD-012.
+
 ### Added — Goal 3: Constraint Intelligence Engine
 - `packages/registries`: `constraintCategoryRegistry` (13 categories) and
   `constraintDefinitionRegistry` with a declarative
