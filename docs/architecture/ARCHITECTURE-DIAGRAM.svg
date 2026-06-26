@@ -1,0 +1,257 @@
+<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" font-family="monospace">
+  <defs>
+    <style>
+      text { font-family: 'Courier New', monospace; }
+      .title { font-size: 28px; font-weight: bold; fill: #F2F2F4; }
+      .subtitle { font-size: 13px; fill: #6B6B78; letter-spacing: 3px; }
+      .box-title { font-size: 14px; font-weight: bold; fill: #F2F2F4; }
+      .box-label { font-size: 9px; fill: #C8102E; letter-spacing: 2px; }
+      .box-item { font-size: 11px; fill: #9898A6; }
+      .box-item-bright { font-size: 11px; fill: #F2F2F4; }
+      .layer-label { font-size: 10px; fill: #6B6B78; letter-spacing: 2px; }
+      .law-text { font-size: 11px; fill: #C8102E; }
+      .connector { stroke: #C8102E; stroke-width: 1.5; fill: none; stroke-dasharray: 4,3; }
+      .connector-solid { stroke: rgba(200,16,46,0.3); stroke-width: 1; fill: none; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#C8102E"/>
+    </marker>
+    <marker id="arrow-dim" markerWidth="6" markerHeight="6" refX="5" refY="2" orient="auto">
+      <path d="M0,0 L0,5 L6,2 z" fill="rgba(200,16,46,0.4)"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="900" fill="#080809"/>
+
+  <!-- Grid -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.025)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="900" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="60" y="58" class="title">BOSS</text>
+  <text x="60" y="78" class="subtitle">BUSINESS OPERATING SYSTEM SUITE — PLATFORM ARCHITECTURE</text>
+  <line x1="60" y1="92" x2="1140" y2="92" stroke="rgba(200,16,46,0.4)" stroke-width="1"/>
+  <line x1="60" y1="93" x2="1140" y2="93" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+
+  <!-- ── ROW 1: CLIENT LAYER ── -->
+  <text x="60" y="122" class="layer-label">CLIENT LAYER</text>
+  <rect x="60" y="130" width="260" height="64" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="76" y="150" class="box-label">WEB APP</text>
+  <text x="76" y="166" class="box-item-bright">Next.js 14 App Router</text>
+  <text x="76" y="180" class="box-item">TypeScript · Tailwind · shadcn/ui</text>
+
+  <rect x="340" y="130" width="260" height="64" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="356" y="150" class="box-label">MOBILE</text>
+  <text x="356" y="166" class="box-item-bright">React Native</text>
+  <text x="356" y="180" class="box-item">iOS · Android · Offline-capable</text>
+
+  <rect x="620" y="130" width="260" height="64" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="636" y="150" class="box-label">EMBED SDK</text>
+  <text x="636" y="166" class="box-item-bright">JavaScript SDK</text>
+  <text x="636" y="180" class="box-item">Partner integrations · White-label</text>
+
+  <rect x="900" y="130" width="240" height="64" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="916" y="150" class="box-label">DEVELOPER PORTAL</text>
+  <text x="916" y="166" class="box-item-bright">API Docs · Sandbox</text>
+  <text x="916" y="180" class="box-item">Webhooks · OAuth · Rate limits</text>
+
+  <!-- ── ROW 2: API GATEWAY ── -->
+  <text x="60" y="220" class="layer-label">API GATEWAY</text>
+  <rect x="60" y="228" width="1080" height="52" fill="#151518" stroke="rgba(200,16,46,0.2)" stroke-width="1"/>
+  <text x="80" y="249" class="box-label">GATEWAY</text>
+  <text x="80" y="264" class="box-item-bright">Auth Middleware (Supabase JWT)  ·  Rate Limiting  ·  Tenant Isolation (org_id from JWT)  ·  CORS  ·  Request Signing  ·  TLS 1.3</text>
+
+  <!-- ── ROW 3: MCP + LOOP ── -->
+  <text x="60" y="308" class="layer-label">INTELLIGENCE + EXECUTION</text>
+
+  <!-- MCP Box -->
+  <rect x="60" y="316" width="500" height="240" fill="#0F0F11" stroke="#C8102E" stroke-width="1.5"/>
+  <rect x="60" y="316" width="500" height="3" fill="#C8102E"/>
+  <text x="76" y="336" class="box-label">MCP — MASTER CONTROL PLATFORM</text>
+  <text x="76" y="352" class="box-title">The Brain  ·  Intelligence Only  ·  Never Executes</text>
+
+  <rect x="76" y="362" width="220" height="76" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="90" y="378" class="box-label">REGISTRIES</text>
+  <text x="90" y="393" class="box-item">Prompt Registry</text>
+  <text x="90" y="407" class="box-item">Workflow Registry</text>
+  <text x="90" y="421" class="box-item">Policy Registry</text>
+  <text x="90" y="431" class="box-item">Agent Registry  ·  Memory Registry</text>
+
+  <rect x="312" y="362" width="232" height="76" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="326" y="378" class="box-label">KNOWLEDGE</text>
+  <text x="326" y="393" class="box-item">Business Ontology</text>
+  <text x="326" y="407" class="box-item">KPI Library  ·  Constraint Graph</text>
+  <text x="326" y="421" class="box-item">Industry Models</text>
+  <text x="326" y="435" class="box-item">Knowledge Graph</text>
+
+  <rect x="76" y="450" width="468" height="92" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="90" y="466" class="box-label">INTELLIGENCE OUTPUT</text>
+  <text x="90" y="481" class="box-item">Recommendations  ·  Decision Support  ·  Root Cause Analysis</text>
+  <text x="90" y="495" class="box-item">Transformation Reports  ·  Business Health Score</text>
+  <text x="90" y="509" class="box-item">BTE Analysis (What hurts · Why · What next · Auto or Approve)</text>
+  <text x="90" y="523" class="box-item">Anthropic Claude API (claude-sonnet-4-6)  ·  Vector Store</text>
+
+  <!-- NOT labels -->
+  <text x="76" y="548" fill="rgba(200,16,46,0.6)" font-size="10" font-family="monospace">✕ Does NOT execute workflows  ·  ✕ Does NOT authenticate  ·  ✕ Does NOT render UI</text>
+
+  <!-- LOOP Box -->
+  <rect x="640" y="316" width="500" height="240" fill="#0F0F11" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <rect x="640" y="316" width="500" height="3" fill="rgba(255,255,255,0.15)"/>
+  <text x="656" y="336" class="box-label">LOOP RUNTIME</text>
+  <text x="656" y="352" class="box-title">The Engine  ·  Execution Only  ·  Zero Business Knowledge</text>
+
+  <rect x="656" y="362" width="148" height="76" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="668" y="378" class="box-label">CORE ENGINES</text>
+  <text x="668" y="393" class="box-item">Workflow Engine</text>
+  <text x="668" y="407" class="box-item">Decision Engine</text>
+  <text x="668" y="421" class="box-item">Scheduling Engine</text>
+  <text x="668" y="435" class="box-item">Approval Engine</text>
+
+  <rect x="814" y="362" width="150" height="76" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="826" y="378" class="box-label">RELIABILITY</text>
+  <text x="826" y="393" class="box-item">Recovery Engine</text>
+  <text x="826" y="407" class="box-item">Retry + DLQ</text>
+  <text x="826" y="421" class="box-item">Compensation</text>
+  <text x="826" y="435" class="box-item">Idempotency</text>
+
+  <rect x="974" y="362" width="150" height="76" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="986" y="378" class="box-label">OBSERVABILITY</text>
+  <text x="986" y="393" class="box-item">Audit Log</text>
+  <text x="986" y="407" class="box-item">Telemetry</text>
+  <text x="986" y="421" class="box-item">Feature Flags</text>
+  <text x="986" y="435" class="box-item">Versioning</text>
+
+  <rect x="656" y="450" width="468" height="92" fill="#151518" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="668" y="466" class="box-label">TRIGGER SOURCES</text>
+  <text x="668" y="481" class="box-item-bright">Webhook  ·  Cron Schedule  ·  Domain Event  ·  API Call  ·  Manual</text>
+  <text x="668" y="495" class="box-item">Notifications: Email  ·  SMS  ·  In-App  ·  Webhook</text>
+  <text x="668" y="509" class="box-item">Approval Gates: Auto-approve (low risk)  ·  Owner approval (high impact)</text>
+  <text x="668" y="523" class="box-item">State Machine: Pending → Running → Completed / Failed / Compensated</text>
+
+  <text x="656" y="548" fill="rgba(255,255,255,0.25)" font-size="10" font-family="monospace">✕ Zero hardcoded business logic  ·  All intelligence fetched from MCP at runtime</text>
+
+  <!-- MCP → LOOP arrow -->
+  <line x1="560" y1="436" x2="640" y2="436" class="connector" marker-end="url(#arrow)"/>
+  <text x="574" y="430" fill="#C8102E" font-size="9" font-family="monospace">intelligence</text>
+
+  <!-- ── ROW 4: BOUNDED CONTEXTS ── -->
+  <text x="60" y="582" class="layer-label">BOUNDED CONTEXTS — DOMAIN MODEL</text>
+
+  <rect x="60" y="590" width="152" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="72" y="607" class="box-label">IDENTITY</text>
+  <text x="72" y="621" class="box-item">Users · Orgs · Roles</text>
+  <text x="72" y="634" class="box-item">Permissions · Sessions</text>
+  <text x="72" y="647" class="box-item">MFA · SSO</text>
+
+  <rect x="222" y="590" width="152" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="234" y="607" class="box-label">BUSINESS</text>
+  <text x="234" y="621" class="box-item">Profile · DNA</text>
+  <text x="234" y="634" class="box-item">Health Score</text>
+  <text x="234" y="647" class="box-item">Audit · KPI Track</text>
+
+  <rect x="384" y="590" width="152" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="396" y="607" class="box-label">WORKFLOW</text>
+  <text x="396" y="621" class="box-item">Definitions · Instances</text>
+  <text x="396" y="634" class="box-item">State · History</text>
+  <text x="396" y="647" class="box-item">Approvals</text>
+
+  <rect x="546" y="590" width="152" height="72" fill="rgba(200,16,46,0.07)" stroke="rgba(200,16,46,0.25)" stroke-width="1"/>
+  <text x="558" y="607" class="box-label">AI WORKFORCE</text>
+  <text x="558" y="621" class="box-item">Agent Defs · Memory</text>
+  <text x="558" y="634" class="box-item">Instances · Outputs</text>
+  <text x="558" y="647" class="box-item">Escalations</text>
+
+  <rect x="708" y="590" width="152" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="720" y="607" class="box-label">MARKETPLACE</text>
+  <text x="720" y="621" class="box-item">Templates · Packs</text>
+  <text x="720" y="634" class="box-item">Reviews · Licensing</text>
+  <text x="720" y="647" class="box-item">Revenue Share</text>
+
+  <rect x="870" y="590" width="152" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="882" y="607" class="box-label">ANALYTICS</text>
+  <text x="882" y="621" class="box-item">KPIs · Metrics</text>
+  <text x="882" y="634" class="box-item">BTE Reports</text>
+  <text x="882" y="647" class="box-item">Forecasts</text>
+
+  <rect x="1032" y="590" width="108" height="72" fill="#151518" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="1044" y="607" class="box-label">BILLING</text>
+  <text x="1044" y="621" class="box-item">Subscriptions</text>
+  <text x="1044" y="634" class="box-item">Usage · Tokens</text>
+  <text x="1044" y="647" class="box-item">Invoices</text>
+
+  <!-- ── ROW 5: DATA LAYER ── -->
+  <text x="60" y="686" class="layer-label">DATA LAYER</text>
+
+  <rect x="60" y="694" width="280" height="56" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="76" y="714" class="box-label">SUPABASE POSTGRES</text>
+  <text x="76" y="729" class="box-item-bright">Primary store · RLS on all tables</text>
+  <text x="76" y="742" class="box-item">Audit triggers · Soft deletes · Multi-tenant</text>
+
+  <rect x="360" y="694" width="240" height="56" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="376" y="714" class="box-label">VECTOR STORE</text>
+  <text x="376" y="729" class="box-item-bright">Embeddings for MCP knowledge</text>
+  <text x="376" y="742" class="box-item">Business context · Industry models</text>
+
+  <rect x="620" y="694" width="240" height="56" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="636" y="714" class="box-label">SUPABASE REALTIME</text>
+  <text x="636" y="729" class="box-item-bright">Live dashboard updates</text>
+  <text x="636" y="742" class="box-item">Workflow status · Notifications</text>
+
+  <rect x="880" y="694" width="260" height="56" fill="#0F0F11" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="896" y="714" class="box-label">SUPABASE STORAGE</text>
+  <text x="896" y="729" class="box-item-bright">Business documents · Artifacts</text>
+  <text x="896" y="742" class="box-item">AI employee outputs · Reports</text>
+
+  <!-- ── ROW 6: INTEGRATIONS ── -->
+  <text x="60" y="776" class="layer-label">EXTERNAL INTEGRATIONS</text>
+
+  <rect x="60" y="784" width="185" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="76" y="804" class="box-label">AI</text>
+  <text x="76" y="820" class="box-item">Anthropic Claude API</text>
+  <text x="76" y="831" class="box-item">claude-sonnet-4-6</text>
+
+  <rect x="255" y="784" width="155" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="270" y="804" class="box-label">BILLING</text>
+  <text x="270" y="820" class="box-item">Stripe Subscriptions</text>
+  <text x="270" y="831" class="box-item">Usage Metering</text>
+
+  <rect x="420" y="784" width="155" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="436" y="804" class="box-label">COMMS</text>
+  <text x="436" y="820" class="box-item">Twilio SMS · SendGrid</text>
+  <text x="436" y="831" class="box-item">Email · Notifications</text>
+
+  <rect x="585" y="784" width="155" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="600" y="804" class="box-label">MONITORING</text>
+  <text x="600" y="820" class="box-item">PostHog · Sentry</text>
+  <text x="600" y="831" class="box-item">OpenTelemetry · Pino</text>
+
+  <rect x="750" y="784" width="180" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="766" y="804" class="box-label">PMS INTEGRATIONS</text>
+  <text x="766" y="820" class="box-item">Dentrix · Eaglesoft</text>
+  <text x="766" y="831" class="box-item">QuickBooks · Salesforce</text>
+
+  <rect x="940" y="784" width="200" height="52" fill="#0F0F11" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+  <text x="956" y="804" class="box-label">INFRA</text>
+  <text x="956" y="820" class="box-item">Vercel (frontend)</text>
+  <text x="956" y="831" class="box-item">Railway / Fly.io (runtime)</text>
+
+  <!-- ── THE TWO LAWS callout ── -->
+  <rect x="60" y="852" width="1080" height="36" fill="rgba(200,16,46,0.06)" stroke="rgba(200,16,46,0.2)" stroke-width="1"/>
+  <text x="80" y="875" class="law-text">LAW 1: MCP owns all intelligence. Loop owns all execution. They never swap roles.</text>
+  <text x="700" y="875" fill="rgba(255,255,255,0.25)" font-size="11" font-family="monospace">LAW 2: Everything measurable or it doesn't ship.</text>
+
+  <!-- Vertical connectors between layers -->
+  <line x1="580" y1="194" x2="580" y2="228" stroke="rgba(255,255,255,0.08)" stroke-width="1" marker-end="url(#arrow-dim)"/>
+  <line x1="580" y1="280" x2="580" y2="316" stroke="rgba(255,255,255,0.08)" stroke-width="1" marker-end="url(#arrow-dim)"/>
+  <line x1="580" y1="556" x2="580" y2="590" stroke="rgba(255,255,255,0.08)" stroke-width="1" marker-end="url(#arrow-dim)"/>
+  <line x1="580" y1="662" x2="580" y2="694" stroke="rgba(255,255,255,0.08)" stroke-width="1" marker-end="url(#arrow-dim)"/>
+  <line x1="580" y1="750" x2="580" y2="784" stroke="rgba(255,255,255,0.08)" stroke-width="1" marker-end="url(#arrow-dim)"/>
+
+  <!-- Version stamp -->
+  <text x="1100" y="878" fill="rgba(255,255,255,0.15)" font-size="9" font-family="monospace">v0.1 · ZENITH AI</text>
+</svg>

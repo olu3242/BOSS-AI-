@@ -1,0 +1,51 @@
+{
+  "name": "boss-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BOSS — Business Operating System Suite. The Operating System for Small Business.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "author": {
+    "name": "Zenith AI Automation Agency",
+    "url": "https://zenithaiagency.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/olu3242/boss-ai-"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@turbo/gen": "^1.13.0",
+    "@types/node": "^20.14.0",
+    "eslint": "^9.9.0",
+    "prettier": "^3.3.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.2.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "zod": "^3.23.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "^18.3.0",
+      "react-dom": "^18.3.0"
+    }
+  }
+}

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOSS — Business Operating System Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --boss-red: #C8102E;
+    --boss-red-dim: rgba(200,16,46,0.12);
+    --boss-red-glow: rgba(200,16,46,0.35);
+    --bg: #080809;
+    --surface: #0F0F11;
+    --surface-2: #151518;
+    --border: rgba(255,255,255,0.07);
+    --border-hot: rgba(200,16,46,0.3);
+    --text: #F2F2F4;
+    --text-muted: #6B6B78;
+    --text-dim: #9898A6;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --display: 'Syne', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-weight: 400;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+    background: rgba(8,8,9,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--display);
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .nav-logo span { color: var(--boss-red); }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 13px; font-weight: 500;
+    color: var(--text-dim); text-decoration: none;
+    letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--boss-red);
+    color: #fff; border: none;
+    padding: 9px 22px;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 120px 80px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
+  }
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    top: 10%; right: -100px;
+    background: radial-gradient(circle, var(--boss-red-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 2.5px;
+    color: var(--boss-red);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--boss-red);
+  }
+  .hero-headline {
+    font-family: var(--display);
+    font-size: clamp(52px, 7vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    max-width: 820px;
+    margin-bottom: 32px;
+  }
+  .hero-headline .accent { color: var(--boss-red); }
+  .hero-headline .line2 { display: block; color: var(--text-dim); }
+  .hero-sub {
+    font-size: 17px; font-weight: 300;
+    color: var(--text-dim);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .hero-actions { display: flex; gap: 16px; align-items: center; }
+  .btn-primary {
+    background: var(--boss-red);
+    color: #fff;
+    padding: 14px 32px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    border: none; cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-dim);
+    padding: 14px 32px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+  .hero-scroll-hint {
+    position: absolute; bottom: 40px; left: 80px;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--text-muted); letter-spacing: 2px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-scroll-hint::after {
+    content: '';
+    display: block; width: 40px; height: 1px;
+    background: var(--text-muted);
+    animation: scrollline 2s ease-in-out infinite;
+  }
+  @keyframes scrollline {
+    0%, 100% { width: 40px; opacity: 0.5; }
+    50% { width: 70px; opacity: 1; }
+  }
+
+  /* ─── TICKER ─── */
+  .ticker {
+    background: var(--surface);
+    border-top: 1px solid var(--border-hot);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    overflow: hidden;
+  }
+  .ticker-track {
+    display: flex; gap: 64px;
+    animation: ticker 25s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2px; color: var(--text-muted);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .ticker-item::before {
+    content: '◆';
+    color: var(--boss-red); font-size: 8px;
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ─── SECTION SHARED ─── */
+  section { padding: 120px 80px; }
+  .section-eyebrow {
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 2.5px; color: var(--boss-red);
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: var(--display); font-size: clamp(36px, 4vw, 56px);
+    font-weight: 800; line-height: 1.05;
+    letter-spacing: -2px; margin-bottom: 20px;
+  }
+  .section-sub {
+    font-size: 16px; color: var(--text-dim);
+    max-width: 520px; line-height: 1.7; font-weight: 300;
+  }
+
+  /* ─── PROBLEM ─── */
+  .problem { background: var(--surface); }
+  .problem-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  }
+  .problem-stats { display: flex; flex-direction: column; gap: 40px; }
+  .stat-item { border-left: 2px solid var(--boss-red); padding-left: 24px; }
+  .stat-number {
+    font-family: var(--display); font-size: 56px; font-weight: 800;
+    line-height: 1; letter-spacing: -2px; color: var(--text);
+  }
+  .stat-label { font-size: 14px; color: var(--text-dim); margin-top: 6px; }
+  .stat-note {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+    color: var(--boss-red); margin-top: 4px;
+  }
+
+  /* ─── OS CONCEPT ─── */
+  .os-concept { background: var(--bg); }
+  .os-comparisons {
+    display: flex; gap: 0;
+    border: 1px solid var(--border);
+    margin-top: 64px;
+    overflow: hidden;
+  }
+  .os-item {
+    flex: 1; padding: 40px 36px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .os-item:last-child { border-right: none; }
+  .os-item.active { background: var(--boss-red-dim); }
+  .os-item.active::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; background: var(--boss-red);
+  }
+  .os-company {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+    color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .os-was {
+    font-family: var(--display); font-size: 18px; font-weight: 700;
+    color: var(--text-dim); text-decoration: line-through; margin-bottom: 8px;
+  }
+  .os-became {
+    font-family: var(--display); font-size: 22px; font-weight: 800;
+    color: var(--text);
+  }
+  .os-item.active .os-became { color: var(--boss-red); }
+  .os-tag {
+    display: inline-block; margin-top: 16px;
+    font-family: var(--mono); font-size: 10px;
+    padding: 4px 10px; border: 1px solid var(--border-hot);
+    color: var(--boss-red); letter-spacing: 1px;
+  }
+
+  /* ─── FABLE 5 ─── */
+  .fable { background: var(--surface); }
+  .fable-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0;
+    border: 1px solid var(--border); margin-top: 64px; overflow: hidden;
+  }
+  .fable-item {
+    padding: 36px 28px; border-right: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    transition: background 0.3s;
+  }
+  .fable-item:last-child { border-right: none; }
+  .fable-item:hover { background: var(--boss-red-dim); }
+  .fable-num {
+    font-family: var(--display); font-size: 72px; font-weight: 800;
+    line-height: 1; color: rgba(200,16,46,0.12);
+    position: absolute; top: 16px; right: 16px;
+  }
+  .fable-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--boss-red); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .fable-name {
+    font-family: var(--display); font-size: 20px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .fable-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+  /* ─── ARCHITECTURE ─── */
+  .arch { background: var(--bg); }
+  .arch-diagram {
+    margin-top: 64px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 48px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text-dim);
+    overflow-x: auto;
+  }
+  .arch-diagram .highlight { color: var(--boss-red); }
+  .arch-diagram .bright { color: var(--text); }
+  .arch-two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px;
+  }
+  .arch-box {
+    border: 1px solid var(--border); padding: 32px;
+    background: var(--surface-2); position: relative;
+  }
+  .arch-box.mcp { border-color: var(--border-hot); }
+  .arch-box-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--boss-red); text-transform: uppercase; margin-bottom: 16px;
+  }
+  .arch-box-title {
+    font-family: var(--display); font-size: 22px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .arch-box-sub {
+    font-size: 13px; color: var(--text-dim); margin-bottom: 20px;
+  }
+  .arch-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .arch-list li {
+    font-size: 13px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .arch-list li::before { content: '—'; color: var(--boss-red); flex-shrink: 0; }
+  .arch-badge {
+    position: absolute; top: 16px; right: 16px;
+    font-family: var(--mono); font-size: 9px; letter-spacing: 1.5px;
+    padding: 4px 8px; border: 1px solid;
+    text-transform: uppercase;
+  }
+  .arch-badge.brain { border-color: var(--boss-red); color: var(--boss-red); }
+  .arch-badge.engine { border-color: rgba(255,255,255,0.2); color: var(--text-dim); }
+
+  /* ─── AI WORKFORCE ─── */
+  .workforce { background: var(--surface); }
+  .workforce-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--border); border: 1px solid var(--border);
+    margin-top: 64px; overflow: hidden;
+  }
+  .employee-card {
+    background: var(--surface);
+    padding: 28px 24px;
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .employee-card:hover { background: var(--surface-2); }
+  .employee-icon {
+    width: 36px; height: 36px; margin-bottom: 14px;
+    background: var(--boss-red-dim);
+    border: 1px solid var(--border-hot);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .employee-role {
+    font-family: var(--display); font-size: 15px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .employee-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .employee-kpi {
+    margin-top: 12px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+    color: var(--boss-red);
+  }
+
+  /* ─── BTE ─── */
+  .bte { background: var(--bg); }
+  .bte-engine {
+    margin-top: 64px; border: 1px solid var(--border-hot);
+    background: var(--surface); overflow: hidden;
+  }
+  .bte-header {
+    background: var(--boss-red); padding: 20px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .bte-header-title {
+    font-family: var(--display); font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .bte-header-status {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bte-pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #fff; animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.7); }
+  }
+  .bte-steps { padding: 0; }
+  .bte-step {
+    display: grid; grid-template-columns: 64px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .bte-step:last-child { border-bottom: none; }
+  .bte-step-num {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-2);
+    font-family: var(--display); font-size: 24px; font-weight: 800;
+    color: rgba(200,16,46,0.3);
+    border-right: 1px solid var(--border);
+  }
+  .bte-step-content { padding: 28px 32px; }
+  .bte-step-q {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
+    color: var(--boss-red); text-transform: uppercase; margin-bottom: 6px;
+  }
+  .bte-step-a {
+    font-family: var(--display); font-size: 17px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .bte-step-desc { font-size: 13px; color: var(--text-dim); }
+
+  /* ─── MVP ─── */
+  .mvp { background: var(--surface); }
+  .mvp-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    align-items: start; margin-top: 64px;
+  }
+  .mvp-checklist { display: flex; flex-direction: column; gap: 0; }
+  .mvp-item {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 0; border-bottom: 1px solid var(--border);
+  }
+  .mvp-item:first-child { padding-top: 0; }
+  .mvp-check {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border: 1.5px solid var(--boss-red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--boss-red);
+  }
+  .mvp-text { font-size: 15px; color: var(--text); line-height: 1.4; }
+  .mvp-sub { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .mvp-model { background: var(--bg); border: 1px solid var(--border); padding: 40px; }
+  .mvp-model-title {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+    color: var(--text-muted); text-transform: uppercase; margin-bottom: 24px;
+  }
+  .tier { padding: 20px 0; border-bottom: 1px solid var(--border); }
+  .tier:last-child { border-bottom: none; }
+  .tier-name {
+    font-family: var(--display); font-size: 15px; font-weight: 700;
+  }
+  .tier-price {
+    font-family: var(--display); font-size: 28px; font-weight: 800;
+    color: var(--boss-red); margin: 4px 0;
+  }
+  .tier-desc { font-size: 12px; color: var(--text-dim); }
+
+  /* ─── WAVES ─── */
+  .waves { background: var(--bg); }
+  .waves-track {
+    display: flex; gap: 0;
+    border: 1px solid var(--border);
+    margin-top: 64px; overflow: hidden;
+  }
+  .wave-item {
+    flex: 1; padding: 36px 28px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .wave-item:last-child { border-right: none; }
+  .wave-num {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px;
+    color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;
+  }
+  .wave-name {
+    font-family: var(--display); font-size: 17px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .wave-weeks {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+    color: var(--boss-red); margin-bottom: 16px;
+  }
+  .wave-bullets { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .wave-bullets li {
+    font-size: 12px; color: var(--text-dim);
+    display: flex; gap: 8px;
+  }
+  .wave-bullets li::before { content: '→'; color: var(--boss-red); flex-shrink: 0; }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    background: var(--surface);
+    text-align: center; padding: 140px 80px;
+    position: relative; overflow: hidden;
+  }
+  .cta-glow {
+    position: absolute; width: 800px; height: 400px;
+    top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse, var(--boss-red-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section .section-title { font-size: clamp(42px, 5vw, 68px); max-width: 700px; margin: 0 auto 24px; }
+  .cta-section .section-sub { margin: 0 auto 48px; text-align: center; }
+  .cta-actions { display: flex; gap: 16px; justify-content: center; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 48px 80px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-brand { font-family: var(--display); font-size: 20px; font-weight: 800; }
+  .footer-brand span { color: var(--boss-red); }
+  .footer-mission { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--text-muted); }
+  .footer-copy { font-size: 12px; color: var(--text-muted); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    .hero { padding: 100px 24px 80px; }
+    .hero-scroll-hint { left: 24px; }
+    .problem-inner { grid-template-columns: 1fr; gap: 48px; }
+    .os-comparisons { flex-direction: column; }
+    .fable-grid { grid-template-columns: 1fr 1fr; }
+    .fable-grid .fable-item:nth-child(5) { border-right: none; }
+    .arch-two-col { grid-template-columns: 1fr; }
+    .workforce-grid { grid-template-columns: repeat(2, 1fr); }
+    .mvp-grid { grid-template-columns: 1fr; }
+    .waves-track { flex-direction: column; }
+    .wave-item { border-right: none; border-bottom: 1px solid var(--border); }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">B<span>O</span>SS</div>
+  <div class="nav-links">
+    <a href="#product">Product</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#workforce">AI Workforce</a>
+    <a href="#bte">BTE</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+  <button class="nav-cta">Request Access</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">Business Operating System Suite</div>
+  <h1 class="hero-headline">
+    Your business<br>
+    runs on<br>
+    <span class="accent">BOSS.</span>
+  </h1>
+  <p class="hero-sub">The AI Operating System that gives every small business a digital COO — one that never sleeps, never misses a signal, and never stops optimizing.</p>
+  <div class="hero-actions">
+    <button class="btn-primary">Start Free Audit</button>
+    <button class="btn-secondary">See How It Works</button>
+  </div>
+  <div class="hero-scroll-hint">SCROLL</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">AI Workforce</span>
+    <span class="ticker-item">Business Health Score</span>
+    <span class="ticker-item">Loop Runtime</span>
+    <span class="ticker-item">Transformation Engine</span>
+    <span class="ticker-item">KPI Optimization</span>
+    <span class="ticker-item">Workflow Marketplace</span>
+    <span class="ticker-item">Industry Packs</span>
+    <span class="ticker-item">Partner Network</span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item">AI Workforce</span>
+    <span class="ticker-item">Business Health Score</span>
+    <span class="ticker-item">Loop Runtime</span>
+    <span class="ticker-item">Transformation Engine</span>
+    <span class="ticker-item">KPI Optimization</span>
+    <span class="ticker-item">Workflow Marketplace</span>
+    <span class="ticker-item">Industry Packs</span>
+    <span class="ticker-item">Partner Network</span>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem" id="product">
+  <div class="problem-inner">
+    <div>
+      <div class="section-eyebrow">The Problem</div>
+      <h2 class="section-title">Small businesses operate in the dark.</h2>
+      <p class="section-sub">Enterprise companies have COOs, analytics teams, and $2M software stacks. Small businesses have spreadsheets and gut instinct. BOSS closes that gap — permanently.</p>
+    </div>
+    <div class="problem-stats">
+      <div class="stat-item">
+        <div class="stat-number">82%</div>
+        <div class="stat-label">of small businesses fail due to poor financial and operational management</div>
+        <div class="stat-note">U.S. Bureau of Labor Statistics</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">33M</div>
+        <div class="stat-label">small businesses in the US alone — with no enterprise-grade operating intelligence</div>
+        <div class="stat-note">SBA 2024</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">$0</div>
+        <div class="stat-label">spent on AI-powered business optimization by most small businesses today</div>
+        <div class="stat-note">The opportunity</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OS CONCEPT -->
+<section class="os-concept">
+  <div class="section-eyebrow">The Vision</div>
+  <h2 class="section-title">They said it was just software.<br>Until it became the platform.</h2>
+  <p class="section-sub">Every category-defining company outgrew its original label. BOSS doesn't start as a tool. It starts as the operating system.</p>
+  <div class="os-comparisons">
+    <div class="os-item">
+      <div class="os-company">Salesforce</div>
+      <div class="os-was">CRM</div>
+      <div class="os-became">Enterprise Cloud Platform</div>
+      <span class="os-tag">$300B+ market cap</span>
+    </div>
+    <div class="os-item">
+      <div class="os-company">Shopify</div>
+      <div class="os-was">Ecommerce</div>
+      <div class="os-became">Commerce Operating System</div>
+      <span class="os-tag">$100B+ market cap</span>
+    </div>
+    <div class="os-item">
+      <div class="os-company">ServiceNow</div>
+      <div class="os-was">IT Tickets</div>
+      <div class="os-became">Enterprise Workflow Platform</div>
+      <span class="os-tag">$180B+ market cap</span>
+    </div>
+    <div class="os-item active">
+      <div class="os-company">BOSS</div>
+      <div class="os-was">Automation Tool</div>
+      <div class="os-became">Business Operating System</div>
+      <span class="os-tag">The category we're creating</span>
+    </div>
+  </div>
+</section>
+
+<!-- FABLE 5 -->
+<section class="fable">
+  <div class="section-eyebrow">Design Methodology</div>
+  <h2 class="section-title">Built on Fable 5.</h2>
+  <p class="section-sub">Five foundational layers that compound into a platform designed not for this year, but for the next decade.</p>
+  <div class="fable-grid">
+    <div class="fable-item">
+      <div class="fable-num">1</div>
+      <div class="fable-label">Fable One</div>
+      <div class="fable-name">Foundation</div>
+      <div class="fable-desc">Business ontology, capability model, personas, industry model, Business DNA.</div>
+    </div>
+    <div class="fable-item">
+      <div class="fable-num">2</div>
+      <div class="fable-label">Fable Two</div>
+      <div class="fable-name">Architecture</div>
+      <div class="fable-desc">Bounded contexts, domain model, knowledge graph, MCP, Loop Runtime, all registries.</div>
+    </div>
+    <div class="fable-item">
+      <div class="fable-num">3</div>
+      <div class="fable-label">Fable Three</div>
+      <div class="fable-name">Product</div>
+      <div class="fable-desc">Every user experience — onboarding, audit, dashboard, marketplace, AI workforce.</div>
+    </div>
+    <div class="fable-item">
+      <div class="fable-num">4</div>
+      <div class="fable-label">Fable Four</div>
+      <div class="fable-name">Execution</div>
+      <div class="fable-desc">Loop Runtime — workflow, scheduling, approval, recovery, observability engines.</div>
+    </div>
+    <div class="fable-item">
+      <div class="fable-num">5</div>
+      <div class="fable-label">Fable Five</div>
+      <div class="fable-name">Evolution</div>
+      <div class="fable-desc">Marketplace, SDK, partner platform, industry packs, AI coach, continuous learning.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="arch" id="architecture">
+  <div class="section-eyebrow">Platform Architecture</div>
+  <h2 class="section-title">Two systems.<br>One unstoppable platform.</h2>
+  <p class="section-sub">The hardest architectural decision BOSS makes — and enforces — is the absolute separation of intelligence and execution.</p>
+  <div class="arch-two-col">
+    <div class="arch-box mcp">
+      <span class="arch-badge brain">The Brain</span>
+      <div class="arch-box-label">MCP — Master Control Platform</div>
+      <div class="arch-box-title">Intelligence Layer</div>
+      <div class="arch-box-sub">Owns all knowledge. Provides all recommendations. Never executes a single workflow.</div>
+      <ul class="arch-list">
+        <li>Knowledge graph &amp; business ontology</li>
+        <li>KPI library &amp; constraint registry</li>
+        <li>Prompt, policy &amp; workflow registries</li>
+        <li>Industry models (dental, legal, home services…)</li>
+        <li>AI employee definitions &amp; memory</li>
+        <li>Recommendations &amp; decision support</li>
+      </ul>
+    </div>
+    <div class="arch-box">
+      <span class="arch-badge engine">The Engine</span>
+      <div class="arch-box-label">Loop Runtime</div>
+      <div class="arch-box-title">Execution Layer</div>
+      <div class="arch-box-sub">Executes everything. Manages state, retries, approvals. Contains zero business knowledge.</div>
+      <ul class="arch-list">
+        <li>Workflow &amp; decision engines</li>
+        <li>Scheduling &amp; approval engines</li>
+        <li>Notification &amp; recovery engines</li>
+        <li>Immutable audit log</li>
+        <li>Telemetry &amp; observability</li>
+        <li>Dead letter queues &amp; compensation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- AI WORKFORCE -->
+<section class="workforce" id="workforce">
+  <div class="section-eyebrow">AI Workforce</div>
+  <h2 class="section-title">Hire your entire C-suite.<br>For $299/month.</h2>
+  <p class="section-sub">Each AI employee has a mission, defined KPIs, memory, escalation rules, and accountability. Not chatbots. AI colleagues.</p>
+  <div class="workforce-grid">
+    <div class="employee-card">
+      <div class="employee-icon">👔</div>
+      <div class="employee-role">CEO Advisor</div>
+      <div class="employee-desc">Strategic alignment, decision support, board-ready reporting.</div>
+      <div class="employee-kpi">↑ Strategic clarity score</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">⚙️</div>
+      <div class="employee-role">COO</div>
+      <div class="employee-desc">Operational efficiency, process oversight, constraint resolution.</div>
+      <div class="employee-kpi">↑ Ops efficiency index</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">📈</div>
+      <div class="employee-role">Sales Manager</div>
+      <div class="employee-desc">Pipeline management, lead follow-up, revenue optimization.</div>
+      <div class="employee-kpi">↑ Close rate, ↓ Lead decay</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">📣</div>
+      <div class="employee-role">Marketing Director</div>
+      <div class="employee-desc">Campaign management, content generation, growth tracking.</div>
+      <div class="employee-kpi">↑ CAC efficiency</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">☎️</div>
+      <div class="employee-role">Receptionist</div>
+      <div class="employee-desc">Inbound handling, appointment booking, missed call recovery.</div>
+      <div class="employee-kpi">↓ Missed lead rate</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">📒</div>
+      <div class="employee-role">Bookkeeper</div>
+      <div class="employee-desc">Financial tracking, categorization, cash flow alerts.</div>
+      <div class="employee-kpi">↑ Financial accuracy</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">🤝</div>
+      <div class="employee-role">HR Coordinator</div>
+      <div class="employee-desc">People ops, onboarding, compliance and documentation.</div>
+      <div class="employee-kpi">↑ Team retention rate</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">⭐</div>
+      <div class="employee-role">Review Manager</div>
+      <div class="employee-desc">Reputation management, review response, sentiment tracking.</div>
+      <div class="employee-kpi">↑ Average review score</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">🗓️</div>
+      <div class="employee-role">Scheduler</div>
+      <div class="employee-desc">Appointment optimization, resource allocation, no-show recovery.</div>
+      <div class="employee-kpi">↑ Schedule utilization</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">💰</div>
+      <div class="employee-role">Collections Specialist</div>
+      <div class="employee-desc">AR management, payment reminders, collections escalation.</div>
+      <div class="employee-kpi">↓ Days sales outstanding</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">✍️</div>
+      <div class="employee-role">Proposal Writer</div>
+      <div class="employee-desc">Sales document generation, pricing configuration, submission tracking.</div>
+      <div class="employee-kpi">↑ Proposal win rate</div>
+    </div>
+    <div class="employee-card">
+      <div class="employee-icon">📊</div>
+      <div class="employee-role">Reporting Analyst</div>
+      <div class="employee-desc">Business intelligence, KPI dashboards, trend analysis.</div>
+      <div class="employee-kpi">↑ Decision velocity</div>
+    </div>
+  </div>
+</section>
+
+<!-- BTE -->
+<section class="bte" id="bte">
+  <div class="section-eyebrow">Core Differentiator</div>
+  <h2 class="section-title">The Business Transformation Engine.</h2>
+  <p class="section-sub">BOSS doesn't wait for you to ask a question. Every 24 hours, the BTE runs a full diagnostic on your business and acts on what it finds.</p>
+  <div class="bte-engine">
+    <div class="bte-header">
+      <div class="bte-header-title">BTE — Daily Business Analysis</div>
+      <div class="bte-header-status"><div class="bte-pulse"></div> Running for 847 businesses</div>
+    </div>
+    <div class="bte-steps">
+      <div class="bte-step">
+        <div class="bte-step-num">1</div>
+        <div class="bte-step-content">
+          <div class="bte-step-q">The Question</div>
+          <div class="bte-step-a">What is hurting this business?</div>
+          <div class="bte-step-desc">Every KPI across Sales, Operations, Finance, and Customer Success is analyzed. Anomalies are ranked by revenue impact.</div>
+        </div>
+      </div>
+      <div class="bte-step">
+        <div class="bte-step-num">2</div>
+        <div class="bte-step-content">
+          <div class="bte-step-q">The Diagnosis</div>
+          <div class="bte-step-a">Why is it happening?</div>
+          <div class="bte-step-desc">Root cause analysis using business events, historical patterns, and industry models from the MCP knowledge graph.</div>
+        </div>
+      </div>
+      <div class="bte-step">
+        <div class="bte-step-num">3</div>
+        <div class="bte-step-content">
+          <div class="bte-step-q">The Plan</div>
+          <div class="bte-step-a">What should be done next?</div>
+          <div class="bte-step-desc">A ranked action list is generated, each mapped to estimated ROI, required resources, and deployment risk.</div>
+        </div>
+      </div>
+      <div class="bte-step">
+        <div class="bte-step-num">4</div>
+        <div class="bte-step-content">
+          <div class="bte-step-q">The Execution</div>
+          <div class="bte-step-a">Execute automatically — or ask for approval?</div>
+          <div class="bte-step-desc">Low-risk actions deploy immediately via Loop Runtime. High-impact decisions are escalated to you with one-click approval. You stay in control.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MVP -->
+<section class="mvp">
+  <div class="section-eyebrow">Product Contract</div>
+  <h2 class="section-title">Nine steps to transformation.</h2>
+  <p class="section-sub">The MVP is the smallest complete product capable of delivering measurable business change. Every feature beyond this is secondary until all nine pass.</p>
+  <div class="mvp-grid">
+    <div class="mvp-checklist">
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Create an account</div><div class="mvp-sub">30-second signup, no credit card</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Create a business profile</div><div class="mvp-sub">Business DNA captured in 10 minutes</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Complete an AI audit</div><div class="mvp-sub">8-12 questions, AI-analyzed in real time</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Receive a Business Health Score</div><div class="mvp-sub">0–100 composite score across 6 dimensions</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Receive a Transformation Report</div><div class="mvp-sub">Prioritized action plan with ROI projections</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Deploy one AI workflow</div><div class="mvp-sub">From marketplace to live in under 5 minutes</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Deploy one AI employee</div><div class="mvp-sub">Configured, mission-set, and active</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Measure one KPI improvement</div><div class="mvp-sub">Tracked before and after deployment</div></div>
+      </div>
+      <div class="mvp-item">
+        <div class="mvp-check">✓</div>
+        <div><div class="mvp-text">Calculate ROI</div><div class="mvp-sub">Dollar value tied to every action taken</div></div>
+      </div>
+    </div>
+    <div class="mvp-model">
+      <div class="mvp-model-title">Business Model</div>
+      <div class="tier">
+        <div class="tier-name">Starter</div>
+        <div class="tier-price">$99<span style="font-size:16px;color:var(--text-dim)">/mo</span></div>
+        <div class="tier-desc">1 business, 3 AI employees, 5 workflows, monthly BTE report</div>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Growth</div>
+        <div class="tier-price">$299<span style="font-size:16px;color:var(--text-dim)">/mo</span></div>
+        <div class="tier-desc">1 business, all 13 AI employees, unlimited workflows, daily BTE</div>
+      </div>
+      <div class="tier">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price">Custom</div>
+        <div class="tier-desc">Multi-location, DSO/franchise, white-label, partner licensing</div>
+      </div>
+      <div class="tier" style="border-bottom:none">
+        <div class="tier-name">Marketplace</div>
+        <div class="tier-price" style="font-size:20px">30% rev share</div>
+        <div class="tier-desc">Templates, industry packs, consultant workflows</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAVES -->
+<section class="waves" id="roadmap">
+  <div class="section-eyebrow">Implementation Roadmap</div>
+  <h2 class="section-title">Five waves.<br>One decade.</h2>
+  <p class="section-sub">Governance-first development. No wave begins until the previous wave passes acceptance criteria.</p>
+  <div class="waves-track">
+    <div class="wave-item">
+      <div class="wave-num">Wave 0</div>
+      <div class="wave-name">Foundation</div>
+      <div class="wave-weeks">Weeks 1–2</div>
+      <ul class="wave-bullets">
+        <li>BOSS Constitution</li>
+        <li>Domain model</li>
+        <li>Database schema</li>
+        <li>API contracts</li>
+        <li>Security model</li>
+      </ul>
+    </div>
+    <div class="wave-item">
+      <div class="wave-num">Wave 1</div>
+      <div class="wave-name">Core Platform</div>
+      <div class="wave-weeks">Weeks 3–6</div>
+      <ul class="wave-bullets">
+        <li>Auth &amp; onboarding</li>
+        <li>AI Audit</li>
+        <li>Health Score</li>
+        <li>Transformation Report</li>
+        <li>MVP criteria 1–5</li>
+      </ul>
+    </div>
+    <div class="wave-item">
+      <div class="wave-num">Wave 2</div>
+      <div class="wave-name">AI Workforce</div>
+      <div class="wave-weeks">Weeks 7–10</div>
+      <ul class="wave-bullets">
+        <li>Loop Runtime v1</li>
+        <li>MCP v1</li>
+        <li>First 3 employees</li>
+        <li>Workflow deployment</li>
+        <li>MVP criteria 6–9</li>
+      </ul>
+    </div>
+    <div class="wave-item">
+      <div class="wave-num">Wave 3</div>
+      <div class="wave-name">Marketplace</div>
+      <div class="wave-weeks">Weeks 11–14</div>
+      <ul class="wave-bullets">
+        <li>Template marketplace</li>
+        <li>Industry packs</li>
+        <li>Partner portal</li>
+        <li>BTE automated</li>
+        <li>Revenue share</li>
+      </ul>
+    </div>
+    <div class="wave-item">
+      <div class="wave-num">Wave 4</div>
+      <div class="wave-name">Evolution</div>
+      <div class="wave-weeks">Week 15+</div>
+      <ul class="wave-bullets">
+        <li>Developer SDK</li>
+        <li>Enterprise licensing</li>
+        <li>All 13 employees</li>
+        <li>BI &amp; forecasting</li>
+        <li>Public marketplace</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="section-eyebrow">Get Started</div>
+  <h2 class="section-title">Your business deserves a real operating system.</h2>
+  <p class="section-sub">Start with a free AI audit. Know your Business Health Score in 10 minutes. Deploy your first AI employee the same day.</p>
+  <div class="cta-actions">
+    <button class="btn-primary">Start Free Audit — No Card Required</button>
+    <button class="btn-secondary">Talk to Founding Team</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">B<span>O</span>SS</div>
+    <div class="footer-mission" style="margin-top:8px">Business Operating System Suite</div>
+  </div>
+  <div class="footer-copy">© 2025 Zenith AI Automation Agency. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

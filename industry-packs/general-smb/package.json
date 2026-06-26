@@ -1,0 +1,20 @@
+{
+  "name": "@boss/industry-pack-general-smb",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"no tests yet\" && exit 0",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@boss/registries": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
