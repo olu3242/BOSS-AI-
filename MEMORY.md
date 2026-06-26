@@ -229,3 +229,95 @@ AI — future goal decides if/how to layer LLM reasoning on top), TD-008
 MRI, DNA, Health, and Timeline pages backed by the Goal 2 services, plus
 HTTP transport for `apps/api` (Express/Fastify/Next route handlers) so the
 UI has a real network boundary to call.
+
+## Goal 3 — Constraint Intelligence Engine (complete)
+
+Full ADR: `docs/adr/0004-constraint-intelligence-engine.md`.
+
+### Registries (`packages/registries`)
+- `constraintCategory.ts` — `constraintCategoryRegistry` (13 declarative
+  category entries: sales, marketing, operations, scheduling, finance,
+  customer_experience, communication, reporting, staff_productivity,
+  compliance, technology, leadership, growth).
+- `constraintDefinition.ts` — `constraintDefinitionRegistry` and the
+  declarative `ConstraintDetectionRule` union (`mri_response_equals`,
+  `mri_response_in`, `mri_response_includes`, `health_dimension_below`,
+  `capability_maturity_in`) plus `ConstraintImpactModel`. Adding a new
+  constraint requires only a new registry entry, no engine changes.
+
+### Capability pack (`industry-packs/general-smb`)
+- `data/constraintCategories.ts` / `data/constraintLibrary.ts` — seed the
+  13 categories and 20 General SMB Constraint Library definitions, each
+  with detection rules, a fixed impact model, and related capabilities.
+  Pack version bumped to `0.3.0`.
+- `installGeneralSmbPack()` made idempotent (module-level guard) since
+  `apps/api` now installs it at container-construction time and
+  `createRegistry().register()` throws on duplicate keys.
+
+### Intelligence (`packages/mcp`)
+- `intelligence/constraintEngine.ts` — `detectConstraints()` evaluates
+  every registry-driven detection rule against MRI responses, health
+  dimensions, and capability assessments (any rule match is sufficient
+  evidence); `prioritizeConstraints()` computes six deterministic
+  sub-scores, a fixed-weight `overallScore`, and buckets into five
+  priority levels via fixed thresholds. No hallucinated values anywhere
+  in the impact-estimation path — all numeric impact is a scaled
+  function of `employeeCount`.
+
+### Database (`packages/db`)
+- `migrations/0004_constraint_intelligence.sql` — 8 tables
+  (`constraint_categories`, `constraint_definitions`,
+  `constraint_instances`, `constraint_evidence`,
+  `constraint_relationships`, `constraint_scores`,
+  `constraint_priorities`, `constraint_history`).
+- `migrations/0005_seed_constraint_library.sql` — seeds the 13 categories
+  and 20 definitions, mirroring the TypeScript registries exactly.
+- Both **executed and verified against a live local Postgres 16
+  instance** (`boss_dev`): `constraint_categories`=13,
+  `constraint_definitions`=20, all 8 tables present.
+- `businessConstraintRepository`, `constraintScoreRepository`,
+  `constraintPriorityRepository` — Postgres + in-memory adapters
+  following the Goal 2 pattern. The in-memory
+  `ConstraintPriorityRepository` is constructed with a reference to the
+  in-memory `BusinessConstraintRepository` (rather than zero-arg) since
+  `ConstraintPriority` doesn't denormalize `businessId`.
+
+### API (`apps/api`)
+- `services/businessConstraintService.ts` — `analyze()` runs detection +
+  prioritization, persists constraints + evidence + scores + priorities,
+  re-fetches each constraint with evidence, and appends a
+  `constraint_analysis_completed` timeline event; `list`, `getPriorities`,
+  `dismiss` (with history recording) round out the service.
+- `controllers/businessConstraintController.ts` — thin, zero business
+  logic, matching the Goal 2 controller pattern exactly.
+- `container.ts` now depends on `@boss/industry-pack-general-smb` and
+  calls `installGeneralSmbPack()` before constructing either repository
+  container, closing the registry-seeding gap the new engine introduced.
+- `__tests__/constraintAnalysisFlow.test.ts` — full end-to-end test:
+  create business → complete MRI → derive DNA/Health/Capabilities →
+  analyze constraints → asserts constraints/scores/priorities/evidence,
+  `list`/`getPriorities`/`dismiss`, and the `constraint_analysis_completed`
+  timeline event. Passing.
+
+**Validation:** `pnpm -r typecheck`, `pnpm -r lint`, `pnpm -r build`,
+`pnpm -r test` (api: 2 integration tests/2 files, all other workspaces
+unchanged and passing) and `pnpm run arch:check` (`✔ no dependency
+violations found (96 modules, 244 dependencies cruised)`, knip clean) all
+pass. Migrations executed and validated against `boss_dev`.
+
+**Explicitly NOT done in this goal (by design):** AI agents, workflows,
+Loop Runtime, recommendations — detection/classification/prioritization/
+explanation only, per the goal's explicit scope. `apps/web` UI for
+constraints is deferred.
+
+**Known limitations / tech debt (see `docs/execution/TECH_DEBT.md`):**
+TD-009 (Constraint Graph relationship/history tables are persisted but
+not yet exposed through any API read path), TD-010 (pack installation is
+hardcoded to `general-smb` in `apps/api`'s container — no
+runtime-configurable pack selection yet).
+
+**Recommended next goal:** Goal 4 — Recommendation Intelligence Engine:
+transform detected constraints into measurable, ranked, explainable
+recommendations with ROI forecasts and a transformation roadmap —
+diagnose/rank/explain/forecast only, no execution (deferred to a future
+Loop Runtime).

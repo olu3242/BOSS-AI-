@@ -23,3 +23,4 @@ export * from "./intelligence/responseMap.js";
 export * from "./intelligence/businessDna.js";
 export * from "./intelligence/businessHealth.js";
 export * from "./intelligence/capabilityGraph.js";
+export * from "./intelligence/constraintEngine.js";

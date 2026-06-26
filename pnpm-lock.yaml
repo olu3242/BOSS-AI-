@@ -55,6 +55,9 @@ importers:
       '@boss/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../../industry-packs/general-smb
       '@boss/loop':
         specifier: workspace:*
         version: link:../../packages/loop

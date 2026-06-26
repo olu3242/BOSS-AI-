@@ -8,4 +8,7 @@ export * from "./repositories/postgres/businessDnaRepository.js";
 export * from "./repositories/postgres/businessHealthRepository.js";
 export * from "./repositories/postgres/businessCapabilityRepository.js";
 export * from "./repositories/postgres/businessTimelineRepository.js";
+export * from "./repositories/postgres/businessConstraintRepository.js";
+export * from "./repositories/postgres/constraintScoreRepository.js";
+export * from "./repositories/postgres/constraintPriorityRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";

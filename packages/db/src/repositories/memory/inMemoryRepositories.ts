@@ -10,6 +10,9 @@ import type {
   BusinessHealthDimension,
   BusinessCapabilityAssessment,
   BusinessTimelineEntry,
+  BusinessConstraint,
+  ConstraintScore,
+  ConstraintPriority,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -19,6 +22,10 @@ import type {
   BusinessHealthRepository,
   BusinessCapabilityRepository,
   BusinessTimelineRepository,
+  BusinessConstraintRepository,
+  StoredConstraintEvidence,
+  ConstraintScoreRepository,
+  ConstraintPriorityRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -205,6 +212,98 @@ export function createInMemoryBusinessTimelineRepository(): BusinessTimelineRepo
       return Array.from(items.values())
         .filter((item) => item.orgId === orgId && item.businessId === businessId)
         .sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+    },
+  };
+}
+
+export function createInMemoryBusinessConstraintRepository(): BusinessConstraintRepository {
+  const items = new Map<string, BusinessConstraint>();
+  const evidence = new Map<string, StoredConstraintEvidence[]>();
+  return {
+    async create(input) {
+      const constraint: BusinessConstraint = { id: randomUUID(), ...input, evidence: [], ...stamp() };
+      items.set(constraint.id, constraint);
+      evidence.set(constraint.id, []);
+      return constraint;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values())
+        .filter((item) => item.orgId === orgId && item.businessId === businessId)
+        .map((item) => ({ ...item, evidence: evidence.get(item.id) ?? [] }));
+    },
+    async findById(orgId, id) {
+      const found = items.get(id);
+      if (!found || found.orgId !== orgId) return null;
+      return { ...found, evidence: evidence.get(id) ?? [] };
+    },
+    async updateStatus(orgId, id, status) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`BusinessConstraint ${id} not found`);
+      }
+      const updated: BusinessConstraint = { ...existing, status, updatedAt: new Date().toISOString() };
+      items.set(id, updated);
+      return { ...updated, evidence: evidence.get(id) ?? [] };
+    },
+    async addEvidence(constraintId, item) {
+      const stored: StoredConstraintEvidence = { id: randomUUID(), constraintId, ...item, createdAt: new Date().toISOString() };
+      const list = evidence.get(constraintId) ?? [];
+      list.push(stored);
+      evidence.set(constraintId, list);
+      return stored;
+    },
+    async listEvidence(constraintId) {
+      return evidence.get(constraintId) ?? [];
+    },
+    async recordHistory() {
+      // In-memory adapter does not persist history; Postgres adapter does.
+    },
+  };
+}
+
+export function createInMemoryConstraintScoreRepository(): ConstraintScoreRepository {
+  const items = new Map<string, ConstraintScore>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find((item) => item.constraintId === input.constraintId);
+      const score: ConstraintScore = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(score.id, score);
+      return score;
+    },
+    async findByConstraintId(orgId, constraintId) {
+      return (
+        Array.from(items.values()).find((item) => item.orgId === orgId && item.constraintId === constraintId) ?? null
+      );
+    },
+  };
+}
+
+/**
+ * businessId is not denormalized onto ConstraintPriority, so the in-memory
+ * adapter is constructed with the constraint repository it should consult
+ * to resolve which constraint IDs belong to a given business.
+ */
+export function createInMemoryConstraintPriorityRepository(
+  constraintRepository: BusinessConstraintRepository
+): ConstraintPriorityRepository {
+  const items = new Map<string, ConstraintPriority>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find((item) => item.constraintId === input.constraintId);
+      const priority: ConstraintPriority = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(priority.id, priority);
+      return priority;
+    },
+    async listByBusinessId(orgId, businessId) {
+      const constraints = await constraintRepository.listByBusinessId(orgId, businessId);
+      const constraintIds = new Set(constraints.map((c) => c.id));
+      return Array.from(items.values())
+        .filter((item) => item.orgId === orgId && constraintIds.has(item.constraintId))
+        .sort((a, b) => a.rank - b.rank);
     },
   };
 }

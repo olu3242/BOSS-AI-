@@ -16,7 +16,8 @@
     "@boss/shared": "workspace:*",
     "@boss/mcp": "workspace:*",
     "@boss/loop": "workspace:*",
-    "@boss/db": "workspace:*"
+    "@boss/db": "workspace:*",
+    "@boss/industry-pack-general-smb": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.16.0",

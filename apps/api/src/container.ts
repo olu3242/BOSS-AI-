@@ -6,6 +6,9 @@ import {
   createPostgresBusinessHealthRepository,
   createPostgresBusinessCapabilityRepository,
   createPostgresBusinessTimelineRepository,
+  createPostgresBusinessConstraintRepository,
+  createPostgresConstraintScoreRepository,
+  createPostgresConstraintPriorityRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -13,6 +16,9 @@ import {
   createInMemoryBusinessHealthRepository,
   createInMemoryBusinessCapabilityRepository,
   createInMemoryBusinessTimelineRepository,
+  createInMemoryBusinessConstraintRepository,
+  createInMemoryConstraintScoreRepository,
+  createInMemoryConstraintPriorityRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -20,7 +26,11 @@ import {
   type BusinessHealthRepository,
   type BusinessCapabilityRepository,
   type BusinessTimelineRepository,
+  type BusinessConstraintRepository,
+  type ConstraintScoreRepository,
+  type ConstraintPriorityRepository,
 } from "@boss/db";
+import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
 export interface RepositoryContainer {
   businesses: BusinessRepository;
@@ -30,9 +40,13 @@ export interface RepositoryContainer {
   businessHealth: BusinessHealthRepository;
   businessCapabilities: BusinessCapabilityRepository;
   businessTimeline: BusinessTimelineRepository;
+  businessConstraints: BusinessConstraintRepository;
+  constraintScores: ConstraintScoreRepository;
+  constraintPriorities: ConstraintPriorityRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
+  installGeneralSmbPack();
   return {
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
@@ -41,10 +55,15 @@ export function createPostgresContainer(): RepositoryContainer {
     businessHealth: createPostgresBusinessHealthRepository(),
     businessCapabilities: createPostgresBusinessCapabilityRepository(),
     businessTimeline: createPostgresBusinessTimelineRepository(),
+    businessConstraints: createPostgresBusinessConstraintRepository(),
+    constraintScores: createPostgresConstraintScoreRepository(),
+    constraintPriorities: createPostgresConstraintPriorityRepository(),
   };
 }
 
 export function createInMemoryContainer(): RepositoryContainer {
+  installGeneralSmbPack();
+  const businessConstraints = createInMemoryBusinessConstraintRepository();
   return {
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),
@@ -53,5 +72,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     businessHealth: createInMemoryBusinessHealthRepository(),
     businessCapabilities: createInMemoryBusinessCapabilityRepository(),
     businessTimeline: createInMemoryBusinessTimelineRepository(),
+    businessConstraints,
+    constraintScores: createInMemoryConstraintScoreRepository(),
+    constraintPriorities: createInMemoryConstraintPriorityRepository(businessConstraints),
   };
 }

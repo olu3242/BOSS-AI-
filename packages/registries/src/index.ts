@@ -13,4 +13,6 @@ export * from "./registries/dna.js";
 export * from "./registries/health.js";
 export * from "./registries/painPoint.js";
 export * from "./registries/goalOption.js";
+export * from "./registries/constraintCategory.js";
+export * from "./registries/constraintDefinition.js";
 export * from "./seed/index.js";

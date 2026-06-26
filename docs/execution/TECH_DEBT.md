@@ -13,6 +13,8 @@ Each entry should be small enough to become a single PR.
 | TD-006 | No auth — CI and local dev have no permission boundary yet | Goal 0 | High | unassigned | open |
 | TD-007 | Business DNA/Health/Capability derivation in `packages/mcp` is deterministic rule-based logic, explicitly not AI inference — Goal 2 forbids AI here; a later goal should decide if/how to layer LLM reasoning on top | Goal 2 | Medium | unassigned | open |
 | TD-008 | `packages/db` repositories enforce `org_id` scoping in application-level WHERE clauses, not Postgres row-level security policies | Goal 2 | Medium | unassigned | open |
+| TD-009 | Constraint Graph relationship (`constraint_relationships`) and history (`constraint_history`) tables are persisted but not yet exposed through any API read path | Goal 3 | Medium | unassigned | open |
+| TD-010 | Capability pack installation is hardcoded to `general-smb` inside `apps/api`'s container — no runtime-configurable pack selection for multiple verticals yet | Goal 3 | Medium | unassigned | open |
 
 ## Process
 

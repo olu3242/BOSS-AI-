@@ -5,6 +5,28 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 3: Constraint Intelligence Engine
+- `packages/registries`: `constraintCategoryRegistry` (13 categories) and
+  `constraintDefinitionRegistry` with a declarative
+  `ConstraintDetectionRule` union and fixed `ConstraintImpactModel`.
+- `industry-packs/general-smb`: 20-item General SMB Constraint Library
+  with registry-driven detection rules; `installGeneralSmbPack()` made
+  idempotent; pack version bumped to `0.3.0`.
+- `packages/mcp`: `constraintEngine.ts` — deterministic, registry-driven
+  constraint detection (`detectConstraints`) and weighted priority scoring
+  (`prioritizeConstraints`), with scaled, non-hallucinated impact
+  estimation.
+- `packages/db`: raw SQL migrations (8 tables) for Constraint Registry/
+  Instances/Evidence/Categories/Relationships/History/Scores/Priorities,
+  executed and verified against a live Postgres 16 instance; dual
+  Postgres + in-memory repository adapters.
+- `apps/api`: `businessConstraintService`/`businessConstraintController`
+  for detection, scoring, prioritization, listing, and dismissal; now
+  depends on `@boss/industry-pack-general-smb` and installs it at
+  container-construction time; end-to-end integration test.
+- `docs/adr/0004-constraint-intelligence-engine.md`.
+- Tech Debt Register: TD-009, TD-010.
+
 ### Added — Goal 2: Business Intelligence Layer
 - `packages/db`: raw SQL migrations (11 tables) for Business MRI/DNA/Health/
   Capabilities/Timeline, executed and verified against a live Postgres 16

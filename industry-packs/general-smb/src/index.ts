@@ -16,10 +16,18 @@ import { seedDnaDimensions } from "./data/dna.js";
 import { seedHealthDimensions } from "./data/health.js";
 import { seedPainPoints } from "./data/painPoints.js";
 import { seedGoalOptions } from "./data/goalOptions.js";
+import { seedConstraintCategories } from "./data/constraintCategories.js";
+import { seedConstraintLibrary } from "./data/constraintLibrary.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.2.0";
+export const GENERAL_SMB_PACK_VERSION = "0.3.0";
+
+let installed = false;
 
 export function installGeneralSmbPack(): void {
+  if (installed) {
+    return;
+  }
+  installed = true;
   seedCapabilities();
   seedConstraints();
   seedKpis();
@@ -31,6 +39,8 @@ export function installGeneralSmbPack(): void {
   seedHealthDimensions();
   seedPainPoints();
   seedGoalOptions();
+  seedConstraintCategories();
+  seedConstraintLibrary();
 }
 
 export {
@@ -45,4 +55,6 @@ export {
   seedHealthDimensions,
   seedPainPoints,
   seedGoalOptions,
+  seedConstraintCategories,
+  seedConstraintLibrary,
 };

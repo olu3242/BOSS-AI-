@@ -327,7 +327,8 @@ export type TimelineEventType =
   | "business_mri_completed"
   | "business_dna_generated"
   | "business_health_updated"
-  | "capability_updated";
+  | "capability_updated"
+  | "constraint_analysis_completed";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;
@@ -336,6 +337,94 @@ export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   description: string;
   metadata: Record<string, unknown>;
   occurredAt: string;
+}
+
+export type ConstraintCategoryKey =
+  | "sales"
+  | "marketing"
+  | "operations"
+  | "scheduling"
+  | "finance"
+  | "customer_experience"
+  | "communication"
+  | "reporting"
+  | "staff_productivity"
+  | "compliance"
+  | "technology"
+  | "leadership"
+  | "growth";
+
+export type ConstraintSeverity = "critical" | "high" | "medium" | "low" | "informational";
+
+export type ConstraintStatus = "active" | "monitoring" | "resolved" | "dismissed";
+
+export type ImpactLevel = "low" | "medium" | "high";
+
+export interface ConstraintEvidenceItem {
+  source:
+    | "business_mri"
+    | "business_health"
+    | "capability_assessment"
+    | "business_timeline"
+    | "business_profile"
+    | "configuration"
+    | "historical_assessment";
+  description: string;
+  data: Record<string, unknown>;
+}
+
+export interface ConstraintImpactEstimate {
+  revenueLossAnnual: number;
+  timeLostHoursWeekly: number;
+  customerImpact: ImpactLevel;
+  operationalFriction: ImpactLevel;
+  growthLimitation: ImpactLevel;
+  ownerStress: ImpactLevel;
+  confidence: number;
+}
+
+export interface BusinessConstraint extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  definitionKey: string;
+  title: string;
+  description: string;
+  category: ConstraintCategoryKey;
+  severity: ConstraintSeverity;
+  confidence: number;
+  businessImpact: string;
+  financialImpact: ConstraintImpactEstimate;
+  customerImpact: ImpactLevel;
+  operationalImpact: ImpactLevel;
+  automationPotential: "low" | "medium" | "high";
+  businessOwner: string;
+  evidence: ConstraintEvidenceItem[];
+  dependencies: string[];
+  status: ConstraintStatus;
+  dateDetected: string;
+  version: number;
+}
+
+export type ConstraintPriorityLevel = "critical" | "high" | "medium" | "low" | "informational";
+
+export interface ConstraintScore extends TenantScoped, Timestamped {
+  id: ID;
+  constraintId: ID;
+  businessImpactScore: number;
+  financialImpactScore: number;
+  customerImpactScore: number;
+  urgencyScore: number;
+  automationScore: number;
+  confidenceScore: number;
+  overallScore: number;
+}
+
+export interface ConstraintPriority extends TenantScoped, Timestamped {
+  id: ID;
+  constraintId: ID;
+  priority: ConstraintPriorityLevel;
+  rank: number;
+  computedAt: string;
 }
 
 export interface BossEventRecord extends TenantScoped {

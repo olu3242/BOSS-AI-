@@ -9,6 +9,10 @@ import type {
   BusinessHealthDimension,
   BusinessCapabilityAssessment,
   BusinessTimelineEntry,
+  BusinessConstraint,
+  ConstraintEvidenceItem,
+  ConstraintScore,
+  ConstraintPriority,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -68,4 +72,32 @@ export interface BusinessTimelineRepository {
     input: Omit<BusinessTimelineEntry, "id" | "createdAt" | "updatedAt" | "deletedAt">
   ): Promise<BusinessTimelineEntry>;
   listByBusinessId(orgId: string, businessId: string): Promise<BusinessTimelineEntry[]>;
+}
+
+export interface StoredConstraintEvidence extends ConstraintEvidenceItem {
+  id: string;
+  constraintId: string;
+  createdAt: string;
+}
+
+export interface BusinessConstraintRepository {
+  create(
+    input: Omit<BusinessConstraint, "id" | "createdAt" | "updatedAt" | "deletedAt" | "evidence">
+  ): Promise<BusinessConstraint>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessConstraint[]>;
+  findById(orgId: string, id: string): Promise<BusinessConstraint | null>;
+  updateStatus(orgId: string, id: string, status: BusinessConstraint["status"]): Promise<BusinessConstraint>;
+  addEvidence(constraintId: string, evidence: ConstraintEvidenceItem): Promise<StoredConstraintEvidence>;
+  listEvidence(constraintId: string): Promise<StoredConstraintEvidence[]>;
+  recordHistory(constraintId: string, previousStatus: string | null, newStatus: string, note: string): Promise<void>;
+}
+
+export interface ConstraintScoreRepository {
+  upsert(input: Omit<ConstraintScore, "id" | "createdAt" | "updatedAt">): Promise<ConstraintScore>;
+  findByConstraintId(orgId: string, constraintId: string): Promise<ConstraintScore | null>;
+}
+
+export interface ConstraintPriorityRepository {
+  upsert(input: Omit<ConstraintPriority, "id" | "createdAt" | "updatedAt">): Promise<ConstraintPriority>;
+  listByBusinessId(orgId: string, businessId: string): Promise<ConstraintPriority[]>;
 }
