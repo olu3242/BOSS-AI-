@@ -5,6 +5,21 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 2: Business Intelligence Layer
+- `packages/db`: raw SQL migrations (11 tables) for Business MRI/DNA/Health/
+  Capabilities/Timeline, executed and verified against a live Postgres 16
+  instance; migration runner (`migrate.ts`) and validator
+  (`validateMigrations.ts`); dual Postgres + in-memory repository adapters
+  behind shared interfaces.
+- `packages/mcp`: deterministic, non-AI derivation functions
+  (`deriveBusinessDna`, `deriveBusinessHealth`, `evaluateCapabilities`).
+- `apps/api`: typed services and logic-free controllers for Business
+  Profile, MRI, DNA, Health, Capabilities, and Timeline, wired through a
+  repository container; end-to-end integration test.
+- `docs/adr/0003-business-intelligence-layer.md`.
+- Tech Debt Register: TD-007, TD-008; updated TD-001–TD-006 to reflect
+  Goal 2 progress.
+
 ### Added — Goal 0.5: Engineering Operating System + Core Business Foundation
 - Engineering governance: `CONTRIBUTING.md`, `CODEOWNERS`, Definition of
   Done, Coding Standards, Technical Debt Register, Project Health

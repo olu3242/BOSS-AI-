@@ -11,8 +11,13 @@ import { seedKpis } from "./data/kpis.js";
 import { seedAiEmployees } from "./data/aiEmployees.js";
 import { seedWorkflows } from "./data/workflows.js";
 import { seedPrompts } from "./data/prompts.js";
+import { seedMri } from "./data/mri.js";
+import { seedDnaDimensions } from "./data/dna.js";
+import { seedHealthDimensions } from "./data/health.js";
+import { seedPainPoints } from "./data/painPoints.js";
+import { seedGoalOptions } from "./data/goalOptions.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.1.0";
+export const GENERAL_SMB_PACK_VERSION = "0.2.0";
 
 export function installGeneralSmbPack(): void {
   seedCapabilities();
@@ -21,6 +26,11 @@ export function installGeneralSmbPack(): void {
   seedAiEmployees();
   seedWorkflows();
   seedPrompts();
+  seedMri();
+  seedDnaDimensions();
+  seedHealthDimensions();
+  seedPainPoints();
+  seedGoalOptions();
 }
 
 export {
@@ -30,4 +40,9 @@ export {
   seedAiEmployees,
   seedWorkflows,
   seedPrompts,
+  seedMri,
+  seedDnaDimensions,
+  seedHealthDimensions,
+  seedPainPoints,
+  seedGoalOptions,
 };

@@ -159,37 +159,183 @@ export interface Report extends TenantScoped, Timestamped {
   content: Record<string, unknown>;
 }
 
+export interface Business extends TenantScoped, Timestamped {
+  id: ID;
+  name: string;
+  industry: string;
+  employeeCount: number;
+  annualRevenue: number;
+}
+
+export interface BusinessProfile extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  businessName: string;
+  businessType: string;
+  yearsOperating: number;
+  employeeCount: number;
+  locationCount: number;
+  businessHours: string;
+}
+
+export type MriStatus = "not_started" | "in_progress" | "completed";
+
 export interface BusinessMRI extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
   version: string;
+  status: MriStatus;
+  startedAt: string | null;
   completedAt: string | null;
 }
+
+export type MriSectionKey =
+  | "identity"
+  | "customers"
+  | "sales"
+  | "operations"
+  | "finance"
+  | "marketing"
+  | "technology"
+  | "goals"
+  | "pain_points";
+
+export interface BusinessMriSection extends TenantScoped, Timestamped {
+  id: ID;
+  businessMriId: ID;
+  sectionKey: MriSectionKey;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export type MriQuestionType =
+  | "text"
+  | "number"
+  | "boolean"
+  | "single_select"
+  | "multi_select"
+  | "scale";
+
+export interface BusinessMriResponse extends TenantScoped, Timestamped {
+  id: ID;
+  businessMriId: ID;
+  sectionKey: MriSectionKey;
+  questionKey: string;
+  value: unknown;
+  answeredAt: string;
+}
+
+export type BusinessArchetype =
+  | "solo_operator"
+  | "owner_operator"
+  | "growth_stage_team"
+  | "established_enterprise";
+
+export type GrowthStage = "startup" | "early_growth" | "scaling" | "mature";
+
+export type OperationalComplexity = "simple" | "moderate" | "complex" | "highly_complex";
+
+export type TechnologyMaturity = "manual" | "basic_tools" | "integrated" | "advanced";
+
+export type AutomationReadiness = "low" | "moderate" | "high" | "very_high";
+
+export type CustomerEngagementStyle =
+  | "transactional"
+  | "relationship_driven"
+  | "community_driven"
+  | "self_service";
+
+export type RevenueModel =
+  | "one_time_sales"
+  | "recurring_subscription"
+  | "service_based"
+  | "mixed";
+
+export type CommunicationStyle = "formal" | "casual" | "high_touch" | "low_touch";
+
+export type DecisionStyle = "data_driven" | "intuitive" | "consensus_driven" | "owner_led";
+
+export type RiskProfile = "risk_averse" | "balanced" | "risk_tolerant";
 
 export interface BusinessDNA extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
-  growthStage: string;
-  technologyMaturity: string;
-  riskProfile: string;
-  communicationStyle: string;
-  customerModel: string;
-  revenueModel: string;
-  operationalComplexity: string;
-  decisionStyle: string;
+  archetype: BusinessArchetype;
+  growthStage: GrowthStage;
+  operationalComplexity: OperationalComplexity;
+  technologyMaturity: TechnologyMaturity;
+  automationReadiness: AutomationReadiness;
+  customerEngagementStyle: CustomerEngagementStyle;
+  revenueModel: RevenueModel;
+  communicationStyle: CommunicationStyle;
+  decisionStyle: DecisionStyle;
+  riskProfile: RiskProfile;
+  generatedAt: string;
 }
+
+export type HealthDimensionKey =
+  | "sales"
+  | "marketing"
+  | "operations"
+  | "financial"
+  | "customer_experience"
+  | "team_productivity"
+  | "technology"
+  | "growth"
+  | "ai_readiness"
+  | "overall";
+
+export type HealthTrend = "improving" | "stable" | "declining" | "unknown";
+
+export type HealthStatus = "strong" | "healthy" | "at_risk" | "critical";
 
 export interface BusinessHealth extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
   overallScore: number;
+  generatedAt: string;
 }
+
+export interface BusinessHealthDimension extends TenantScoped, Timestamped {
+  id: ID;
+  businessHealthId: ID;
+  dimensionKey: HealthDimensionKey;
+  score: number;
+  confidence: number;
+  trend: HealthTrend;
+  evidence: string[];
+  status: HealthStatus;
+}
+
+export type CapabilityMaturity = "absent" | "ad_hoc" | "developing" | "managed" | "optimized";
+
+export interface BusinessCapabilityAssessment extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  capabilityKey: string;
+  currentMaturity: CapabilityMaturity;
+  businessImportance: "low" | "medium" | "high" | "critical";
+  automationPotential: "low" | "medium" | "high";
+  dependencies: string[];
+  owner: string;
+}
+
+export type TimelineEventType =
+  | "business_created"
+  | "business_updated"
+  | "business_mri_started"
+  | "business_mri_completed"
+  | "business_dna_generated"
+  | "business_health_updated"
+  | "capability_updated";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
-  type: string;
+  type: TimelineEventType;
   description: string;
+  metadata: Record<string, unknown>;
+  occurredAt: string;
 }
 
 export interface BossEventRecord extends TenantScoped {

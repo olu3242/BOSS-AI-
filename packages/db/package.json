@@ -1,26 +1,27 @@
 {
-  "name": "@boss/api",
+  "name": "@boss/db",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/index.ts",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "migrate": "tsx src/migrate.ts",
+    "validate-migrations": "tsx src/validateMigrations.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "tsx": "^4.16.0",
+    "@types/pg": "^8.11.0"
   },
   "dependencies": {
     "@boss/types": "workspace:*",
     "@boss/shared": "workspace:*",
-    "@boss/mcp": "workspace:*",
-    "@boss/loop": "workspace:*",
-    "@boss/db": "workspace:*"
-  },
-  "devDependencies": {
-    "tsx": "^4.16.0",
-    "typescript": "^5.5.0",
-    "vitest": "^2.0.0"
+    "pg": "^8.12.0"
   }
 }

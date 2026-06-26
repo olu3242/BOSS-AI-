@@ -143,3 +143,89 @@ driven, no AI reasoning), Business Health Framework, Business Timeline (data
 model only), Business DNA (descriptive only), Repository Layer, database
 schema, API contracts, minimal UI — explicitly excluding AI reasoning,
 recommendations, Loop Runtime execution, and dashboards.
+
+## Goal 2 — Business Intelligence Layer (complete)
+
+**Status:** Done. Business MRI, Business DNA, Business Health Graph,
+Capability Graph, and Business Timeline are persisted, derived, and exposed
+through typed services — strictly non-AI, per the Two Laws. See
+`docs/adr/0003-business-intelligence-layer.md`.
+
+### Database (`packages/db`)
+- Raw, sequentially-numbered SQL migrations in `packages/db/migrations`:
+  `0001_business_intelligence.sql` (11 tables: `businesses`,
+  `business_profiles`, `business_mri`, `business_mri_sections`,
+  `business_mri_responses`, `business_dna`, `business_health`,
+  `business_health_dimensions`, `business_capabilities`,
+  `business_timeline`, `schema_migrations`), `0002_seed_mri_questions.sql`
+  (question catalog), `0003_seed_sample_business.sql` (sample business +
+  realistic responses).
+- All three migrations **executed and verified against a live local
+  Postgres 16 instance** (`boss_dev`), not just statically reviewed: row
+  counts confirmed (`business_mri_responses`=35,
+  `business_health_dimensions`=10, `business_capabilities`=9,
+  `business_timeline`=6).
+- `src/client.ts` — pooled `pg` connection (`DATABASE_URL` env var, local
+  fallback), `query()`, `withTransaction()`, `firstRow()` helper for
+  `noUncheckedIndexedAccess`-safe `RETURNING *` call sites.
+- `src/migrate.ts` — idempotent migration runner tracked in
+  `schema_migrations`.
+- `src/validateMigrations.ts` — validates `NNNN_description.sql`
+  naming/sequence statically, then applies all migrations to a disposable
+  Postgres schema to catch SQL errors before they reach a real environment
+  (exercised against `boss_dev`, not just reviewed).
+- `src/repositories/types.ts` — one interface per entity family (Business,
+  BusinessProfile, BusinessMri incl. sections/responses, BusinessDna,
+  BusinessHealth incl. dimensions, BusinessCapability, BusinessTimeline).
+- `src/repositories/postgres/*` — parameterized-SQL implementations against
+  `pg`, enforcing `org_id` scoping and `deleted_at IS NULL` (soft deletes)
+  in application-level WHERE clauses.
+- `src/repositories/memory/inMemoryRepositories.ts` — `Map`-based
+  implementations of every interface, enabling full-flow tests without a
+  database connection.
+
+### Intelligence (`packages/mcp`)
+- Deterministic, rule-based (explicitly non-AI) derivation functions:
+  `deriveBusinessDna`, `deriveBusinessHealth`, `evaluateCapabilities` — each
+  a fixed, documented function of MRI responses, commented as a future
+  placeholder for real inference. Depends on `@boss/registries` for
+  health-dimension weights and pain-point penalties (verified: no
+  dependency-cruiser violation).
+
+### API (`apps/api`)
+- `container.ts` — `RepositoryContainer` wiring either Postgres or
+  in-memory repositories behind the same interfaces.
+- `services/*` — one service per entity family
+  (businessProfile/Mri/Dna/Health/Capability/Timeline); all orchestration
+  (persist + derive + emit timeline event) lives here.
+- `controllers/*` — thin factory functions with **zero business logic**,
+  delegating entirely to services.
+- `index.ts` — `createApi()` wires the full Postgres-backed container; no
+  HTTP transport (Express/Fastify/Next route handlers) is wired up yet
+  (see Tech Debt TD-002).
+- `__tests__/businessIntelligenceFlow.test.ts` — full end-to-end test:
+  create business → start/answer/complete MRI → derive DNA → derive Health
+  → evaluate Capabilities → asserts exact ordered timeline of 6 event
+  types. Passing.
+
+**Validation:** `pnpm -r typecheck`, `pnpm -r lint`, `pnpm -r build`,
+`pnpm -r test` (db: 3 tests/2 files, mcp: 7 tests/3 files, general-smb: 6
+tests, api: 1 integration test) and `pnpm run arch:check` (`✔ no dependency
+violations found (85 modules, 199 dependencies cruised)`, knip clean) all
+pass.
+
+**Explicitly NOT done in this goal (by design):** AI reasoning,
+recommendations, Loop Runtime workflows, `apps/web` UI pages, HTTP
+transport, Postgres row-level security.
+
+**Known limitations / tech debt (see `docs/execution/TECH_DEBT.md`):**
+TD-001 (`apps/web` has no real pages yet), TD-002 (`apps/api` has no HTTP
+transport), TD-003 (rest of the ARCHITECTURE.md §6 schema beyond Business
+Intelligence is unimplemented), TD-007 (derivation logic is rule-based, not
+AI — future goal decides if/how to layer LLM reasoning on top), TD-008
+(`org_id` scoping is application-level, not RLS).
+
+**Recommended next goal:** Goal 3 — `apps/web` Next.js UI: Business Setup,
+MRI, DNA, Health, and Timeline pages backed by the Goal 2 services, plus
+HTTP transport for `apps/api` (Express/Fastify/Next route handlers) so the
+UI has a real network boundary to call.

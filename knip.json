@@ -21,7 +21,6 @@
     "zod",
     "@boss/types",
     "@boss/shared",
-    "@boss/mcp",
     "@boss/loop",
     "@boss/ui"
   ],

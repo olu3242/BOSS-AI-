@@ -11,13 +11,4 @@ export interface Organization {
   createdAt: string;
 }
 
-export interface Business {
-  id: ID;
-  orgId: ID;
-  name: string;
-  industry: string;
-  employeeCount: number;
-  annualRevenue: number;
-}
-
 export * from "./ontology.js";
