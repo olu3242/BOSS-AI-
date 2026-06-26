@@ -80,8 +80,12 @@ describe("constraint analysis flow", () => {
 
     const list = await constraintService.list(ORG_ID, business.id);
     expect(list.length).toBe(analysis.constraints.length);
+    const firstConstraint = list[0];
+    if (!firstConstraint) {
+      throw new Error("Expected at least one detected constraint");
+    }
 
-    const dismissed = await constraintService.dismiss(ORG_ID, list[0].id);
+    const dismissed = await constraintService.dismiss(ORG_ID, firstConstraint.id);
     expect(dismissed.status).toBe("dismissed");
 
     const timeline = await timelineService.list(ORG_ID, business.id);
