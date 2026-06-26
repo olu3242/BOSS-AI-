@@ -1,0 +1,95 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+import type { AiEmployeeEntry } from "@boss/registries";
+
+const aiEmployees: AiEmployeeEntry[] = [
+  {
+    key: "ceo_advisor",
+    label: "CEO Advisor",
+    mission: "Keep the owner focused on what moves the business forward.",
+    responsibilities: ["Surface top constraints", "Recommend priorities", "Track goal progress"],
+    capabilities: ["reporting", "operations"],
+    requiredTools: ["business_health_api", "recommendation_api"],
+    kpis: ["business_health_score", "business_growth_score"],
+    permissions: ["read:business_health", "read:recommendations"],
+    escalationRules: ["escalate_to_owner_on_critical_constraint"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_front_desk",
+    label: "AI Front Desk",
+    mission: "Greet and triage every inbound customer interaction.",
+    responsibilities: ["Answer inbound messages", "Capture lead details", "Route to scheduling"],
+    capabilities: ["communication", "lead_management"],
+    requiredTools: ["messaging_api", "calendar_api"],
+    kpis: ["lead_response_time"],
+    permissions: ["read:leads", "write:leads"],
+    escalationRules: ["escalate_to_owner_on_complaint"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_follow_up_assistant",
+    label: "AI Follow-Up Assistant",
+    mission: "Ensure no lead or customer goes without a timely follow-up.",
+    responsibilities: ["Send follow-up messages", "Re-engage cold leads", "Log outcomes"],
+    capabilities: ["lead_management", "communication"],
+    requiredTools: ["messaging_api"],
+    kpis: ["lead_response_time", "lead_conversion_rate"],
+    permissions: ["read:leads", "write:notifications"],
+    escalationRules: ["escalate_after_three_failed_attempts"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_operations_coordinator",
+    label: "AI Operations Coordinator",
+    mission: "Keep day-to-day operations running without owner intervention.",
+    responsibilities: ["Coordinate scheduling", "Track task completion", "Flag bottlenecks"],
+    capabilities: ["operations", "scheduling", "task_management"],
+    requiredTools: ["calendar_api", "task_api"],
+    kpis: ["administrative_hours"],
+    permissions: ["read:tasks", "write:tasks"],
+    escalationRules: ["escalate_on_missed_appointment"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_review_manager",
+    label: "AI Review Manager",
+    mission: "Grow and protect the business's reputation.",
+    responsibilities: ["Request reviews", "Monitor review sentiment", "Draft responses"],
+    capabilities: ["reviews"],
+    requiredTools: ["review_platform_api"],
+    kpis: ["review_rating"],
+    permissions: ["read:reviews", "write:notifications"],
+    escalationRules: ["escalate_on_negative_review"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_collections_assistant",
+    label: "AI Collections Assistant",
+    mission: "Keep cash flow healthy by chasing outstanding invoices.",
+    responsibilities: ["Send payment reminders", "Track invoice aging", "Flag chronic late payers"],
+    capabilities: ["billing", "finance"],
+    requiredTools: ["billing_api", "messaging_api"],
+    kpis: ["outstanding_invoices"],
+    permissions: ["read:invoices", "write:notifications"],
+    escalationRules: ["escalate_after_30_days_overdue"],
+    lifecycle: "draft",
+  },
+  {
+    key: "ai_reporting_analyst",
+    label: "AI Reporting Analyst",
+    mission: "Turn raw business data into clear, actionable reporting.",
+    responsibilities: ["Compile KPI reports", "Highlight anomalies", "Maintain business timeline"],
+    capabilities: ["reporting"],
+    requiredTools: ["analytics_api"],
+    kpis: ["business_health_score"],
+    permissions: ["read:kpis", "write:reports"],
+    escalationRules: ["escalate_on_kpi_anomaly"],
+    lifecycle: "draft",
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

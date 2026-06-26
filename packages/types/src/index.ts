@@ -1,4 +1,6 @@
-export type ID = string;
+import type { ID } from "./primitives.js";
+
+export * from "./primitives.js";
 
 export interface Organization {
   id: ID;
@@ -17,3 +19,5 @@ export interface Business {
   employeeCount: number;
   annualRevenue: number;
 }
+
+export * from "./ontology.js";

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    "apps/*": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/config": {
+      "entry": ["eslint.base.js"],
+      "project": ["*.js"]
+    },
+    "packages/*": {
+      "project": ["src/**/*.ts"]
+    },
+    "industry-packs/*": {
+      "project": ["src/**/*.ts"]
+    }
+  },
+  "ignoreDependencies": [
+    "@anthropic-ai/sdk",
+    "@supabase/supabase-js",
+    "zod",
+    "@boss/types",
+    "@boss/shared",
+    "@boss/mcp",
+    "@boss/loop",
+    "@boss/ui"
+  ],
+  "ignoreExportsUsedInFile": true
+}

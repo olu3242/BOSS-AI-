@@ -1,0 +1,14 @@
+# Default owner for everything not matched below.
+*                           @olu3242
+
+# Bounded-context ownership. Update as the team grows past one owner.
+/packages/mcp/              @olu3242
+/packages/loop/             @olu3242
+/packages/registries/       @olu3242
+/packages/events/           @olu3242
+/packages/types/            @olu3242
+/industry-packs/            @olu3242
+/apps/web/                  @olu3242
+/apps/api/                  @olu3242
+/docs/adr/                  @olu3242
+/CLAUDE.md                  @olu3242

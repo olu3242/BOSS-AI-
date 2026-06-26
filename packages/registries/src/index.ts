@@ -1,14 +1,11 @@
-/**
- * Declarative registries that back the MCP knowledge layer.
- * Capability packs (e.g. general-smb) populate these registries;
- * nothing about a business vertical is hardcoded in platform code.
- */
-export interface RegistryEntry {
-  key: string;
-  label: string;
-}
-
-export interface Registry<TEntry extends RegistryEntry = RegistryEntry> {
-  list(): TEntry[];
-  get(key: string): TEntry | undefined;
-}
+export * from "./types.js";
+export * from "./createRegistry.js";
+export * from "./registries/capability.js";
+export * from "./registries/constraint.js";
+export * from "./registries/kpi.js";
+export * from "./registries/aiEmployee.js";
+export * from "./registries/workflow.js";
+export * from "./registries/prompt.js";
+export * from "./registries/policy.js";
+export * from "./registries/event.js";
+export * from "./seed/index.js";
