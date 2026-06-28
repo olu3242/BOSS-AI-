@@ -16,6 +16,7 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "@boss/capabilities": "workspace:*",
     "@boss/types": "workspace:*",
     "@boss/shared": "workspace:*",
     "@boss/events": "workspace:*",

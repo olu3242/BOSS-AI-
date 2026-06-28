@@ -8,3 +8,4 @@ export * from "./businessGraph.js";
 export * from "./businessSemantic.js";
 export * from "./businessQuery.js";
 export * from "./capabilityPack.js";
+export * from "./ucr.js";
