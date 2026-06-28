@@ -13,6 +13,9 @@ import {
   createPostgresRecommendationScoreRepository,
   createPostgresRecommendationPriorityRepository,
   createPostgresTransformationRoadmapRepository,
+  createPostgresBusinessDiagnosticRepository,
+  createPostgresBusinessDiscoveryRepository,
+  createPostgresBusinessGraphRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -27,6 +30,9 @@ import {
   createInMemoryRecommendationScoreRepository,
   createInMemoryRecommendationPriorityRepository,
   createInMemoryTransformationRoadmapRepository,
+  createInMemoryBusinessDiagnosticRepository,
+  createInMemoryBusinessDiscoveryRepository,
+  createInMemoryBusinessGraphRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -41,6 +47,9 @@ import {
   type RecommendationScoreRepository,
   type RecommendationPriorityRepository,
   type TransformationRoadmapRepository,
+  type BusinessDiagnosticRepository,
+  type BusinessDiscoveryRepository,
+  type BusinessGraphRepository,
 } from "@boss/db";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
@@ -59,6 +68,9 @@ export interface RepositoryContainer {
   recommendationScores: RecommendationScoreRepository;
   recommendationPriorities: RecommendationPriorityRepository;
   transformationRoadmaps: TransformationRoadmapRepository;
+  businessDiagnostics: BusinessDiagnosticRepository;
+  businessDiscovery: BusinessDiscoveryRepository;
+  businessGraph: BusinessGraphRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -78,6 +90,9 @@ export function createPostgresContainer(): RepositoryContainer {
     recommendationScores: createPostgresRecommendationScoreRepository(),
     recommendationPriorities: createPostgresRecommendationPriorityRepository(),
     transformationRoadmaps: createPostgresTransformationRoadmapRepository(),
+    businessDiagnostics: createPostgresBusinessDiagnosticRepository(),
+    businessDiscovery: createPostgresBusinessDiscoveryRepository(),
+    businessGraph: createPostgresBusinessGraphRepository(),
   };
 }
 
@@ -100,5 +115,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     recommendationScores: createInMemoryRecommendationScoreRepository(),
     recommendationPriorities: createInMemoryRecommendationPriorityRepository(businessRecommendations),
     transformationRoadmaps: createInMemoryTransformationRoadmapRepository(),
+    businessDiagnostics: createInMemoryBusinessDiagnosticRepository(),
+    businessDiscovery: createInMemoryBusinessDiscoveryRepository(),
+    businessGraph: createInMemoryBusinessGraphRepository(),
   };
 }

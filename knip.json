@@ -20,9 +20,8 @@
     "@supabase/supabase-js",
     "zod",
     "@boss/types",
-    "@boss/shared",
-    "@boss/loop",
-    "@boss/ui"
+    "@boss/shared"
   ],
+  "ignoreBinaries": ["powershell"],
   "ignoreExportsUsedInFile": true
 }

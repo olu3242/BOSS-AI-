@@ -1,7 +1,7 @@
 import { aiEmployeeRegistry } from "@boss/registries";
 import type { AiEmployeeEntry } from "@boss/registries";
 
-const aiEmployees: AiEmployeeEntry[] = [
+export const aiEmployees = [
   {
     key: "ceo_advisor",
     label: "CEO Advisor",
@@ -86,7 +86,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_kpi_anomaly"],
     lifecycle: "draft",
   },
-];
+] as const satisfies readonly AiEmployeeEntry[];
 
 export function seedAiEmployees(): void {
   for (const employee of aiEmployees) {

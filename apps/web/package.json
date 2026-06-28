@@ -2,22 +2,27 @@
   "name": "@boss/web",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/index.ts",
-    "lint": "eslint src --max-warnings=0",
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "eslint app src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"no tests yet\" && exit 0",
-    "clean": "rm -rf dist"
+    "test": "vitest run",
+    "clean": "rm -rf .next dist"
   },
   "dependencies": {
+    "@boss/api": "workspace:*",
     "@boss/types": "workspace:*",
     "@boss/shared": "workspace:*",
-    "@boss/ui": "workspace:*"
+    "@boss/ui": "workspace:*",
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
   },
   "devDependencies": {
-    "tsx": "^4.16.0",
-    "typescript": "^5.5.0"
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   }
 }

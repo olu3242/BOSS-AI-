@@ -17,10 +17,11 @@
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@11.3.0",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev.ps1",
+    "dev:turbo": "turbo run dev --filter=@boss/api --filter=@boss/web",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
@@ -45,11 +46,5 @@
     "@anthropic-ai/sdk": "^0.27.0",
     "@supabase/supabase-js": "^2.45.0",
     "zod": "^3.23.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "react": "^18.3.0",
-      "react-dom": "^18.3.0"
-    }
   }
 }

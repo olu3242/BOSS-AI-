@@ -13,3 +13,7 @@ numbered, immutable Markdown file: `NNNN-short-title.md`.
 |-----|-------|--------|
 | [0001](./0001-monorepo-normalization.md) | Monorepo normalization with pnpm + Turborepo | accepted |
 | [0002](./0002-registry-driven-capability-packs.md) | Registry-driven capability packs over hardcoded industry logic | accepted |
+| [0003](./0003-business-intelligence-layer.md) | Deterministic Business Intelligence layer | accepted |
+| [0004](./0004-constraint-intelligence-engine.md) | Registry-driven Constraint Intelligence | accepted |
+| [0005](./0005-recommendation-intelligence-engine.md) | Recommendation Intelligence and transformation roadmaps | accepted |
+| [0006](./0006-architecture-freeze-and-product-focus.md) | Architecture freeze and first-value product focus | accepted |

@@ -1,0 +1,135 @@
+import {
+  IdentityRuntime,
+  PostgresAuditSink,
+  SupabaseIdentityProvider,
+  createPostgresOrganizationRuntime,
+  type Identity,
+  type ProviderSession,
+} from "@boss/api";
+import type { Organization, OrganizationWithMembership } from "@boss/types";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import type { NextResponse } from "next/server";
+import {
+  ACCESS_COOKIE,
+  PERSIST_COOKIE,
+  REFRESH_COOKIE,
+} from "../authConstants";
+
+export { ACCESS_COOKIE, PERSIST_COOKIE, REFRESH_COOKIE };
+
+export function createBrowserIdentityServices() {
+  const provider = SupabaseIdentityProvider.fromEnvironment();
+  const { organizations, memberships } = createPostgresOrganizationRuntime();
+  const identity = new IdentityRuntime(
+    provider,
+    memberships,
+    new PostgresAuditSink(),
+  );
+  return { provider, identity, organizations };
+}
+
+export function sessionCookieSecurity(
+  production = process.env.NODE_ENV === "production",
+): {
+  readonly httpOnly: true;
+  readonly sameSite: "lax";
+  readonly secure: boolean;
+  readonly path: "/";
+} {
+  return {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: production,
+    path: "/",
+  };
+}
+
+export function writeSessionCookies(
+  response: NextResponse,
+  session: ProviderSession,
+  persistent: boolean,
+): void {
+  const base = sessionCookieSecurity();
+  const accessMaxAge = Math.max(
+    1,
+    Math.floor((Date.parse(session.expiresAt) - Date.now()) / 1_000),
+  );
+  response.cookies.set(ACCESS_COOKIE, session.accessToken, {
+    ...base,
+    ...(persistent ? { maxAge: accessMaxAge } : {}),
+  });
+  response.cookies.set(REFRESH_COOKIE, session.refreshToken, {
+    ...base,
+    ...(persistent ? { maxAge: 60 * 60 * 24 * 30 } : {}),
+  });
+  response.cookies.set(PERSIST_COOKIE, persistent ? "1" : "0", {
+    ...base,
+    ...(persistent ? { maxAge: 60 * 60 * 24 * 30 } : {}),
+  });
+}
+
+export function clearSessionCookies(response: NextResponse): void {
+  for (const name of [ACCESS_COOKIE, REFRESH_COOKIE, PERSIST_COOKIE]) {
+    response.cookies.set(name, "", {
+      ...sessionCookieSecurity(),
+      maxAge: 0,
+    });
+  }
+}
+
+export async function readBrowserIdentity(): Promise<{
+  readonly identity: Identity;
+  readonly accessToken: string;
+} | null> {
+  const accessToken = cookies().get(ACCESS_COOKIE)?.value;
+  if (!accessToken) {
+    return null;
+  }
+  try {
+    const { provider } = createBrowserIdentityServices();
+    const session = await provider.verify(accessToken);
+    return { identity: session.identity, accessToken };
+  } catch {
+    return null;
+  }
+}
+
+export async function requireBrowserIdentity(
+  nextPath: string,
+): Promise<{ readonly identity: Identity; readonly accessToken: string }> {
+  const session = await readBrowserIdentity();
+  if (session) {
+    return session;
+  }
+  if (cookies().get(REFRESH_COOKIE)?.value) {
+    redirect(`/api/auth/refresh?next=${encodeURIComponent(nextPath)}`);
+  }
+  redirect(`/auth/sign-in?next=${encodeURIComponent(nextPath)}`);
+}
+
+export async function requireActiveTenant(nextPath: string): Promise<{
+  readonly identity: Identity;
+  readonly accessToken: string;
+  readonly organization: Organization;
+  readonly organizations: readonly OrganizationWithMembership[];
+}> {
+  const session = await requireBrowserIdentity(nextPath);
+  const { organizations } = createBrowserIdentityServices();
+  const [active, available] = await Promise.all([
+    organizations.active(session.identity.userId),
+    organizations.list(session.identity.userId),
+  ]);
+  if (!active) {
+    redirect("/onboarding/organization");
+  }
+  return {
+    ...session,
+    organization: active,
+    organizations: available,
+  };
+}
+
+export function safeNextPath(value: string | null, fallback: string): string {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : fallback;
+}

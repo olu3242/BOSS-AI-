@@ -19,6 +19,20 @@ import type {
   RecommendationPriority,
   TransformationRoadmap,
   TransformationRoadmapStageEntry,
+  BusinessDiagnosticReport,
+  Organization,
+  OrganizationMembershipRecord,
+  OrganizationWithMembership,
+  BusinessContextSnapshot,
+  BusinessDiscoveryHistoryEntry,
+  BusinessDiscoveryStatus,
+  CanonicalBusinessContextData,
+  BusinessEdge,
+  BusinessGraphHistoryEntry,
+  BusinessGraphStatus,
+  BusinessNode,
+  GraphMetadata,
+  GraphSnapshot,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -141,6 +155,141 @@ export interface TransformationRoadmapRepository {
     input: Omit<TransformationRoadmap, "id" | "createdAt" | "updatedAt">
   ): Promise<TransformationRoadmap>;
   findByBusinessId(orgId: string, businessId: string): Promise<TransformationRoadmap | null>;
+}
+
+export interface BusinessDiagnosticRepository {
+  save(report: BusinessDiagnosticReport): Promise<void>;
+  findLatest(
+    orgId: string,
+    businessId: string,
+  ): Promise<BusinessDiagnosticReport | null>;
+  listVersions(
+    orgId: string,
+    businessId: string,
+  ): Promise<readonly BusinessDiagnosticReport[]>;
+}
+
+export interface OrganizationRepository {
+  create(
+    userId: string,
+    input: { readonly name: string; readonly slug: string },
+  ): Promise<OrganizationWithMembership>;
+  getMembership(
+    userId: string,
+    orgId: string,
+  ): Promise<OrganizationMembershipRecord | undefined>;
+  listForUser(userId: string): Promise<readonly OrganizationWithMembership[]>;
+  getActive(userId: string): Promise<Organization | null>;
+  setActive(userId: string, orgId: string): Promise<Organization>;
+}
+
+export interface BusinessDiscoveryMutationContext {
+  readonly actorId: string;
+  readonly correlationId: string;
+  readonly traceId: string;
+  readonly reason: string;
+}
+
+export class BusinessDiscoveryConcurrencyError extends Error {
+  constructor() {
+    super("Business Discovery was modified by another request.");
+    this.name = "BusinessDiscoveryConcurrencyError";
+  }
+}
+
+export interface BusinessDiscoveryRepository {
+  create(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly context: CanonicalBusinessContextData;
+    readonly schemaVersion: string;
+    readonly mutation: BusinessDiscoveryMutationContext;
+  }): Promise<BusinessContextSnapshot>;
+  getCurrent(
+    orgId: string,
+    businessId: string,
+  ): Promise<BusinessContextSnapshot | null>;
+  saveContext(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly expectedLockVersion: number;
+    readonly context: CanonicalBusinessContextData;
+    readonly mutation: BusinessDiscoveryMutationContext;
+  }): Promise<BusinessContextSnapshot>;
+  transition(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly expectedLockVersion: number;
+    readonly status: BusinessDiscoveryStatus;
+    readonly mutation: BusinessDiscoveryMutationContext;
+  }): Promise<BusinessContextSnapshot>;
+  listVersions(
+    orgId: string,
+    businessId: string,
+  ): Promise<readonly BusinessContextSnapshot[]>;
+  listHistory(
+    orgId: string,
+    businessId: string,
+  ): Promise<readonly BusinessDiscoveryHistoryEntry[]>;
+}
+
+export class BusinessGraphConcurrencyError extends Error {
+  constructor() {
+    super("Business Knowledge Graph was modified by another request.");
+    this.name = "BusinessGraphConcurrencyError";
+  }
+}
+
+export interface BusinessGraphMutationContext {
+  readonly actorId: string;
+  readonly correlationId: string;
+  readonly traceId: string;
+  readonly reason: string;
+}
+
+export interface BusinessGraphRepository {
+  create(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly discoveryId: string;
+    readonly sourceDiscoveryVersion: number;
+    readonly nodes: readonly Omit<BusinessNode, "graphId">[];
+    readonly edges: readonly Omit<BusinessEdge, "graphId">[];
+    readonly metadata: GraphMetadata;
+    readonly mutation: BusinessGraphMutationContext;
+  }): Promise<GraphSnapshot>;
+  getCurrent(orgId: string, businessId: string): Promise<GraphSnapshot | null>;
+  saveSnapshot(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly expectedLockVersion: number;
+    readonly sourceDiscoveryVersion: number;
+    readonly nodes: readonly Omit<BusinessNode, "graphId">[];
+    readonly edges: readonly Omit<BusinessEdge, "graphId">[];
+    readonly metadata: GraphMetadata;
+    readonly action: BusinessGraphHistoryEntry["action"];
+    readonly mutation: BusinessGraphMutationContext;
+  }): Promise<GraphSnapshot>;
+  transition(input: {
+    readonly orgId: string;
+    readonly businessId: string;
+    readonly expectedLockVersion: number;
+    readonly status: BusinessGraphStatus;
+    readonly mutation: BusinessGraphMutationContext;
+  }): Promise<GraphSnapshot>;
+  getVersion(
+    orgId: string,
+    businessId: string,
+    version: number,
+  ): Promise<GraphSnapshot | null>;
+  listVersions(
+    orgId: string,
+    businessId: string,
+  ): Promise<readonly GraphSnapshot[]>;
+  listHistory(
+    orgId: string,
+    businessId: string,
+  ): Promise<readonly BusinessGraphHistoryEntry[]>;
 }
 
 export type { TransformationRoadmapStageEntry };

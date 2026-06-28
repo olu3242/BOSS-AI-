@@ -1,9 +1,163 @@
 # Changelog
 
+## Unreleased
+
+### Phase B - Capability Pack Platform
+
+- Added the common domain and manifest contract for ten installable pack types.
+- Added canonical SHA-256 manifests, Ed25519 trust verification, platform and
+  runtime compatibility checks, approved-registry validation, and permission
+  enforcement.
+- Added tenant-scoped installation, activation, deactivation, dependency-safe
+  removal, upgrade compensation, rollback, and immutable lifecycle history.
+- Added readonly Capability Pack and Marketplace registries, four runtime
+  registrations, two policies, one feature, and six lifecycle events.
+- Added static architecture enforcement and lifecycle, security, tenant,
+  signature, dependency, upgrade, and rollback tests.
+- Adopted the Platform Maturity Model, Business Capability Model, Business
+  Capability Lifecycle policy, and execution roadmap without claiming their
+  unimplemented enforcement surfaces.
+
+### Epic 2 - Business Query & Insight Layer
+
+- Added graph-independent query, projection, view, factual insight, execution,
+  result, pagination, streaming, and performance contracts.
+- Added a readonly 14-query catalog covering executive, operations, customer,
+  business, and execution contexts.
+- Added reusable Projection and factual Insight services with version-aware
+  query, projection, and context caches.
+- Added semantic-version invalidation, query metrics, four event contracts,
+  audit integration, registry metadata, and execution policy.
+- Migrated workflow and agent preflight to BQIL while preserving prior guard
+  names as deprecated compatibility aliases.
+- Added an architecture rule preventing downstream services from importing
+  Semantic Layer internals.
+- Added full-catalog, deterministic cache, pagination, streaming, historical,
+  tenant, event, audit, and performance integration tests.
+
+### Epic 2 - Business Semantic Layer
+
+- Added graph-independent semantic entities, relationships, contexts,
+  projections, views, snapshots, dependency results, and lifecycle contracts.
+- Added the Semantic Layer anti-corruption service, canonical context APIs,
+  deterministic dependency resolution, eight registered views, semantic and
+  projection caches, and graph-version invalidation.
+- Moved workflow and agent execution preflight to Semantic Context while
+  retaining deprecated compatibility class names.
+- Registered the Semantic Layer feature, four runtime services, policy, view
+  catalog, and four semantic events.
+- Added an architecture rule preventing application services from importing
+  graph infrastructure directly.
+- Added end-to-end tenant, version, view, dependency, event, audit, memoization,
+  historical reconstruction, and cache invalidation tests.
+
+### Epic 2 - Business Knowledge Graph Foundation and Runtime
+
+- Added the extensible Business Graph domain, centralized relationship
+  taxonomy, deterministic Canonical Business Context projection, lifecycle,
+  optimistic concurrency, immutable snapshots, and audit history.
+- Added normalized PostgreSQL graph tables with RLS and composite tenant
+  foreign keys, plus in-memory and PostgreSQL repository implementations.
+- Added Graph Runtime lifecycle, version-pinned sessions, context resolution,
+  deterministic traversal, structural validation, health metrics, and
+  tenant/version-aware cache invalidation.
+- Registered graph features, runtime services, policy, relationship types, and
+  graph foundation/runtime events.
+- Added execution preflight that requires published, context-synchronized
+  graphs for workflow and agent use.
+- Added graph journey, malformed-graph, cache invalidation, migration, and
+  registry tests plus the eight requested architecture documents.
+
+### Epic 2 - Canonical Business Discovery Foundation
+
+- Added the canonical, extensible Business Context domain and authoritative
+  service.
+- Added tenant-scoped immutable context versions, lifecycle history,
+  optimistic concurrency, migration `0012`, and RLS.
+- Registered the feature, runtime, policy, and four discovery events.
+- Added fail-closed Business Context guards for workflow and agent execution.
+- Adopted Epic -> Capability -> Batch -> Certification as the permanent
+  delivery model.
+
+### OC1 Wave A - Identity Completion
+
+- Added provider-backed browser signup, verification callback, sign-in,
+  refresh, logout, and HTTP-only session cookies.
+- Added durable organizations, memberships, active-tenant preferences, RLS,
+  organization onboarding, and organization switching.
+- Protected onboarding and dashboard routes with middleware presence checks
+  plus server-side provider and membership verification.
+- Added organization runtime and migration tests.
+- Installed the approved full marketing landing page at `/landing.html`, routed
+  `/` to it, and aligned application pages to its brand palette and typography.
+- Completed browser password recovery, provider verification auditing, durable
+  PostgreSQL identity/organization audit storage, and hardened tenant-preference
+  RLS.
+- Repaired Windows migration CLI execution so validation cannot silently
+  report success without applying schemas.
+- Closed Wave A as `GO With Environmental Blockers`; live Supabase,
+  PostgreSQL, email, HTTPS, and browser evidence remain deployment work.
+
 All notable changes to BOSS are recorded here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
+
+### Added — Outcome Chain 1 certification
+- Audited Identity, Discovery and Diagnostic as one customer outcome.
+- Recorded an evidence-based production `NO-GO`, including browser identity,
+  Discovery Context, RLS, observability, dashboard and real TTFBV blockers.
+- Explicitly blocked Outcome Chains 2 and 3 until the upstream production gate
+  is satisfied.
+
+### Added — Engine Program 03: Business Diagnostic Engine
+- Added deterministic, configurable diagnostic synthesis across twelve
+  business areas and nine maturity areas.
+- Added evidence-backed root-cause, opportunity, priority and executive-summary
+  models without introducing workflow execution.
+- Added versioned PostgreSQL and in-memory diagnostic repositories, normalized
+  migration `0010`, RLS policies, events, telemetry and dashboard projection.
+- Added end-to-end diagnostic, tenant-boundary, dashboard and migration tests.
+
+### Added — PI-2 architecture assessment
+- Completed Phase 1 assessment for the proposed Business Capability Platform.
+- Defined the non-colliding Business Outcome Plan integration model, dependency
+  matrix, additive migration plan, risks, diagrams, implementation gates, and
+  conditional certification.
+- Preserved the architecture and MVP freezes; no PI-2 production code,
+  migrations, registry entries, APIs, or UI were introduced.
+
+### Added — MVP product freeze and first-value measurement
+- Accepted ADR-0006, freezing the canonical registry, intelligence, execution,
+  tenancy, event, repository, and migration architecture.
+- Added the P0/P1/P2 MVP feature freeze and evidence-based journey baseline.
+- Added durable, ordered Time to First Business Value instrumentation from
+  landing through the first visible result.
+- Added migration `0009_mvp_journey_metrics.sql` and in-memory/PostgreSQL
+  journey stores.
+- Added tests for stage ordering, idempotency, target calculation, persistence,
+  and migration structure.
+
+### Added — Production platform completion pass
+- `apps/api`: `createApiFromContainer()` and `createInMemoryApi()` for
+  verified non-Postgres workflows, demos, tests, and future UI adapters.
+- `apps/api`: production certification utilities for tenant-scoped RBAC
+  checks, structured audit events, trace IDs, operation metrics, and
+  runtime health/environment diagnostics.
+- `apps/api`: persistent local development health server for `pnpm --filter
+  @boss/api dev`.
+- `apps/web`: replaced the placeholder entrypoint with a typed BOSS Command
+  Center snapshot builder, accessible responsive HTML renderer, and an
+  end-to-end demo workflow that exercises business setup, MRI, DNA, health,
+  capabilities, constraints, recommendations, approval, roadmap, and
+  timeline through the real API services.
+- `apps/web`: Next.js App Router foundation (`app/`, `next.config.mjs`,
+  loading state, error boundary, global styles) with `next dev` and
+  `next build` scripts.
+- `packages/ui`: shared dashboard formatting and tone helpers for currency,
+  counts, percentages, labels, scores, and priorities.
+- Tests for the command center workflow and shared UI helpers.
+- Tests for production certification utilities.
 
 ### Added — Goal 4: Recommendation Intelligence Engine
 - `packages/registries`: `recommendationCategoryRegistry` (13 categories)

@@ -25,3 +25,4 @@ export * from "./intelligence/businessHealth.js";
 export * from "./intelligence/capabilityGraph.js";
 export * from "./intelligence/constraintEngine.js";
 export * from "./intelligence/recommendationEngine.js";
+export * from "./intelligence/diagnosticEngine.js";
