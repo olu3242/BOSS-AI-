@@ -4,6 +4,17 @@ import { runtimeRegistry } from "../registries/runtime.js";
 
 const features = [
   {
+    id: "universal_capability_runtime",
+    displayName: "Universal Capability Runtime",
+    description: "Capability-agnostic execution contracts, context, state machine, events, errors, and observability.",
+    sourcePaths: [
+      "packages/types/src/ucr.ts",
+      "packages/loop/src/universalCapabilityRuntime.ts",
+    ],
+    owner: "Platform",
+    status: "internal_alpha" as const,
+  },
+  {
     id: "capability_pack_platform",
     displayName: "Capability Pack Platform",
     description: "Shared signed-pack lifecycle, compatibility, installation, activation, upgrade, and rollback infrastructure.",
@@ -137,6 +148,9 @@ export function seedPlatformCatalogs(): void {
     ["pack_loader", "Pack Loader", "capability", "@boss/capabilities", "packages/capabilities/src/runtime.ts"],
     ["capability_dependency_resolver", "Capability Dependency Resolver", "capability", "@boss/capabilities", "packages/capabilities/src/runtime.ts"],
     ["capability_compatibility_validator", "Capability Compatibility Validator", "capability", "@boss/capabilities", "packages/capabilities/src/runtime.ts"],
+    ["universal_capability_runtime", "Universal Capability Runtime", "capability", "@boss/loop", "packages/loop/src/universalCapabilityRuntime.ts"],
+    ["capability_execution_pipeline", "Capability Execution Pipeline", "capability", "@boss/loop", "packages/loop/src/universalCapabilityRuntime.ts"],
+    ["capability_execution_state_machine", "Capability Execution State Machine", "capability", "@boss/loop", "packages/loop/src/universalCapabilityRuntime.ts"],
   ] as const;
 
   for (const [id, displayName, kind, implementationPackage, documentation] of runtimes) {

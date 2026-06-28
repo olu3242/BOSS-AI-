@@ -216,7 +216,7 @@ describe("installGeneralSmbPack", () => {
 
   it("registers readonly execution registries without inventing runtime definitions", () => {
     expect(workflowRegistry.list()).toHaveLength(6);
-    expect(eventRegistry.list()).toHaveLength(53);
+    expect(eventRegistry.list()).toHaveLength(62);
     expect(triggerRegistry.list()).toHaveLength(3);
     expect(automationRegistry.list()).toHaveLength(0);
     expect(orchestratorRegistry.list()).toHaveLength(0);
@@ -255,14 +255,14 @@ describe("installGeneralSmbPack", () => {
 
   it("builds an integral graph, indexes, and read-only impact models", () => {
     const graph = dependencyGraph.snapshot();
-    expect(graph.nodes).toHaveLength(130);
+    expect(graph.nodes).toHaveLength(139);
     expect(graph.edges).toHaveLength(109);
     expect(graph.health.duplicateNodeIds).toEqual([]);
     expect(graph.health.brokenReferences).toEqual([]);
     expect(graph.health.cyclicReferences).toEqual([]);
     expect(graph.health.unusedPromptIds).toEqual([]);
     expect(graph.health.missingOwnerNodeIds).toEqual([]);
-    expect(graph.health.orphanNodeIds).toHaveLength(59);
+    expect(graph.health.orphanNodeIds).toHaveLength(68);
     expect(graph.health.emptyRegistryIds).toEqual(
       expect.arrayContaining(["automation", "notification", "integration", "orchestrator"]),
     );
@@ -312,6 +312,7 @@ describe("installGeneralSmbPack", () => {
 
   it("registers implemented platform features and dashboards without fabricating a runtime", () => {
     expect(featureRegistry.list().map((entry) => entry.id)).toEqual([
+      "universal_capability_runtime",
       "capability_pack_platform",
       "business_knowledge_graph",
       "business_semantic_layer",
@@ -327,7 +328,7 @@ describe("installGeneralSmbPack", () => {
         status: "internal_alpha",
       }),
     );
-    expect(runtimeRegistry.list()).toHaveLength(27);
+    expect(runtimeRegistry.list()).toHaveLength(30);
     expect(runtimeRegistry.get("business_context_runtime")).toEqual(
       expect.objectContaining({
         kind: "discovery",

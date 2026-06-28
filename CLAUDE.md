@@ -6,6 +6,20 @@
 
 ---
 
+## Constitutional Authority
+
+Read `OPERATING_PRINCIPLES.md`, `EXECUTION_CONSTITUTION.md`,
+`PRODUCT_OPERATING_MODEL.md`,
+`CANONICAL_BUSINESS_MODEL.md`,
+`BUSINESS_OPERATING_LOOP.md`, `BUSINESS_MATURITY_MODEL.md`,
+`CUSTOMER_LIFECYCLE_FRAMEWORK.md`,
+`docs/execution/ENGINEERING_PRINCIPLES.md`, and
+`docs/execution/ARCHITECTURE_GOVERNANCE.md` before implementation.
+These documents govern all contributors and AI coding sessions. Future-state
+invariants are enforced only when their prerequisite capability is certified.
+
+---
+
 ## Project Identity
 
 **Name:** BOSS — Business Operating System Suite

@@ -3,7 +3,13 @@
 ## Authority
 
 Adopted 2026-06-28 as the day-to-day engineering handbook. It governs execution
-discipline; the Master Program Plan governs sequencing.
+discipline; the Master Program Plan governs sequencing and the Execution
+Constitution governs product intent.
+
+Before a new roadmap item becomes an engineering batch, it must pass the
+Product Operating Model. Product readiness confirms the customer problem,
+measurable outcome, time to value, trust, and simplicity; it does not replace
+architecture review or engineering certification.
 
 The standard work unit is:
 

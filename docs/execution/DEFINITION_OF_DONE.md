@@ -3,12 +3,29 @@
 A change is "done" only when every applicable item below is true. This
 mirrors the Implementation Governance checklist in `CLAUDE.md`.
 
+Every change must also pass the Constitutional Test in
+`EXECUTION_CONSTITUTION.md`.
+
+New roadmap scope must first pass the product gates and scorecard in
+`PRODUCT_OPERATING_MODEL.md`. Defect, security, and incident work may use the
+documented emergency path but must still identify the affected customer
+outcome.
+
 Delivery is organized as Epic -> Capability -> Batch -> Certification. One
 execution prompt may cover only one batch. A dependent batch starts only after
 the current batch has a recorded certification decision. See
 `docs/execution/DELIVERY_MODEL.md`.
 
 - [ ] Bounded context identified — code lives in the package that owns it.
+- [ ] Business problem, intended outcome, constitutional capability (Observe,
+      Understand, Decide, Plan, Execute, or Learn), and success evidence are
+      stated.
+- [ ] Product Operating Model result, scorecard, Day-One Test, Small Business
+      Filter, and time-to-value measurement are recorded for new scope.
+- [ ] Canonical state owner and execution/evidence paths are identified; no
+      parallel state or runtime is introduced.
+- [ ] Business entities and relationships map to
+      `CANONICAL_BUSINESS_MODEL.md`; new base concepts have an ADR.
 - [ ] P0 journey stage identified, or the change is explicitly classified as
       backlog under `docs/product/MVP_FEATURE_FREEZE.md`.
 - [ ] TTFBV impact stated: reduced time, improved outcome quality, or required

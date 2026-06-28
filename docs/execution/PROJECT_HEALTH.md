@@ -18,6 +18,8 @@ repository snapshot, not a live operations dashboard.
 | Business Query & Insight Layer | Engineering GO | Fourteen canonical queries, reusable projections, factual insights, pagination, streaming, performance metrics, cache invalidation, audit, and consumer guards pass locally. |
 | Business Knowledge Platform | GO with environmental blockers | Capability 2 Batches 1-4 pass engineering gates; live migration `0013` application and RLS probing require PostgreSQL. |
 | Capability Pack Platform | Engineering GO | Signed manifests, compatibility/dependency validation, tenant lifecycle, activation, compensated upgrades, rollback, removal, registries, events, audit, and all repository gates pass. |
+| Universal Capability Runtime | Engineering GO (Batch 2) | Deterministic twelve-stage generic execution, registry-driven dependency validation, session finalization, events, telemetry, and all repository gates pass; resilience remains Batch 3. |
+| PI-0 Product Governance | Governance GO | Operating Principles, Constitution, CBM, maturity model, operating loop, customer lifecycle, ARB, strategy freeze, Definition of Done, PR review, and PI-2 entry gate are adopted; future behavior remains gated. |
 | Registry architecture | Conditional go | Agent, capability, execution, graph, and governance metadata are certified; automation and orchestrator registries remain empty. |
 | Database | Provider-ready, externally blocked | Identity tables, audit storage, constraints, RLS, and tenant repositories are locally validated; live PostgreSQL migration and RLS evidence require a target. |
 | Auth | GO with environmental blockers | Browser signup, verification, reset, sessions, refresh, logout, organization switching, route protection, and durable audit wiring pass local gates; deployed Supabase/email/HTTPS evidence is outstanding. |
@@ -38,9 +40,9 @@ repository snapshot, not a live operations dashboard.
 
 ## Next milestone
 
-Phase B / Universal Capability Runtime, after Capability Pack Platform
-certification. SDK, governance, marketplace operations, and Business Capability
-Lifecycle enforcement remain separate capabilities.
+Phase B / Universal Capability Runtime Batch 3: replay, retry, recovery,
+checkpoints, and idempotency. SDK, governance, marketplace operations, and
+Business Capability Lifecycle enforcement remain separate capabilities.
 
 See [CURRENT_TO_FUTURE_GAP_ANALYSIS.md](./CURRENT_TO_FUTURE_GAP_ANALYSIS.md)
 for the evidence-based domain scores, sequencing rationale, and exit criteria.

@@ -13,6 +13,10 @@ Engineering GO Capability Pack Platform. The primary constraints have shifted
 from architecture discovery to live-environment certification, remaining
 Platform Kernel capabilities, and business capability delivery.
 
+PI-0 governance and the Canonical Business Model are adopted. The Business
+Graph is the canonical relationship layer; Business Memory will be a versioned
+semantic view introduced only through its gated PI-2 increment.
+
 The target is a tenant-aware Business Operating System that understands,
 strategizes, plans, executes, measures, learns, and continuously improves
 through certified Business Capabilities.
@@ -25,7 +29,7 @@ through certified Business Capabilities.
 | Business Context | Engineering GO | Production GO | Live PostgreSQL/RLS evidence | P0 |
 | Business Knowledge Platform | Engineering GO | Production GO | Live PostgreSQL/RLS evidence | P0 |
 | Capability Pack Platform | Engineering GO | Production GO | Durable stores, key operations, artifact isolation/distribution | P1 |
-| Universal Capability Runtime | Planned | Production GO | Entire capability | P1 |
+| Universal Capability Runtime | Batch 2 Engineering GO | Production GO | Durable persistence, replay, retry, recovery, scheduling, concurrency, health, and migration | P1 |
 | Capability SDK | Planned | Production GO | Entire capability | P1 |
 | Capability Governance | Planned | Production GO | Entire capability | P1 |
 | Diagnostics | Planned | Production GO | Entire Business Capability | P2 |
@@ -56,7 +60,7 @@ through certified Business Capabilities.
 
 ### P1 Platform Completion
 
-- Universal Capability Runtime.
+- Universal Capability Runtime Batches 3 and later.
 - Capability SDK.
 - Capability Governance.
 - Durable CPP state, trust/key operations, artifact isolation, and

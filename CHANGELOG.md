@@ -2,6 +2,56 @@
 
 ## Unreleased
 
+### PI-0 - Execution Constitution and Canonical Business Model
+
+- Adopted the Execution Constitution as the highest-level product authority.
+- Adopted the Canonical Business Model as the common business semantic model.
+- Adopted the Business Maturity Model as the evidence-based customer roadmap.
+- Adopted the Business Operating Loop as the canonical continuous cycle.
+- Added an Architecture Review Board process and embedded its questions in the
+  pull request template.
+- Adopted company Operating Principles and the Customer Lifecycle Framework.
+- Adopted the Product Operating Model with customer-value intake gates,
+  scorecard thresholds, the Day-One Test, and the Small Business Filter.
+- Retained TTFBV as the activation metric and defined minutes saved plus
+  verified business outcomes as the north-star outcome family.
+- Froze foundational strategy; future work moves to executable specifications
+  and certified implementation.
+- Defined Business Graph as canonical relationship/temporal state and Business
+  Memory as an evidence-backed semantic view rather than a parallel store.
+- Integrated constitutional checks into AI instructions, Engineering Operating
+  System, Definition of Done, architecture governance, and the program plan.
+- Renamed and decomposed the Executive Intelligence initiative as gated PI-2;
+  no PI-2 implementation was introduced.
+
+### Phase B - Universal Capability Runtime Batch 2
+
+- Added the mandatory twelve-stage generic capability execution pipeline.
+- Added five-hook stage lifecycle, deterministic coordination, immutable stage
+  results, cleanup, and exact failure-stage propagation.
+- Added recursive capability and pack dependency validation with cycle,
+  version-range, runtime API, runtime registry, and feature registry checks.
+- Added injectable generic executor, evidence writer, and result writer
+  contracts with process-local defaults.
+- Added completed, failed, and cancelled session finalization, five pipeline
+  events, and pipeline/stage/event-count telemetry.
+- Added seven pipeline tests without implementing retry, replay, scheduling,
+  parallelism, or business behavior.
+
+### Phase B - Universal Capability Runtime Batch 1
+
+- Added immutable UCR execution, context, session, result, metadata, transition,
+  and event contracts.
+- Added a deterministic execution state machine and six stable typed errors.
+- Added registry-backed capability, manifest, and dependency adapters,
+  permission-aware context resolution, and immutable in-memory evidence.
+- Added a non-executing lifecycle shell with four canonical events and existing
+  runtime telemetry integration.
+- Registered UCR and its state machine as internal alpha while keeping the
+  Batch 2 execution pipeline explicitly planned.
+- Added context, transition, event, telemetry, adapter, error, evidence, and
+  registry tests without implementing business execution.
+
 ### Phase B - Capability Pack Platform
 
 - Added the common domain and manifest contract for ten installable pack types.

@@ -29,6 +29,9 @@ Each entry should be small enough to become a single PR.
 | TD-022 | Capability Pack releases, tenant installations, audit history, and trust keys default to process-local stores | Phase B / CPP | High | unassigned | open |
 | TD-023 | Capability Pack modules are trusted in-process descriptors without artifact isolation, resource limits, malware scanning, or distributed loading | Phase B / CPP | High | unassigned | open |
 | TD-024 | Business Capability bundles, top-level registry, lifecycle gate enforcement, and Decision Ledger integration are adopted architecture but not implemented | Enterprise Architecture v2 | High | unassigned | planned |
+| TD-025 | UCR execution history, evidence, and default telemetry are process-local; durable repositories and production exporters are not implemented | UCR Batch 1 | High | unassigned | open |
+| TD-026 | Existing specialized runtimes remain available for backward compatibility and have not migrated to the non-executing UCR foundation | UCR Batch 1 | Medium | unassigned | planned |
+| TD-027 | UCR Batch 2 result/evidence stores are process-local, and one coordinator instance does not support concurrent pipelines | UCR Batch 2 | High | unassigned | planned for durable/concurrency batches |
 
 ## Process
 

@@ -204,6 +204,9 @@ importers:
 
   packages/loop:
     dependencies:
+      '@boss/capabilities':
+        specifier: workspace:*
+        version: link:../capabilities
       '@boss/events':
         specifier: workspace:*
         version: link:../events

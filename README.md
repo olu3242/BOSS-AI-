@@ -8,7 +8,8 @@ page to visible business improvement in under twenty minutes.
 The platform architecture is frozen under
 [ADR-0006](docs/adr/0006-architecture-freeze-and-product-focus.md). Product
 scope and priorities are defined by the
-[MVP Feature Freeze](docs/product/MVP_FEATURE_FREEZE.md).
+[MVP Feature Freeze](docs/product/MVP_FEATURE_FREEZE.md), and new work enters
+engineering through the [Product Operating Model](PRODUCT_OPERATING_MODEL.md).
 
 ---
 
