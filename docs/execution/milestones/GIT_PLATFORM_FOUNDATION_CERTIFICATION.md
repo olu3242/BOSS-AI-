@@ -4,7 +4,7 @@
 
 **Engineering GO**
 
-Certification date: 2026-06-28  
+Certification date: 2026-06-28
 Repository: `https://github.com/olu3242/BOSS-AI-.git`
 
 ## Repository State
