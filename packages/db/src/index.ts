@@ -15,4 +15,8 @@ export * from "./repositories/postgres/businessRecommendationRepository.js";
 export * from "./repositories/postgres/recommendationScoreRepository.js";
 export * from "./repositories/postgres/recommendationPriorityRepository.js";
 export * from "./repositories/postgres/transformationRoadmapRepository.js";
+export * from "./repositories/postgres/integrationAccountRepository.js";
+export * from "./repositories/postgres/permissionPolicyRepository.js";
+export * from "./repositories/postgres/toolExecutionRepository.js";
+export * from "./repositories/postgres/providerHealthRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";

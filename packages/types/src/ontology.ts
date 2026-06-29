@@ -529,6 +529,87 @@ export interface TransformationRoadmap extends TenantScoped, Timestamped {
   version: number;
 }
 
+export type IntegrationAccountStatus = "connected" | "disconnected" | "error";
+
+/** A business's connection to a Provider. Never stores raw secrets. */
+export interface IntegrationAccount extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  providerKey: string;
+  status: IntegrationAccountStatus;
+  connectedAt: string | null;
+  version: number;
+}
+
+/**
+ * A reference to a credential held in an external secret store. The
+ * Tool Fabric's own tables never persist raw secret material — only an
+ * opaque pointer the runtime resolves at execution time.
+ */
+export interface CredentialReference extends TenantScoped, Timestamped {
+  id: ID;
+  integrationAccountId: ID;
+  secretRef: string;
+  rotatedAt: string | null;
+}
+
+export type PermissionApprovalRequirement = "auto" | "approval_required" | "executive_review" | "manual_only";
+
+export interface PermissionPolicy extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolKey: string;
+  roleKey: string;
+  allowed: boolean;
+  approval: PermissionApprovalRequirement;
+  rateLimitPerMinute: number | null;
+  version: number;
+}
+
+export type ToolExecutionStatus = "pending" | "succeeded" | "failed" | "rejected";
+
+export interface ToolExecution extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolKey: string;
+  capabilityKey: string;
+  providerKey: string;
+  requestedBy: string;
+  status: ToolExecutionStatus;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export type ProviderHealthStatus = "healthy" | "degraded" | "down" | "unknown";
+
+export interface ProviderHealth extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  providerKey: string;
+  status: ProviderHealthStatus;
+  latencyMs: number | null;
+  failureCount: number;
+  quotaRemaining: number | null;
+  authenticated: boolean;
+  checkedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ToolAuditRecord extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  toolExecutionId: ID;
+  action: string;
+  actor: string;
+  details: Record<string, unknown>;
+  occurredAt: string;
+  createdAt: string;
+}
+
 export interface BossEventRecord extends TenantScoped {
   id: ID;
   type: string;

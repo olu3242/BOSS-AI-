@@ -19,6 +19,12 @@ import type {
   RecommendationPriority,
   TransformationRoadmap,
   TransformationRoadmapStageEntry,
+  IntegrationAccount,
+  CredentialReference,
+  PermissionPolicy,
+  ToolExecution,
+  ProviderHealth,
+  ToolAuditRecord,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -144,3 +150,37 @@ export interface TransformationRoadmapRepository {
 }
 
 export type { TransformationRoadmapStageEntry };
+
+export interface IntegrationAccountRepository {
+  upsert(input: Omit<IntegrationAccount, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<IntegrationAccount>;
+  listByBusinessId(orgId: string, businessId: string): Promise<IntegrationAccount[]>;
+  findByProvider(orgId: string, businessId: string, providerKey: string): Promise<IntegrationAccount | null>;
+  addCredentialReference(
+    integrationAccountId: string,
+    input: Omit<CredentialReference, "id" | "createdAt" | "updatedAt" | "deletedAt" | "integrationAccountId" | "orgId">
+  ): Promise<CredentialReference>;
+}
+
+export interface PermissionPolicyRepository {
+  upsert(input: Omit<PermissionPolicy, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<PermissionPolicy>;
+  listByBusinessId(orgId: string, businessId: string): Promise<PermissionPolicy[]>;
+}
+
+export interface ToolExecutionRepository {
+  create(input: Omit<ToolExecution, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<ToolExecution>;
+  updateStatus(
+    orgId: string,
+    id: string,
+    status: ToolExecution["status"],
+    output: Record<string, unknown> | null,
+    errorMessage: string | null
+  ): Promise<ToolExecution>;
+  listByBusinessId(orgId: string, businessId: string): Promise<ToolExecution[]>;
+  addAuditRecord(input: Omit<ToolAuditRecord, "id" | "createdAt">): Promise<ToolAuditRecord>;
+  listAuditRecords(orgId: string, businessId: string): Promise<ToolAuditRecord[]>;
+}
+
+export interface ProviderHealthRepository {
+  upsert(input: Omit<ProviderHealth, "id" | "createdAt" | "updatedAt">): Promise<ProviderHealth>;
+  listByBusinessId(orgId: string, businessId: string): Promise<ProviderHealth[]>;
+}

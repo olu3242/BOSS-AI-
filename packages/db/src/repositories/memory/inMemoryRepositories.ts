@@ -17,6 +17,12 @@ import type {
   RecommendationScore,
   RecommendationPriority,
   TransformationRoadmap,
+  IntegrationAccount,
+  CredentialReference,
+  PermissionPolicy,
+  ToolExecution,
+  ToolAuditRecord,
+  ProviderHealth,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -35,6 +41,10 @@ import type {
   RecommendationScoreRepository,
   RecommendationPriorityRepository,
   TransformationRoadmapRepository,
+  IntegrationAccountRepository,
+  PermissionPolicyRepository,
+  ToolExecutionRepository,
+  ProviderHealthRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -433,6 +443,128 @@ export function createInMemoryTransformationRoadmapRepository(): TransformationR
       return (
         Array.from(items.values()).find((item) => item.orgId === orgId && item.businessId === businessId) ?? null
       );
+    },
+  };
+}
+
+export function createInMemoryIntegrationAccountRepository(): IntegrationAccountRepository {
+  const accounts = new Map<string, IntegrationAccount>();
+  const credentials = new Map<string, CredentialReference>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(accounts.values()).find(
+        (a) => a.businessId === input.businessId && a.providerKey === input.providerKey
+      );
+      const account: IntegrationAccount = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      accounts.set(account.id, account);
+      return account;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(accounts.values()).filter(
+        (a) => a.orgId === orgId && a.businessId === businessId && !a.deletedAt
+      );
+    },
+    async findByProvider(orgId, businessId, providerKey) {
+      return (
+        Array.from(accounts.values()).find(
+          (a) => a.orgId === orgId && a.businessId === businessId && a.providerKey === providerKey && !a.deletedAt
+        ) ?? null
+      );
+    },
+    async addCredentialReference(integrationAccountId, input) {
+      const account = accounts.get(integrationAccountId);
+      const credential: CredentialReference = {
+        id: randomUUID(),
+        orgId: account?.orgId ?? "",
+        integrationAccountId,
+        ...input,
+        ...stamp(),
+      };
+      credentials.set(credential.id, credential);
+      return credential;
+    },
+  };
+}
+
+export function createInMemoryPermissionPolicyRepository(): PermissionPolicyRepository {
+  const items = new Map<string, PermissionPolicy>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (p) => p.businessId === input.businessId && p.toolKey === input.toolKey && p.roleKey === input.roleKey
+      );
+      const policy: PermissionPolicy = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(policy.id, policy);
+      return policy;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter((p) => p.orgId === orgId && p.businessId === businessId && !p.deletedAt);
+    },
+  };
+}
+
+export function createInMemoryToolExecutionRepository(): ToolExecutionRepository {
+  const executions = new Map<string, ToolExecution>();
+  const audits = new Map<string, ToolAuditRecord>();
+  return {
+    async create(input) {
+      const execution: ToolExecution = { id: randomUUID(), ...input, ...stamp() };
+      executions.set(execution.id, execution);
+      return execution;
+    },
+    async updateStatus(orgId, id, status, output, errorMessage) {
+      const existing = executions.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`ToolExecution ${id} not found`);
+      }
+      const updated: ToolExecution = {
+        ...existing,
+        status,
+        output,
+        errorMessage,
+        completedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      executions.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(executions.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+    },
+    async addAuditRecord(input) {
+      const record: ToolAuditRecord = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
+      audits.set(record.id, record);
+      return record;
+    },
+    async listAuditRecords(orgId, businessId) {
+      return Array.from(audits.values())
+        .filter((a) => a.orgId === orgId && a.businessId === businessId)
+        .sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryProviderHealthRepository(): ProviderHealthRepository {
+  const items = new Map<string, ProviderHealth>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (h) => h.businessId === input.businessId && h.providerKey === input.providerKey
+      );
+      const health: ProviderHealth = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(health.id, health);
+      return health;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter((h) => h.orgId === orgId && h.businessId === businessId);
     },
   };
 }

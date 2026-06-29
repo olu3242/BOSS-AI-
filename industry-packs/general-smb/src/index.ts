@@ -20,8 +20,9 @@ import { seedConstraintCategories } from "./data/constraintCategories.js";
 import { seedConstraintLibrary } from "./data/constraintLibrary.js";
 import { seedRecommendationCategories } from "./data/recommendationCategories.js";
 import { seedRecommendationLibrary } from "./data/recommendationLibrary.js";
+import { seedToolFabric } from "./data/toolFabric.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.4.0";
+export const GENERAL_SMB_PACK_VERSION = "0.5.0";
 
 let installed = false;
 
@@ -45,6 +46,7 @@ export function installGeneralSmbPack(): void {
   seedConstraintLibrary();
   seedRecommendationCategories();
   seedRecommendationLibrary();
+  seedToolFabric();
 }
 
 export {
@@ -63,4 +65,5 @@ export {
   seedConstraintLibrary,
   seedRecommendationCategories,
   seedRecommendationLibrary,
+  seedToolFabric,
 };

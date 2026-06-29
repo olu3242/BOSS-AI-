@@ -17,4 +17,7 @@ export * from "./registries/constraintCategory.js";
 export * from "./registries/constraintDefinition.js";
 export * from "./registries/recommendationCategory.js";
 export * from "./registries/recommendationDefinition.js";
+export * from "./registries/capabilityContract.js";
+export * from "./registries/providerDefinition.js";
+export * from "./registries/toolDefinition.js";
 export * from "./seed/index.js";
