@@ -17,6 +17,10 @@ Each entry should be small enough to become a single PR.
 | TD-010 | Capability pack installation is hardcoded to `general-smb` inside `apps/api`'s container — no runtime-configurable pack selection for multiple verticals yet | Goal 3 | Medium | unassigned | open |
 | TD-011 | Transformation Roadmap and Approval Model (`auto`/`approval_required`/`executive_review`/`manual_only`) are persisted but not consumed by any runtime yet — reserved for a future Loop Runtime | Goal 4 | Medium | unassigned | open |
 | TD-012 | `recommendation_instances.dependencies` is a flat `jsonb` array, not a dedicated relationship table — unlike constraints, which got `constraint_relationships` in Goal 3 | Goal 4 | Low | unassigned | open |
+| TD-013 | `executeToolRequestSimulated()` is the only Execution Adapter — no real provider HTTP clients exist yet (Gmail, Twilio, HubSpot, etc.); deferred to a future Loop Runtime adapter layer | Goal 8 | High | unassigned | open |
+| TD-014 | `CredentialReference.secretRef` is a schema for a pointer only — no actual external secret-store integration (e.g. Vault, AWS Secrets Manager) exists to resolve it | Goal 8 | High | unassigned | open |
+| TD-015 | `ToolDefinitionEntry.rateLimitPerMinute` and `PermissionPolicy.rateLimitPerMinute` are declared but not enforced anywhere at execution time | Goal 8 | Medium | unassigned | open |
+| TD-016 | No Integration Center / Connection Wizard UI exists to let a business owner actually connect (OAuth) a provider — `connectIntegration()` is API-only | Goal 8 | Medium | unassigned | open |
 
 ## Process
 

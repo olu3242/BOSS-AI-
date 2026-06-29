@@ -7,6 +7,7 @@ import { createBusinessCapabilityService } from "./services/businessCapabilitySe
 import { createBusinessTimelineService } from "./services/businessTimelineService.js";
 import { createBusinessConstraintService } from "./services/businessConstraintService.js";
 import { createBusinessRecommendationService } from "./services/businessRecommendationService.js";
+import { createToolFabricService } from "./services/toolFabricService.js";
 import { createBusinessController } from "./controllers/businessController.js";
 import { createBusinessMriController } from "./controllers/businessMriController.js";
 import { createBusinessDnaController } from "./controllers/businessDnaController.js";
@@ -15,6 +16,7 @@ import { createBusinessCapabilityController } from "./controllers/businessCapabi
 import { createBusinessTimelineController } from "./controllers/businessTimelineController.js";
 import { createBusinessConstraintController } from "./controllers/businessConstraintController.js";
 import { createBusinessRecommendationController } from "./controllers/businessRecommendationController.js";
+import { createToolFabricController } from "./controllers/toolFabricController.js";
 
 export function createApi() {
   const repos = createPostgresContainer();
@@ -28,6 +30,7 @@ export function createApi() {
     businessTimeline: createBusinessTimelineController(createBusinessTimelineService(repos)),
     businessConstraint: createBusinessConstraintController(createBusinessConstraintService(repos)),
     businessRecommendation: createBusinessRecommendationController(createBusinessRecommendationService(repos)),
+    toolFabric: createToolFabricController(createToolFabricService(repos)),
   };
 }
 
@@ -40,3 +43,4 @@ export * from "./services/businessCapabilityService.js";
 export * from "./services/businessTimelineService.js";
 export * from "./services/businessConstraintService.js";
 export * from "./services/businessRecommendationService.js";
+export * from "./services/toolFabricService.js";

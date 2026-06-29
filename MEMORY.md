@@ -419,3 +419,91 @@ for `apps/api`, so the Constraint/Recommendation intelligence built in
 Goals 3–4 has a real user-facing surface — though see the Goal 8/9
 redirect below for an architectural reordering proposed before AI
 Workforce work begins.
+
+## Goal 8 — Business Tool & Integration Fabric (complete)
+
+**What:** Abstraction layer between AI Employees/Loop Runtime and external
+providers (Gmail, Microsoft 365, Twilio, HubSpot, QuickBooks, Slack, etc.)
+so nothing ever calls a provider SDK directly — every request goes through
+a named Capability Contract and the Tool Fabric resolves the concrete
+Tool + connected Provider.
+
+### Registries (`packages/registries`)
+- `capabilityContractRegistry` — 12 provider-agnostic capabilities
+  (`send_email`, `send_sms`, `send_message`, `schedule_appointment`,
+  `create_invoice`, `create_customer`, `update_crm`, `upload_document`,
+  `generate_pdf`, `send_notification`, `store_file`, `search_contacts`),
+  each with an `inputSchema`/`outputSchema`.
+- `providerDefinitionRegistry` — 19 providers across email, sms,
+  calendar, crm, accounting, storage, messaging categories.
+- `toolDefinitionRegistry` — 12 tools, each the join of one capability +
+  the providers that can fulfill it + required permissions +
+  retry/timeout/rate-limit/audit policy.
+- `industry-packs/general-smb/src/data/toolFabric.ts` seeds all three;
+  pack version bumped to `0.5.0`.
+
+### MCP (`packages/mcp`)
+- `intelligence/toolFabric.ts` — `resolveCapability(capabilityKey,
+  connectedIntegrations, roleKey, permissions)`: looks up the Tool for a
+  capability, intersects its `supportedProviderKeys` with the business's
+  currently-connected providers (never defaults to an unconnected one),
+  checks permission for `(toolKey, roleKey)` (default
+  `"approval_required"` if no policy row exists), throws
+  `CapabilityNotFoundError` / `NoConnectedProviderError` /
+  `PermissionDeniedError` as appropriate.
+- `executeToolRequestSimulated(resolved, input)` — no real network call
+  (Law 1: MCP never executes); returns a deterministic
+  `{ status: "succeeded", output: { simulated: true, ... } }` so the rest
+  of the fabric has something concrete to audit/track until a future Loop
+  Runtime adapter performs the live call.
+
+### Database (`packages/db`)
+- `migrations/0008_tool_integration_fabric.sql` — 9 tables:
+  `capability_contracts`, `provider_definitions`, `tool_definitions`
+  (global/declarative), `integration_accounts`, `credential_references`
+  (references only — `secret_ref` never stores a raw secret),
+  `permission_policies`, `tool_executions`, `provider_health`,
+  `tool_audit_history`.
+- `migrations/0009_seed_tool_fabric.sql` — generated from the TypeScript
+  source to avoid drift; executed and verified against a live local
+  Postgres 16 instance (`boss_dev`): 12 capabilities, 19 providers, 12
+  tools — exact match.
+- `IntegrationAccountRepository`, `PermissionPolicyRepository`,
+  `ToolExecutionRepository` (also owns `tool_audit_history`),
+  `ProviderHealthRepository` — Postgres + in-memory adapters. Per the
+  established convention, `ToolAuditRecord` and `ProviderHealth` extend
+  `TenantScoped` only (not `Timestamped`) since their tables have no
+  `deleted_at` column.
+
+### API (`apps/api`)
+- `services/toolFabricService.ts` — connect/disconnect integration,
+  set/list permission policies, `requestTool()` (resolve → create
+  pending `ToolExecution` → audit `tool.requested` → execute simulated →
+  update status → audit `tool.<status>` → upsert `ProviderHealth`), list
+  executions/audit history/provider health.
+- `controllers/toolFabricController.ts` — thin, zero business logic.
+- `__tests__/toolFabricFlow.test.ts` — connects an integration, sets a
+  permission, requests a tool, asserts resolved provider/tool/status,
+  audit records, and provider health; second test asserts a clean
+  rejection when no provider is connected for the capability.
+
+**Validation:** `pnpm -r typecheck`, `pnpm -r lint`, `pnpm -r build`,
+`pnpm -r test` (apps/api: 5 tests/4 files, all other workspaces unchanged
+and passing), `pnpm run arch:check` (no dependency violations, knip
+clean) all pass. Migrations 0008/0009 executed and validated against
+`boss_dev` with exact seeded row counts.
+
+**Explicitly NOT done in this goal (by design):** AI Employees (Goal 9
+depends on these capability contracts but is sequenced after), any real
+provider HTTP client (Execution Adapter is simulated only), any
+Integration Center / Connection Wizard UI, actual external secret-store
+integration for `CredentialReference`.
+
+**Known limitations / tech debt:** TD-013 (simulated Execution Adapter
+only), TD-014 (no real secret-store integration), TD-015 (rate limits
+declared but not enforced), TD-016 (no Integration Center UI).
+
+**Recommended next goal:** Goal 9 — AI Workforce Layer, now unblocked
+since AI Employees can request `SendMessage`/`ScheduleMeeting`/
+`CreateCustomer`/`CreateInvoice`/etc. capabilities through this fabric
+instead of touching providers directly.

@@ -5,6 +5,31 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 8: Business Tool & Integration Fabric
+- `packages/registries`: `capabilityContractRegistry` (12 capabilities),
+  `providerDefinitionRegistry` (19 providers), `toolDefinitionRegistry`
+  (12 tools) — capability/provider/tool kept as three separate
+  registries so AI Employees only ever reference capabilities.
+- `industry-packs/general-smb`: seeds all three registries via
+  `seedToolFabric()`; pack version bumped to `0.5.0`.
+- `packages/mcp`: `intelligence/toolFabric.ts` —
+  `resolveCapability()` (provider resolution scoped to currently
+  connected integrations, permission validation with safe
+  `approval_required` default) and `executeToolRequestSimulated()` (no
+  real network call — Law 1).
+- `packages/db`: raw SQL migrations (9 tables) for Capability/Provider/
+  Tool Registry, Integration Accounts, Credential References
+  (references only, never raw secrets), Permission Policies, Tool
+  Executions, Provider Health, Tool Audit History, executed and
+  verified against a live Postgres 16 instance; dual Postgres +
+  in-memory repository adapters.
+- `apps/api`: `toolFabricService`/`toolFabricController` for
+  connect/disconnect integration, permission policies, tool resolution +
+  simulated execution + audit + health tracking; end-to-end integration
+  test.
+- `docs/adr/0006-tool-integration-fabric.md`.
+- Tech Debt Register: TD-013, TD-014, TD-015, TD-016.
+
 ### Added — Goal 4: Recommendation Intelligence Engine
 - `packages/registries`: `recommendationCategoryRegistry` (13 categories)
   and `recommendationDefinitionRegistry` with declarative

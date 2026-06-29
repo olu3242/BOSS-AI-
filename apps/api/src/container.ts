@@ -13,6 +13,10 @@ import {
   createPostgresRecommendationScoreRepository,
   createPostgresRecommendationPriorityRepository,
   createPostgresTransformationRoadmapRepository,
+  createPostgresIntegrationAccountRepository,
+  createPostgresPermissionPolicyRepository,
+  createPostgresToolExecutionRepository,
+  createPostgresProviderHealthRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -27,6 +31,10 @@ import {
   createInMemoryRecommendationScoreRepository,
   createInMemoryRecommendationPriorityRepository,
   createInMemoryTransformationRoadmapRepository,
+  createInMemoryIntegrationAccountRepository,
+  createInMemoryPermissionPolicyRepository,
+  createInMemoryToolExecutionRepository,
+  createInMemoryProviderHealthRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -41,6 +49,10 @@ import {
   type RecommendationScoreRepository,
   type RecommendationPriorityRepository,
   type TransformationRoadmapRepository,
+  type IntegrationAccountRepository,
+  type PermissionPolicyRepository,
+  type ToolExecutionRepository,
+  type ProviderHealthRepository,
 } from "@boss/db";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
@@ -59,6 +71,10 @@ export interface RepositoryContainer {
   recommendationScores: RecommendationScoreRepository;
   recommendationPriorities: RecommendationPriorityRepository;
   transformationRoadmaps: TransformationRoadmapRepository;
+  integrationAccounts: IntegrationAccountRepository;
+  permissionPolicies: PermissionPolicyRepository;
+  toolExecutions: ToolExecutionRepository;
+  providerHealth: ProviderHealthRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -78,6 +94,10 @@ export function createPostgresContainer(): RepositoryContainer {
     recommendationScores: createPostgresRecommendationScoreRepository(),
     recommendationPriorities: createPostgresRecommendationPriorityRepository(),
     transformationRoadmaps: createPostgresTransformationRoadmapRepository(),
+    integrationAccounts: createPostgresIntegrationAccountRepository(),
+    permissionPolicies: createPostgresPermissionPolicyRepository(),
+    toolExecutions: createPostgresToolExecutionRepository(),
+    providerHealth: createPostgresProviderHealthRepository(),
   };
 }
 
@@ -100,5 +120,9 @@ export function createInMemoryContainer(): RepositoryContainer {
     recommendationScores: createInMemoryRecommendationScoreRepository(),
     recommendationPriorities: createInMemoryRecommendationPriorityRepository(businessRecommendations),
     transformationRoadmaps: createInMemoryTransformationRoadmapRepository(),
+    integrationAccounts: createInMemoryIntegrationAccountRepository(),
+    permissionPolicies: createInMemoryPermissionPolicyRepository(),
+    toolExecutions: createInMemoryToolExecutionRepository(),
+    providerHealth: createInMemoryProviderHealthRepository(),
   };
 }
