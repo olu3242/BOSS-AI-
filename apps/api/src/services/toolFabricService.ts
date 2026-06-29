@@ -1,5 +1,6 @@
 import { nowIso } from "@boss/shared";
-import { resolveCapability, executeToolRequestSimulated } from "@boss/mcp";
+import { resolveCapability } from "@boss/mcp";
+import { dispatchProviderExecution } from "./providerAdapters/index.js";
 import type {
   IntegrationAccount,
   PermissionPolicy,
@@ -114,9 +115,12 @@ export function createToolFabricService(repos: RepositoryContainer): ToolFabricS
         occurredAt: nowIso(),
       });
 
-      const result = executeToolRequestSimulated(resolved, request.input);
+      const result = await dispatchProviderExecution(repos, orgId, businessId, resolved, request.input);
 
-      execution = await repos.toolExecutions.updateStatus(orgId, execution.id, result.status, result.output, result.errorMessage);
+      execution = await repos.toolExecutions.updateStatus(orgId, execution.id, result.status, result.output, result.errorMessage, {
+        attemptCount: result.attemptCount,
+        latencyMs: result.latencyMs,
+      });
 
       await repos.toolExecutions.addAuditRecord({
         orgId,
@@ -139,7 +143,7 @@ export function createToolFabricService(repos: RepositoryContainer): ToolFabricS
         businessId,
         providerKey: resolved.providerKey,
         status: result.status === "succeeded" ? "healthy" : "degraded",
-        latencyMs: null,
+        latencyMs: result.latencyMs > 0 ? result.latencyMs : null,
         failureCount: result.status === "succeeded" ? 0 : 1,
         quotaRemaining: null,
         authenticated: true,

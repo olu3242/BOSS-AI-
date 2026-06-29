@@ -495,6 +495,13 @@ export function createInMemoryIntegrationAccountRepository(): IntegrationAccount
       credentials.set(credential.id, credential);
       return credential;
     },
+    async findCredentialByAccount(integrationAccountId) {
+      return (
+        Array.from(credentials.values()).find(
+          (c) => c.integrationAccountId === integrationAccountId && !c.deletedAt
+        ) ?? null
+      );
+    },
   };
 }
 
@@ -522,11 +529,17 @@ export function createInMemoryToolExecutionRepository(): ToolExecutionRepository
   const audits = new Map<string, ToolAuditRecord>();
   return {
     async create(input) {
-      const execution: ToolExecution = { id: randomUUID(), ...input, ...stamp() };
+      const execution: ToolExecution = {
+        id: randomUUID(),
+        ...input,
+        attemptCount: 1,
+        latencyMs: null,
+        ...stamp(),
+      };
       executions.set(execution.id, execution);
       return execution;
     },
-    async updateStatus(orgId, id, status, output, errorMessage) {
+    async updateStatus(orgId, id, status, output, errorMessage, meta) {
       const existing = executions.get(id);
       if (!existing || existing.orgId !== orgId) {
         throw new Error(`ToolExecution ${id} not found`);
@@ -536,6 +549,8 @@ export function createInMemoryToolExecutionRepository(): ToolExecutionRepository
         status,
         output,
         errorMessage,
+        attemptCount: meta?.attemptCount ?? existing.attemptCount,
+        latencyMs: meta?.latencyMs !== undefined ? meta.latencyMs : existing.latencyMs,
         completedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

@@ -91,5 +91,13 @@ export function createPostgresIntegrationAccountRepository(): IntegrationAccount
       );
       return toCredential(firstRow(rows));
     },
+    async findCredentialByAccount(integrationAccountId) {
+      const rows = await query<CredentialRow>(
+        `SELECT * FROM credential_references WHERE integration_account_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+        [integrationAccountId]
+      );
+      const row = rows[0];
+      return row ? toCredential(row) : null;
+    },
   };
 }

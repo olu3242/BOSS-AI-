@@ -5,6 +5,36 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 16: Production Provider Adapter Framework
+
+- `apps/api/src/services/providerAdapters/` (new module): production adapter
+  dispatch pipeline — `ProviderAdapter` interface, `CredentialResolver` (env-var
+  placeholder, TD-014 deferred to Goal 17), `CircuitBreaker` (per-provider
+  in-process, three-state), `RetryPolicy` (`withRetry` with injectable sleep),
+  `AdapterRegistry`, `TwilioSmsAdapter` (real Twilio REST API, injectable fetch),
+  and `dispatcher.ts` combining all of the above.
+- `toolFabricService.requestTool()`: the `executeToolRequestSimulated` call is now
+  replaced by `dispatchProviderExecution()`, which routes registered providers
+  through the real adapter pipeline (Twilio) and falls back to simulation for
+  all others. `latencyMs` is now persisted to `provider_health` from real timings.
+- `ToolExecution` ontology type: added `attemptCount: number` and
+  `latencyMs: number | null` fields.
+- `ToolExecutionRepository.updateStatus`: new optional `meta` parameter persists
+  attempt count and latency; both postgres and in-memory implementations updated.
+- `IntegrationAccountRepository`: added `findCredentialByAccount` (was missing
+  from the interface and both implementations despite the DB table existing).
+- Migration `0012_tool_execution_telemetry.sql`: `attempt_count integer NOT NULL
+  DEFAULT 1`, `latency_ms numeric` on `tool_executions`.
+- New domain events (emitted from dispatcher): `tool.provider.resolved`,
+  `tool.credentials.resolved`, `tool.execution.started`, `tool.execution.succeeded`,
+  `tool.execution.failed`, `tool.provider.unavailable`, `tool.retry.scheduled`,
+  `tool.circuit.opened`, `tool.circuit.closed`.
+- `apps/api/src/__tests__/providerAdapterFlow.test.ts` (new): 9 tests covering
+  Twilio success/failure/bad-credential/network-error, circuit-breaker open/close/
+  half-open, retry policy, and missing-credential integration path.
+- `docs/adr/0015-production-provider-adapter-framework.md`.
+- Tech Debt: TD-013 narrowed (Twilio has a real adapter); TD-014 remains open.
+
 ### Added — Goal 15: Auth Hardening (JWT verification)
 - `apps/api/src/http/auth.ts` (new): `requireOrgId(req)` is now async and
   verifies a Supabase-style HS256 JWT (`Authorization: Bearer <token>`)

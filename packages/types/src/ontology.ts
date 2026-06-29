@@ -582,6 +582,8 @@ export interface ToolExecution extends TenantScoped, Timestamped {
   errorMessage: string | null;
   startedAt: string;
   completedAt: string | null;
+  attemptCount: number;
+  latencyMs: number | null;
 }
 
 export type ProviderHealthStatus = "healthy" | "degraded" | "down" | "unknown";

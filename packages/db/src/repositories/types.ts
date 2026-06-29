@@ -165,6 +165,7 @@ export interface IntegrationAccountRepository {
     integrationAccountId: string,
     input: Omit<CredentialReference, "id" | "createdAt" | "updatedAt" | "deletedAt" | "integrationAccountId" | "orgId">
   ): Promise<CredentialReference>;
+  findCredentialByAccount(integrationAccountId: string): Promise<CredentialReference | null>;
 }
 
 export interface PermissionPolicyRepository {
@@ -173,13 +174,16 @@ export interface PermissionPolicyRepository {
 }
 
 export interface ToolExecutionRepository {
-  create(input: Omit<ToolExecution, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<ToolExecution>;
+  create(
+    input: Omit<ToolExecution, "id" | "createdAt" | "updatedAt" | "deletedAt" | "attemptCount" | "latencyMs">
+  ): Promise<ToolExecution>;
   updateStatus(
     orgId: string,
     id: string,
     status: ToolExecution["status"],
     output: Record<string, unknown> | null,
-    errorMessage: string | null
+    errorMessage: string | null,
+    meta?: { attemptCount?: number; latencyMs?: number | null }
   ): Promise<ToolExecution>;
   listByBusinessId(orgId: string, businessId: string): Promise<ToolExecution[]>;
   addAuditRecord(input: Omit<ToolAuditRecord, "id" | "createdAt">): Promise<ToolAuditRecord>;

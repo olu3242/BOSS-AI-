@@ -904,3 +904,54 @@ scope — secrets via TD-014, real provider adapters via TD-013, scheduling
 via TD-017 — plus eventually closing TD-030 with a real
 `organizations`/`users` schema and login UI once that bounded context is
 prioritized.
+
+## Goal 16: Production Provider Adapter Framework (complete)
+
+**Branch:** `claude/boss-repo-normalization-n1jdx5`
+
+### What was built
+
+A production adapter dispatch pipeline layered on top of the existing Tool Fabric without
+restructuring any prior work. The `executeToolRequestSimulated` call in
+`toolFabricService.requestTool()` is now routed through `dispatchProviderExecution()`
+which: checks the `AdapterRegistry` → gates on `CircuitBreaker.canAttempt()` → resolves
+credentials via `CredentialResolver` → calls `ProviderAdapter.execute()` with retry via
+`withRetry()` → updates circuit-breaker state → emits provider-specific events. For any
+`providerKey` not in the registry, the simulated path is preserved unchanged.
+
+**Twilio** (`send_sms`, `authType: "api_key"`) is the only real adapter wired. The
+other 18 registered providers retain the simulated fallback.
+
+### Files added/changed
+
+- `apps/api/src/services/providerAdapters/` — new module (7 files: types, credentialResolver,
+  retryPolicy, circuitBreaker, twilioSmsAdapter, adapterRegistry, dispatcher, index)
+- `apps/api/src/services/toolFabricService.ts` — replaced `executeToolRequestSimulated` call
+  with `dispatchProviderExecution`; `latencyMs` now persisted to `provider_health`
+- `packages/types/src/ontology.ts` — `ToolExecution`: added `attemptCount`, `latencyMs`
+- `packages/db/src/repositories/types.ts` — `ToolExecutionRepository.create` Omit updated;
+  `updateStatus` now takes optional `meta`; `IntegrationAccountRepository.findCredentialByAccount` added
+- `packages/db/src/repositories/postgres/toolExecutionRepository.ts` — `attempt_count`/`latency_ms` support
+- `packages/db/src/repositories/postgres/integrationAccountRepository.ts` — `findCredentialByAccount`
+- `packages/db/src/repositories/memory/inMemoryRepositories.ts` — both repos updated
+- `packages/db/migrations/0012_tool_execution_telemetry.sql` — new migration
+- `apps/api/src/__tests__/providerAdapterFlow.test.ts` — 9 new tests
+- `docs/adr/0015-production-provider-adapter-framework.md`
+
+### Known gaps (explicitly deferred)
+
+- **TD-014 / Goal 17**: `CredentialResolver` reads `process.env[secretRef]` — no real
+  secret store, no encryption, no rotation. Goal 17 (Secret Vault) will replace this.
+- **TD-013 (partial)**: 18 of 19 registered providers still use `executeToolRequestSimulated`.
+- Circuit breaker and retry are single-process in-memory only — no distributed state.
+
+### Validation
+
+`pnpm -r typecheck/build` all pass (full workspace). `pnpm -r test` passes: 28 tests in
+`apps/api` (11 test files), including 9 new provider adapter tests.
+
+**Recommended next step:** Goal 17 — Secret Vault & Credential Management. Replace the
+`CredentialResolver` env-var placeholder with a real `SecretStore` abstraction (Vault or
+AWS Secrets Manager driver), credential lifecycle, rotation support, encryption at rest,
+secret versioning, and tenant isolation. Closes TD-014; unblocks real outbound provider
+calls for the remaining 18 providers.

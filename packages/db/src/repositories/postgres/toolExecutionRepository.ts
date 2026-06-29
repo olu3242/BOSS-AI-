@@ -16,6 +16,8 @@ interface ExecutionRow {
   error_message: string | null;
   started_at: string;
   completed_at: string | null;
+  attempt_count: number;
+  latency_ms: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -48,6 +50,8 @@ function toExecution(row: ExecutionRow): ToolExecution {
     errorMessage: row.error_message,
     startedAt: row.started_at,
     completedAt: row.completed_at,
+    attemptCount: row.attempt_count,
+    latencyMs: row.latency_ms,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -72,8 +76,8 @@ export function createPostgresToolExecutionRepository(): ToolExecutionRepository
   return {
     async create(input) {
       const rows = await query<ExecutionRow>(
-        `INSERT INTO tool_executions (org_id, business_id, tool_key, capability_key, provider_key, requested_by, status, input, output, error_message, started_at, completed_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        `INSERT INTO tool_executions (org_id, business_id, tool_key, capability_key, provider_key, requested_by, status, input, output, error_message, started_at, completed_at, attempt_count, latency_ms)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
          RETURNING *`,
         [
           input.orgId,
@@ -88,16 +92,19 @@ export function createPostgresToolExecutionRepository(): ToolExecutionRepository
           input.errorMessage,
           input.startedAt,
           input.completedAt,
+          1,
+          null,
         ]
       );
       return toExecution(firstRow(rows));
     },
-    async updateStatus(orgId, id, status, output, errorMessage) {
+    async updateStatus(orgId, id, status, output, errorMessage, meta) {
       const rows = await query<ExecutionRow>(
-        `UPDATE tool_executions SET status = $3, output = $4, error_message = $5, completed_at = now(), updated_at = now()
+        `UPDATE tool_executions SET status = $3, output = $4, error_message = $5, completed_at = now(), updated_at = now(),
+           attempt_count = COALESCE($6, attempt_count), latency_ms = COALESCE($7, latency_ms)
          WHERE org_id = $1 AND id = $2
          RETURNING *`,
-        [orgId, id, status, output ? JSON.stringify(output) : null, errorMessage]
+        [orgId, id, status, output ? JSON.stringify(output) : null, errorMessage, meta?.attemptCount ?? null, meta?.latencyMs ?? null]
       );
       return toExecution(firstRow(rows));
     },
