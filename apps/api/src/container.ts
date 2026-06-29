@@ -17,6 +17,10 @@ import {
   createPostgresPermissionPolicyRepository,
   createPostgresToolExecutionRepository,
   createPostgresProviderHealthRepository,
+  createPostgresWorkflowExecutionRepository,
+  createPostgresTaskExecutionRepository,
+  createPostgresExecutionEventRepository,
+  createPostgresDeadLetterRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -35,6 +39,10 @@ import {
   createInMemoryPermissionPolicyRepository,
   createInMemoryToolExecutionRepository,
   createInMemoryProviderHealthRepository,
+  createInMemoryWorkflowExecutionRepository,
+  createInMemoryTaskExecutionRepository,
+  createInMemoryExecutionEventRepository,
+  createInMemoryDeadLetterRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -53,6 +61,10 @@ import {
   type PermissionPolicyRepository,
   type ToolExecutionRepository,
   type ProviderHealthRepository,
+  type WorkflowExecutionRepository,
+  type TaskExecutionRepository,
+  type ExecutionEventRepository,
+  type DeadLetterRepository,
 } from "@boss/db";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
@@ -75,6 +87,10 @@ export interface RepositoryContainer {
   permissionPolicies: PermissionPolicyRepository;
   toolExecutions: ToolExecutionRepository;
   providerHealth: ProviderHealthRepository;
+  workflowExecutions: WorkflowExecutionRepository;
+  taskExecutions: TaskExecutionRepository;
+  executionEvents: ExecutionEventRepository;
+  deadLetters: DeadLetterRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -98,6 +114,10 @@ export function createPostgresContainer(): RepositoryContainer {
     permissionPolicies: createPostgresPermissionPolicyRepository(),
     toolExecutions: createPostgresToolExecutionRepository(),
     providerHealth: createPostgresProviderHealthRepository(),
+    workflowExecutions: createPostgresWorkflowExecutionRepository(),
+    taskExecutions: createPostgresTaskExecutionRepository(),
+    executionEvents: createPostgresExecutionEventRepository(),
+    deadLetters: createPostgresDeadLetterRepository(),
   };
 }
 
@@ -124,5 +144,9 @@ export function createInMemoryContainer(): RepositoryContainer {
     permissionPolicies: createInMemoryPermissionPolicyRepository(),
     toolExecutions: createInMemoryToolExecutionRepository(),
     providerHealth: createInMemoryProviderHealthRepository(),
+    workflowExecutions: createInMemoryWorkflowExecutionRepository(),
+    taskExecutions: createInMemoryTaskExecutionRepository(),
+    executionEvents: createInMemoryExecutionEventRepository(),
+    deadLetters: createInMemoryDeadLetterRepository(),
   };
 }

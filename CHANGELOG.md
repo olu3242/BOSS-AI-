@@ -5,6 +5,29 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — EP-1 Batch 5 prerequisite: Loop Runtime core
+- `packages/loop`: real execution engine replacing the prior
+  interface-only skeleton — `stateMachine.ts` (11-state machine with
+  transition guard), `taskHandlerRegistry.ts` (function-based handler
+  registry keyed by `TaskType`), `ports.ts` (persistence-agnostic
+  repository-shaped interfaces), `runtime.ts`
+  (`createLoopRuntime().execute()`: sequential step execution, retry,
+  dead-letter on exhausted retries, reverse-order compensation rollback,
+  dual-channel event emission).
+- `packages/events`: `createInMemoryEventBus()` — first real `EventBus`
+  implementation; fixed a circular import between `index.ts` and the new
+  `inMemoryEventBus.ts` by extracting interfaces into `eventBus.ts`.
+- `packages/types`: `ExecutionState`, `TaskType`, `WorkflowExecution`,
+  `TaskExecution`, `ExecutionEventRecord`, `DeadLetterEntry`.
+- `packages/db`: migration `0010_loop_runtime.sql`
+  (`workflow_executions`, `task_executions`, `execution_events`,
+  `dead_letter_queue`), dual Postgres + in-memory repository adapters.
+- `apps/api`: `loopRuntimeService.ts` wiring the `"tool"` task handler to
+  `toolFabricService.requestTool()`; `container.ts` extended with the
+  four new repositories; 4-test end-to-end suite
+  (`loopRuntimeFlow.test.ts`).
+- `docs/adr/0007-loop-runtime.md`.
+
 ### Added — Goal 8: Business Tool & Integration Fabric
 - `packages/registries`: `capabilityContractRegistry` (12 capabilities),
   `providerDefinitionRegistry` (19 providers), `toolDefinitionRegistry`

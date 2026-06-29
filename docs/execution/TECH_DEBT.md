@@ -21,6 +21,10 @@ Each entry should be small enough to become a single PR.
 | TD-014 | `CredentialReference.secretRef` is a schema for a pointer only — no actual external secret-store integration (e.g. Vault, AWS Secrets Manager) exists to resolve it | Goal 8 | High | unassigned | open |
 | TD-015 | `ToolDefinitionEntry.rateLimitPerMinute` and `PermissionPolicy.rateLimitPerMinute` are declared but not enforced anywhere at execution time | Goal 8 | Medium | unassigned | open |
 | TD-016 | No Integration Center / Connection Wizard UI exists to let a business owner actually connect (OAuth) a provider — `connectIntegration()` is API-only | Goal 8 | Medium | unassigned | open |
+| TD-017 | Loop Runtime has no real scheduler — only synchronous immediate execution; no scheduled/recurring/business-hours-aware/timezone-aware job dispatch exists | EP-1 Batch 5 prereq | High | unassigned | open |
+| TD-018 | Loop Runtime's `timed_out` execution state exists in the state machine but nothing ever transitions into it — no timeout enforcement at the task or workflow level | EP-1 Batch 5 prereq | Medium | unassigned | open |
+| TD-019 | Loop Runtime executes workflow steps strictly sequentially — no parallel step execution and no conditional branching based on prior step output | EP-1 Batch 5 prereq | Medium | unassigned | open |
+| TD-020 | Loop Runtime tracks state via `ExecutionEventRecord` + the current `state` field only — no dedicated `execution_state_history`, `scheduler_jobs`, or `execution_metrics` tables | EP-1 Batch 5 prereq | Low | unassigned | open |
 
 ## Process
 

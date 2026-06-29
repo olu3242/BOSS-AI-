@@ -507,3 +507,97 @@ declared but not enforced), TD-016 (no Integration Center UI).
 since AI Employees can request `SendMessage`/`ScheduleMeeting`/
 `CreateCustomer`/`CreateInvoice`/etc. capabilities through this fabric
 instead of touching providers directly.
+
+## EP-1 pivot (master plan change)
+
+Following Goal 8, the user submitted a sweeping "BOSS EP-1 CONVERGENCE
+EXECUTION (BATCHES 3-12)" specification as the new governing plan,
+explicitly superseding the old sequential Goal 7/8/9 numbering. Its
+assumed baseline (org/signup/onboarding/dashboards/Mission Control
+already built) did not match this repo's actual state — a convergence
+audit confirmed only Goals 0-4 + Goal 8 exist; no org/signup/onboarding/
+UI/Mission Control/Loop Runtime. The user was asked to choose between (a)
+finish Loop Runtime first under the old numbering, (b) treat EP-1 as the
+new master plan and restart planning from Batch 3 onward, or (c) stop for
+review. **The user chose (b).** All subsequent work is now organized
+under EP-1's batch numbering, not Goal N.
+
+## Loop Runtime core (EP-1 Batch 5 prerequisite, complete)
+
+Real execution engine for `packages/loop`, replacing the prior
+interface-only skeleton (`WorkflowState`/`WorkflowInstance`/
+`LoopRuntime.start()`). Required because Batches 5 (Autonomous Workflow
+Generation), 6 (AI Employee Runtime — "use existing runtime, not a new
+one"), 9 (Evidence/Timeline), and 10 (Business Operating Loop) all assume
+a real runtime exists.
+
+### Loop (`packages/loop`)
+- `stateMachine.ts` — 11-state machine (`pending`, `queued`, `running`,
+  `waiting`, `approved`, `rejected`, `completed`, `failed`, `cancelled`,
+  `rolled_back`, `timed_out`) with an explicit `TRANSITIONS` adjacency map,
+  `assertTransition()`/`InvalidStateTransitionError`.
+- `taskHandlerRegistry.ts` — function-based registry (`Map<TaskType,
+  TaskHandler>`), distinct from the data-only `@boss/registries` pattern
+  since handlers are executable code, not declarative metadata.
+- `ports.ts` — `WorkflowExecutionPort`, `TaskExecutionPort`,
+  `ExecutionEventPort`, `DeadLetterPort` interfaces; `packages/loop` has
+  zero dependency on `@boss/db` or `@boss/mcp` (enforced by
+  `.dependency-cruiser.cjs`'s `loop-never-imports-mcp` /
+  `loop-never-imports-industry-packs` rules) — `apps/api` supplies
+  concrete repositories satisfying these shapes.
+- `runtime.ts` — `createLoopRuntime(ports, handlers, eventBus)`. Sequential
+  step execution, retry up to `step.maxRetries` (default 0), dead-letter
+  on exhausted retries, reverse-order compensation rollback via
+  `step.compensationTaskType` on any step failure, dual-channel event
+  emission (durable `ExecutionEventPort.append()` + live `EventBus.publish()`)
+  at every transition (`execution.created/started/completed/failed`,
+  `task.created/started/retrying/completed/failed`, `rollback.started/completed`).
+
+### Events (`packages/events`)
+- `createInMemoryEventBus()` (new) — first real `EventBus` implementation
+  (previously interface-only), synchronous `Map`-based pub/sub.
+- Fixed a circular import (`index.ts` ↔ `inMemoryEventBus.ts`) by
+  extracting `BossEvent`/`EventBus` into `eventBus.ts`.
+
+### Types (`packages/types/src/ontology.ts`)
+- New: `ExecutionState`, `TaskType`, `WorkflowExecution`, `TaskExecution`,
+  `ExecutionEventRecord` (extends `TenantScoped` only — append-only, no
+  `deleted_at`), `DeadLetterEntry`.
+
+### Database (`packages/db`)
+- `migrations/0010_loop_runtime.sql` — `workflow_executions`,
+  `task_executions`, `execution_events`, `dead_letter_queue`. Applied and
+  validated against live local Postgres (`boss_dev`); all 10 migrations
+  pass `validateMigrations`.
+- `WorkflowExecutionRepository`, `TaskExecutionRepository`,
+  `ExecutionEventRepository`, `DeadLetterRepository` — Postgres +
+  in-memory adapters, added to `types.ts` and `index.ts` exports.
+
+### API (`apps/api`)
+- `services/loopRuntimeService.ts` (new) — composes `createLoopRuntime()`
+  with concrete handlers: `"tool"` delegates to
+  `toolFabricService.requestTool()`; `"ai"`/`"manual"`/`"scheduled"` are
+  explicit not-implemented stubs (no AI Employee runtime yet — Batch 6).
+- `container.ts` extended with `workflowExecutions`, `taskExecutions`,
+  `executionEvents`, `deadLetters` repositories.
+- `__tests__/loopRuntimeFlow.test.ts` — 4 tests: full multi-step
+  success + canonical event sequence, retry-then-succeed, failure with
+  compensation rollback + dead-letter, and the `loopRuntimeService`
+  tool-handler integration against `toolFabricService`.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (132 modules, 375 dependencies cruised, knip clean
+after removing the now-unnecessary `@boss/loop` knip ignore entry).
+Migration 0010 applied and validated against live `boss_dev`.
+
+**Explicitly NOT done in this slice (by design, logged as tech debt):**
+no real scheduler (immediate execution only — no scheduled/recurring/
+business-hours-aware modes), no timeout enforcement (the `timed_out`
+state exists in the machine but nothing transitions into it), no
+parallel/conditional step execution (sequential only), no separate
+metrics/logs tables beyond `ExecutionEventRecord` + the current `state`
+field.
+
+**Recommended next step:** EP-1 Batch 5 — Autonomous Workflow Generation
+(approved recommendation → registries → execution graph → this runtime →
+evidence → Mission Control), now unblocked by a real execution engine.

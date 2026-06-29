@@ -16,6 +16,7 @@
     "@boss/shared": "workspace:*",
     "@boss/mcp": "workspace:*",
     "@boss/loop": "workspace:*",
+    "@boss/events": "workspace:*",
     "@boss/db": "workspace:*",
     "@boss/industry-pack-general-smb": "workspace:*"
   },

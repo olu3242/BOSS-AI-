@@ -617,6 +617,70 @@ export interface BossEventRecord extends TenantScoped {
   occurredAt: string;
 }
 
+export type ExecutionState =
+  | "pending"
+  | "queued"
+  | "running"
+  | "waiting"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "failed"
+  | "cancelled"
+  | "rolled_back"
+  | "timed_out";
+
+export type TaskType = "ai" | "manual" | "scheduled" | "tool";
+
+export interface WorkflowExecution extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  workflowKey: string;
+  state: ExecutionState;
+  currentStepIndex: number;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface TaskExecution extends TenantScoped, Timestamped {
+  id: ID;
+  workflowExecutionId: ID;
+  businessId: ID;
+  stepKey: string;
+  taskType: TaskType;
+  state: ExecutionState;
+  attempt: number;
+  maxRetries: number;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface ExecutionEventRecord extends TenantScoped {
+  id: ID;
+  workflowExecutionId: ID;
+  businessId: ID;
+  type: string;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface DeadLetterEntry extends TenantScoped, Timestamped {
+  id: ID;
+  workflowExecutionId: ID;
+  taskExecutionId: ID;
+  businessId: ID;
+  stepKey: string;
+  reason: string;
+  payload: Record<string, unknown>;
+}
+
 export interface Notification extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;

@@ -25,6 +25,11 @@ import type {
   ToolExecution,
   ProviderHealth,
   ToolAuditRecord,
+  WorkflowExecution,
+  TaskExecution,
+  ExecutionEventRecord,
+  DeadLetterEntry,
+  ExecutionState,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -183,4 +188,42 @@ export interface ToolExecutionRepository {
 export interface ProviderHealthRepository {
   upsert(input: Omit<ProviderHealth, "id" | "createdAt" | "updatedAt">): Promise<ProviderHealth>;
   listByBusinessId(orgId: string, businessId: string): Promise<ProviderHealth[]>;
+}
+
+export interface WorkflowExecutionRepository {
+  create(input: Omit<WorkflowExecution, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<WorkflowExecution>;
+  updateState(
+    orgId: string,
+    id: string,
+    state: ExecutionState,
+    currentStepIndex: number,
+    output: Record<string, unknown> | null,
+    errorMessage: string | null,
+    completedAt: string | null
+  ): Promise<WorkflowExecution>;
+  listByBusinessId(orgId: string, businessId: string): Promise<WorkflowExecution[]>;
+}
+
+export interface TaskExecutionRepository {
+  create(input: Omit<TaskExecution, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<TaskExecution>;
+  updateState(
+    orgId: string,
+    id: string,
+    state: ExecutionState,
+    attempt: number,
+    output: Record<string, unknown> | null,
+    errorMessage: string | null,
+    completedAt: string | null
+  ): Promise<TaskExecution>;
+  listByWorkflowExecutionId(orgId: string, workflowExecutionId: string): Promise<TaskExecution[]>;
+}
+
+export interface ExecutionEventRepository {
+  append(input: Omit<ExecutionEventRecord, "id" | "createdAt">): Promise<ExecutionEventRecord>;
+  listByWorkflowExecutionId(orgId: string, workflowExecutionId: string): Promise<ExecutionEventRecord[]>;
+}
+
+export interface DeadLetterRepository {
+  add(input: Omit<DeadLetterEntry, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<DeadLetterEntry>;
+  listByBusinessId(orgId: string, businessId: string): Promise<DeadLetterEntry[]>;
 }

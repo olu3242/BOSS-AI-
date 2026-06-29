@@ -23,6 +23,10 @@ import type {
   ToolExecution,
   ToolAuditRecord,
   ProviderHealth,
+  WorkflowExecution,
+  TaskExecution,
+  ExecutionEventRecord,
+  DeadLetterEntry,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -45,6 +49,10 @@ import type {
   PermissionPolicyRepository,
   ToolExecutionRepository,
   ProviderHealthRepository,
+  WorkflowExecutionRepository,
+  TaskExecutionRepository,
+  ExecutionEventRepository,
+  DeadLetterRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -565,6 +573,104 @@ export function createInMemoryProviderHealthRepository(): ProviderHealthReposito
     },
     async listByBusinessId(orgId, businessId) {
       return Array.from(items.values()).filter((h) => h.orgId === orgId && h.businessId === businessId);
+    },
+  };
+}
+
+export function createInMemoryWorkflowExecutionRepository(): WorkflowExecutionRepository {
+  const executions = new Map<string, WorkflowExecution>();
+  return {
+    async create(input) {
+      const execution: WorkflowExecution = { id: randomUUID(), ...input, ...stamp() };
+      executions.set(execution.id, execution);
+      return execution;
+    },
+    async updateState(orgId, id, state, currentStepIndex, output, errorMessage, completedAt) {
+      const existing = executions.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`WorkflowExecution ${id} not found`);
+      }
+      const updated: WorkflowExecution = {
+        ...existing,
+        state,
+        currentStepIndex,
+        output,
+        errorMessage,
+        completedAt,
+        updatedAt: new Date().toISOString(),
+      };
+      executions.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(executions.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryTaskExecutionRepository(): TaskExecutionRepository {
+  const tasks = new Map<string, TaskExecution>();
+  return {
+    async create(input) {
+      const task: TaskExecution = { id: randomUUID(), ...input, ...stamp() };
+      tasks.set(task.id, task);
+      return task;
+    },
+    async updateState(orgId, id, state, attempt, output, errorMessage, completedAt) {
+      const existing = tasks.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`TaskExecution ${id} not found`);
+      }
+      const updated: TaskExecution = {
+        ...existing,
+        state,
+        attempt,
+        output,
+        errorMessage,
+        completedAt,
+        updatedAt: new Date().toISOString(),
+      };
+      tasks.set(id, updated);
+      return updated;
+    },
+    async listByWorkflowExecutionId(orgId, workflowExecutionId) {
+      return Array.from(tasks.values())
+        .filter((t) => t.orgId === orgId && t.workflowExecutionId === workflowExecutionId)
+        .sort((a, b) => (a.startedAt < b.startedAt ? -1 : 1));
+    },
+  };
+}
+
+export function createInMemoryExecutionEventRepository(): ExecutionEventRepository {
+  const events = new Map<string, ExecutionEventRecord>();
+  return {
+    async append(input) {
+      const event: ExecutionEventRecord = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
+      events.set(event.id, event);
+      return event;
+    },
+    async listByWorkflowExecutionId(orgId, workflowExecutionId) {
+      return Array.from(events.values())
+        .filter((e) => e.orgId === orgId && e.workflowExecutionId === workflowExecutionId)
+        .sort((a, b) => (a.occurredAt < b.occurredAt ? -1 : 1));
+    },
+  };
+}
+
+export function createInMemoryDeadLetterRepository(): DeadLetterRepository {
+  const entries = new Map<string, DeadLetterEntry>();
+  return {
+    async add(input) {
+      const entry: DeadLetterEntry = { id: randomUUID(), ...input, ...stamp() };
+      entries.set(entry.id, entry);
+      return entry;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(entries.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     },
   };
 }

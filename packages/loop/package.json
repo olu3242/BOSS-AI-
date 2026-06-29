@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@boss/types": "workspace:*",
-    "@boss/shared": "workspace:*"
+    "@boss/shared": "workspace:*",
+    "@boss/events": "workspace:*"
   }
 }

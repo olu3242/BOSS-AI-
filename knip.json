@@ -21,7 +21,6 @@
     "zod",
     "@boss/types",
     "@boss/shared",
-    "@boss/loop",
     "@boss/ui"
   ],
   "ignoreExportsUsedInFile": true

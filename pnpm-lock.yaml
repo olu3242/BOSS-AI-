@@ -55,6 +55,9 @@ importers:
       '@boss/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@boss/events':
+        specifier: workspace:*
+        version: link:../../packages/events
       '@boss/industry-pack-general-smb':
         specifier: workspace:*
         version: link:../../industry-packs/general-smb
@@ -155,6 +158,9 @@ importers:
 
   packages/loop:
     dependencies:
+      '@boss/events':
+        specifier: workspace:*
+        version: link:../events
       '@boss/shared':
         specifier: workspace:*
         version: link:../shared

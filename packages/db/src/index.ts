@@ -19,4 +19,8 @@ export * from "./repositories/postgres/integrationAccountRepository.js";
 export * from "./repositories/postgres/permissionPolicyRepository.js";
 export * from "./repositories/postgres/toolExecutionRepository.js";
 export * from "./repositories/postgres/providerHealthRepository.js";
+export * from "./repositories/postgres/workflowExecutionRepository.js";
+export * from "./repositories/postgres/taskExecutionRepository.js";
+export * from "./repositories/postgres/executionEventRepository.js";
+export * from "./repositories/postgres/deadLetterRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";
