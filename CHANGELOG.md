@@ -5,6 +5,28 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 15: Auth Hardening (JWT verification)
+- `apps/api/src/http/auth.ts` (new): `requireOrgId(req)` is now async and
+  verifies a Supabase-style HS256 JWT (`Authorization: Bearer <token>`)
+  against `SUPABASE_JWT_SECRET` via `jose`, extracting tenancy from the
+  token's `org_id` claim instead of a raw `x-org-id` header. All ~30
+  existing route call sites updated to `await requireOrgId(req)`.
+- `apps/api/src/http/apiError.ts` (new): `ApiError` extracted out of
+  `server.ts` so `auth.ts` can throw it too.
+- `POST /api/v1/auth/dev-token` (new, non-production only): mints a
+  signed token for a given `orgId`, standing in for what a real Supabase
+  custom access-token hook would issue at sign-in — there is still no
+  login UI (TD-030).
+- `apps/api/src/server.ts`: requires `SUPABASE_JWT_SECRET` in production;
+  defaults to an obviously-fake dev value otherwise.
+- `apps/web/src/lib/apiClient.ts`: exchanges `DEMO_ORG_ID` for a dev token
+  before each request and sends it as a bearer token instead of an
+  `x-org-id` header.
+- `apps/api/src/__tests__/httpServerFlow.test.ts`: updated to mint and use
+  a real signed token instead of the header.
+- `docs/adr/0014-jwt-auth-verification.md`.
+- Tech Debt Register: TD-027 resolved; TD-006 narrowed; TD-030 added.
+
 ### Added — Goal 14: Web Application
 - `apps/web` is now a real Next.js 14 App Router app (Tailwind 3, dark
   theme, Syne/DM Sans, `#C8102E` accent per CLAUDE.md) instead of a

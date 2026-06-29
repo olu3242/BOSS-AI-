@@ -10,7 +10,7 @@ Each entry should be small enough to become a single PR.
 | TD-003 | Database/Supabase wiring implemented for the Business Intelligence Layer only (Goal 2); the rest of `docs/architecture/ARCHITECTURE.md` §6 schema is not implemented | Goal 0 | High | unassigned | open |
 | TD-004 | `packages/ui`, `packages/loop`, `packages/events` are typed interfaces only, no runtime implementation (`packages/mcp` gained real derivation logic in Goal 2) | Goal 0 | Medium | unassigned | open |
 | TD-005 | Registries are in-memory only — no persistence, no admin UI to edit entries | Goal 0.5 | Medium | unassigned | open |
-| TD-006 | No auth — CI and local dev have no permission boundary yet | Goal 0 | High | unassigned | open |
+| TD-006 | ~~No auth — CI and local dev have no permission boundary yet~~ — narrowed Goal 15: the API now verifies signed JWTs (`apps/api/src/http/auth.ts`), but there is still no real login UI, no `organizations`/`users` schema, and no Supabase Auth project (see TD-030) | Goal 0 | Medium | unassigned | narrowed |
 | TD-007 | Business DNA/Health/Capability derivation in `packages/mcp` is deterministic rule-based logic, explicitly not AI inference — Goal 2 forbids AI here; a later goal should decide if/how to layer LLM reasoning on top | Goal 2 | Medium | unassigned | open |
 | TD-008 | `packages/db` repositories enforce `org_id` scoping in application-level WHERE clauses, not Postgres row-level security policies | Goal 2 | Medium | unassigned | open |
 | TD-009 | Constraint Graph relationship (`constraint_relationships`) and history (`constraint_history`) tables are persisted but not yet exposed through any API read path | Goal 3 | Medium | unassigned | open |
@@ -31,9 +31,10 @@ Each entry should be small enough to become a single PR.
 | TD-024 | The AI Employee runtime's "ai" task handler resolves whether an employee *may* invoke a capability, but performs no actual AI/LLM inference — `AIEmployee.inputs`/`outputs` schemas, `policies`, and real reasoning (Claude API) from CLAUDE.md's contract are not yet implemented | Goal 11 | High | unassigned | open |
 | TD-025 | `memory_records` has no expiry sweeper — `expires_at` is persisted but nothing reads it to purge or ignore expired rows | Goal 11 | Low | unassigned | open |
 | TD-026 | `missionControlService.getSnapshot()` returns full unbounded history (all workflows/tasks/events/dead letters/timeline entries) for a business — no pagination or time-windowing | Goal 12 | Medium | unassigned | open |
-| TD-027 | `apps/api`'s new HTTP transport (`http/server.ts`) reads tenancy from a raw `x-org-id` header instead of a verified JWT — no auth at all (still tracked by TD-006); the header is trivially spoofable and must be replaced before any production traffic | Goal 13 | High | unassigned | open |
+| TD-027 | ~~`apps/api`'s HTTP transport reads tenancy from a raw `x-org-id` header instead of a verified JWT~~ — resolved Goal 15 (`apps/api/src/http/auth.ts` verifies a signed JWT and extracts `org_id` from its claims) | Goal 13 | High | unassigned | resolved |
 | TD-028 | HTTP transport has no input validation (Zod or otherwise) on request bodies — malformed bodies are passed straight into service methods and fail however the underlying service happens to fail, not with a clean 400 | Goal 13 | Medium | unassigned | open |
 | TD-029 | `apps/web` only covers a thin Business Setup → Mission Control vertical slice — MRI, DNA, Health, Constraints, and Recommendations have no pages yet, and `packages/ui` (TD-004) is not integrated since these pages use plain Tailwind classes | Goal 14 | Medium | unassigned | open |
+| TD-030 | JWT verification is real (TD-027 resolved), but token *issuance* is a dev-only placeholder: `POST /api/v1/auth/dev-token` mints a signed token for any `org_id` the caller asks for, with no real login UI, no `organizations`/`users` schema, and no Supabase Auth project; the route is disabled when `NODE_ENV=production` but a real auth/signup flow must replace it before launch | Goal 15 | High | unassigned | open |
 
 ## Process
 

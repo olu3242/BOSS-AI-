@@ -21,7 +21,8 @@
     "@boss/registries": "workspace:*",
     "@boss/shared": "workspace:*",
     "@boss/types": "workspace:*",
-    "express": "4"
+    "express": "4",
+    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@types/express": "4",

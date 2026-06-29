@@ -13,12 +13,31 @@ export class ApiClientError extends Error {
   }
 }
 
+/**
+ * No real login UI exists yet (TD-030), so the web app exchanges its
+ * DEMO_ORG_ID for a signed dev token via the API's non-production
+ * /auth/dev-token route rather than sending org_id as a spoofable header.
+ */
+async function getDevToken(orgId: string): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ orgId }),
+  });
+  const body = await res.json();
+  if (!res.ok) {
+    throw new ApiClientError(res.status, body as ApiErrorBody);
+  }
+  return (body as { token: string }).token;
+}
+
 async function request<T>(orgId: string, path: string, init?: RequestInit): Promise<T> {
+  const token = await getDevToken(orgId);
   const res = await fetch(`${API_BASE_URL}/api/v1${path}`, {
     ...init,
     headers: {
       "content-type": "application/json",
-      "x-org-id": orgId,
+      authorization: `Bearer ${token}`,
       ...init?.headers,
     },
   });

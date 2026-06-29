@@ -1,23 +1,11 @@
 import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import { randomUUID } from "node:crypto";
 import type { createApi } from "../index.js";
+import { ApiError } from "./apiError.js";
+import { mintDevToken, requireOrgId } from "./auth.js";
 
 type Api = ReturnType<typeof createApi>;
 type Handler = (req: Request, res: Response) => Promise<unknown>;
-
-class ApiError extends Error {
-  constructor(public readonly status: number, public readonly code: string, message: string) {
-    super(message);
-  }
-}
-
-function requireOrgId(req: Request): string {
-  const orgId = req.header("x-org-id");
-  if (!orgId) {
-    throw new ApiError(401, "missing_org_id", "x-org-id header is required");
-  }
-  return orgId;
-}
 
 function param(req: Request, name: string): string {
   const value = req.params[name];
@@ -38,9 +26,10 @@ function wrap(handler: Handler) {
 
 /**
  * Thin HTTP transport over the existing controllers — every route is a
- * direct pass-through, no business logic lives here. org_id is read from
- * the `x-org-id` header (TD-006: no auth/JWT yet, so this is a placeholder
- * for the JWT-derived org_id the API conventions call for).
+ * direct pass-through, no business logic lives here. org_id comes from a
+ * verified Supabase JWT's `org_id` claim (see ./auth.ts) — token minting
+ * still has no real login UI behind it (TD-030), so this closes the
+ * verification half of TD-006/TD-027, not the issuance half.
  */
 export function createHttpServer(api: Api): Express {
   const app = express();
@@ -48,160 +37,167 @@ export function createHttpServer(api: Api): Express {
 
   const v1 = express.Router();
 
+  if (process.env.NODE_ENV !== "production") {
+    v1.post(
+      "/auth/dev-token",
+      wrap(async (req) => ({ token: await mintDevToken(String(req.body.orgId)) }))
+    );
+  }
+
   v1.post(
     "/businesses",
-    wrap(async (req) => api.business.create({ ...req.body, orgId: requireOrgId(req) }))
+    wrap(async (req) => api.business.create({ ...req.body, orgId: await requireOrgId(req) }))
   );
   v1.get(
     "/businesses/:businessId",
-    wrap(async (req) => api.business.getProfile(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.business.getProfile(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.post(
     "/businesses/:businessId/mri",
-    wrap(async (req) => api.businessMri.start(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessMri.start(await requireOrgId(req), param(req, "businessId")))
   );
   v1.post(
     "/mri/:mriId/answers",
-    wrap(async (req) => api.businessMri.answer(requireOrgId(req), param(req, "mriId"), req.body))
+    wrap(async (req) => api.businessMri.answer(await requireOrgId(req), param(req, "mriId"), req.body))
   );
   v1.post(
     "/mri/:mriId/sections/:sectionKey/complete",
     wrap(async (req) =>
-      api.businessMri.completeSection(requireOrgId(req), param(req, "mriId"), param(req, "sectionKey") as never)
+      api.businessMri.completeSection(await requireOrgId(req), param(req, "mriId"), param(req, "sectionKey") as never)
     )
   );
   v1.post(
     "/mri/:mriId/complete",
-    wrap(async (req) => api.businessMri.complete(requireOrgId(req), param(req, "mriId")))
+    wrap(async (req) => api.businessMri.complete(await requireOrgId(req), param(req, "mriId")))
   );
   v1.get(
     "/mri/:mriId/responses",
-    wrap(async (req) => api.businessMri.getResponses(requireOrgId(req), param(req, "mriId")))
+    wrap(async (req) => api.businessMri.getResponses(await requireOrgId(req), param(req, "mriId")))
   );
 
   v1.post(
     "/businesses/:businessId/dna",
-    wrap(async (req) => api.businessDna.generate(requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
+    wrap(async (req) => api.businessDna.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
   );
   v1.get(
     "/businesses/:businessId/dna",
-    wrap(async (req) => api.businessDna.getDna(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessDna.getDna(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.post(
     "/businesses/:businessId/health",
-    wrap(async (req) => api.businessHealth.generate(requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
+    wrap(async (req) => api.businessHealth.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
   );
   v1.get(
     "/businesses/:businessId/health",
-    wrap(async (req) => api.businessHealth.getHealth(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessHealth.getHealth(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.post(
     "/businesses/:businessId/capabilities",
     wrap(async (req) =>
-      api.businessCapability.evaluate(requireOrgId(req), param(req, "businessId"), req.body.businessMriId, req.body.dna)
+      api.businessCapability.evaluate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId, req.body.dna)
     )
   );
   v1.get(
     "/businesses/:businessId/capabilities",
-    wrap(async (req) => api.businessCapability.list(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessCapability.list(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.get(
     "/businesses/:businessId/timeline",
-    wrap(async (req) => api.businessTimeline.list(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessTimeline.list(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.post(
     "/businesses/:businessId/constraints/analyze",
     wrap(async (req) =>
-      api.businessConstraint.analyze(requireOrgId(req), param(req, "businessId"), req.body.businessMriId)
+      api.businessConstraint.analyze(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId)
     )
   );
   v1.get(
     "/businesses/:businessId/constraints",
-    wrap(async (req) => api.businessConstraint.list(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessConstraint.list(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/constraints/priorities",
-    wrap(async (req) => api.businessConstraint.getPriorities(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessConstraint.getPriorities(await requireOrgId(req), param(req, "businessId")))
   );
   v1.post(
     "/constraints/:constraintId/dismiss",
-    wrap(async (req) => api.businessConstraint.dismiss(requireOrgId(req), param(req, "constraintId")))
+    wrap(async (req) => api.businessConstraint.dismiss(await requireOrgId(req), param(req, "constraintId")))
   );
 
   v1.post(
     "/businesses/:businessId/recommendations/analyze",
-    wrap(async (req) => api.businessRecommendation.analyze(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessRecommendation.analyze(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/recommendations",
-    wrap(async (req) => api.businessRecommendation.list(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessRecommendation.list(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/recommendations/priorities",
-    wrap(async (req) => api.businessRecommendation.getPriorities(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessRecommendation.getPriorities(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/recommendations/roadmap",
-    wrap(async (req) => api.businessRecommendation.getRoadmap(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.businessRecommendation.getRoadmap(await requireOrgId(req), param(req, "businessId")))
   );
   v1.post(
     "/recommendations/:recommendationId/dismiss",
-    wrap(async (req) => api.businessRecommendation.dismiss(requireOrgId(req), param(req, "recommendationId")))
+    wrap(async (req) => api.businessRecommendation.dismiss(await requireOrgId(req), param(req, "recommendationId")))
   );
   v1.post(
     "/recommendations/:recommendationId/approve",
-    wrap(async (req) => api.businessRecommendation.approve(requireOrgId(req), param(req, "recommendationId")))
+    wrap(async (req) => api.businessRecommendation.approve(await requireOrgId(req), param(req, "recommendationId")))
   );
 
   v1.post(
     "/businesses/:businessId/integrations/:providerKey/connect",
     wrap(async (req) =>
-      api.toolFabric.connectIntegration(requireOrgId(req), param(req, "businessId"), param(req, "providerKey"))
+      api.toolFabric.connectIntegration(await requireOrgId(req), param(req, "businessId"), param(req, "providerKey"))
     )
   );
   v1.post(
     "/businesses/:businessId/integrations/:providerKey/disconnect",
     wrap(async (req) =>
-      api.toolFabric.disconnectIntegration(requireOrgId(req), param(req, "businessId"), param(req, "providerKey"))
+      api.toolFabric.disconnectIntegration(await requireOrgId(req), param(req, "businessId"), param(req, "providerKey"))
     )
   );
   v1.get(
     "/businesses/:businessId/integrations",
-    wrap(async (req) => api.toolFabric.listIntegrations(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.toolFabric.listIntegrations(await requireOrgId(req), param(req, "businessId")))
   );
   v1.post(
     "/businesses/:businessId/permissions",
-    wrap(async (req) => api.toolFabric.setPermission(requireOrgId(req), param(req, "businessId"), req.body))
+    wrap(async (req) => api.toolFabric.setPermission(await requireOrgId(req), param(req, "businessId"), req.body))
   );
   v1.get(
     "/businesses/:businessId/permissions",
-    wrap(async (req) => api.toolFabric.listPermissions(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.toolFabric.listPermissions(await requireOrgId(req), param(req, "businessId")))
   );
   v1.post(
     "/businesses/:businessId/tools/requests",
-    wrap(async (req) => api.toolFabric.requestTool(requireOrgId(req), param(req, "businessId"), req.body))
+    wrap(async (req) => api.toolFabric.requestTool(await requireOrgId(req), param(req, "businessId"), req.body))
   );
   v1.get(
     "/businesses/:businessId/tools/executions",
-    wrap(async (req) => api.toolFabric.listExecutions(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.toolFabric.listExecutions(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/tools/audit",
-    wrap(async (req) => api.toolFabric.listAuditHistory(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.toolFabric.listAuditHistory(await requireOrgId(req), param(req, "businessId")))
   );
   v1.get(
     "/businesses/:businessId/providers/health",
-    wrap(async (req) => api.toolFabric.listProviderHealth(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.toolFabric.listProviderHealth(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.get(
     "/businesses/:businessId/mission-control",
-    wrap(async (req) => api.missionControl.getSnapshot(requireOrgId(req), param(req, "businessId")))
+    wrap(async (req) => api.missionControl.getSnapshot(await requireOrgId(req), param(req, "businessId")))
   );
 
   app.use("/api/v1", v1);

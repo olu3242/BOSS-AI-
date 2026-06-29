@@ -868,7 +868,39 @@ actually needs those guarantees.
 **Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
 arch:check` all pass (156 modules, 439 dependencies cruised, knip clean).
 
-**Recommended next step:** Goal 15 — production hardening: real auth
-closing TD-006 (which TD-027's `x-org-id` header and TD-029's `DEMO_ORG_ID`
-both depend on), secrets via TD-014, real provider adapters via TD-013,
-scheduling via TD-017.
+**Recommended next step (superseded below):** Goal 15 — production
+hardening: real auth closing TD-006 (which TD-027's `x-org-id` header and
+TD-029's `DEMO_ORG_ID` both depend on), secrets via TD-014, real provider
+adapters via TD-013, scheduling via TD-017.
+
+## Goal 15: Auth Hardening — JWT Verification (in progress)
+
+- `apps/api/src/http/auth.ts` (new): `requireOrgId(req)` now verifies a
+  signed HS256 JWT (`Authorization: Bearer <token>`) against
+  `SUPABASE_JWT_SECRET` via `jose`, extracting tenancy from the token's
+  `org_id` claim — replacing the raw, spoofable `x-org-id` header from
+  Goal 13. Every existing route call site updated from `requireOrgId(req)`
+  to `await requireOrgId(req)`; no other route logic changed.
+- `org_id` is read directly off the verified JWT claim, not a DB lookup —
+  this assumes a real Supabase custom access-token hook would stamp that
+  claim at sign-in. No `organizations`/`users` schema exists yet; that's
+  real follow-up work, not something this pass pretends to close.
+- `POST /api/v1/auth/dev-token` (non-production only): mints a token for
+  an `orgId`, since there's still no login UI. `apps/web` now calls this
+  before every API request instead of sending `DEMO_ORG_ID` as a header.
+- `docs/adr/0014-jwt-auth-verification.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-027 (spoofable header) resolved;
+  TD-006 narrowed (verification is real, issuance still isn't); TD-030
+  added to track the dev-token placeholder specifically.
+- `CHANGELOG.md`: Goal 15 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` (19/19 tests in
+apps/api, including the updated `httpServerFlow.test.ts` minting real
+tokens) and `pnpm run arch:check` all pass (158 modules, 442 dependencies
+cruised, knip clean).
+
+**Recommended next step:** the rest of Goal 15's production-hardening
+scope — secrets via TD-014, real provider adapters via TD-013, scheduling
+via TD-017 — plus eventually closing TD-030 with a real
+`organizations`/`users` schema and login UI once that bounded context is
+prioritized.

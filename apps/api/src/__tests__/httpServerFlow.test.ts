@@ -9,8 +9,10 @@ const ORG_ID = "55555555-5555-5555-5555-555555555555";
 describe("HTTP transport", () => {
   let server: Server;
   let baseUrl: string;
+  let authHeader: Record<string, string>;
 
   beforeAll(async () => {
+    process.env.SUPABASE_JWT_SECRET = "test-secret-do-not-use-in-production";
     const repos = createInMemoryContainer();
     const api = createApiFromContainer(repos);
     const app = createHttpServer(api);
@@ -20,13 +22,21 @@ describe("HTTP transport", () => {
     if (address && typeof address === "object") {
       baseUrl = `http://127.0.0.1:${address.port}`;
     }
+
+    const tokenRes = await fetch(`${baseUrl}/api/v1/auth/dev-token`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ orgId: ORG_ID }),
+    });
+    const { token } = (await tokenRes.json()) as { token: string };
+    authHeader = { authorization: `Bearer ${token}` };
   });
 
   afterAll(() => {
     server.close();
   });
 
-  it("rejects requests with no org id", async () => {
+  it("rejects requests with no token", async () => {
     const res = await fetch(`${baseUrl}/api/v1/businesses`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -34,11 +44,11 @@ describe("HTTP transport", () => {
     });
     expect(res.status).toBe(401);
     const body = (await res.json()) as { code: string };
-    expect(body.code).toBe("missing_org_id");
+    expect(body.code).toBe("missing_token");
   });
 
   it("returns 404 with the standard error envelope for an unknown route", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/nope`, { headers: { "x-org-id": ORG_ID } });
+    const res = await fetch(`${baseUrl}/api/v1/nope`, { headers: authHeader });
     expect(res.status).toBe(404);
     const body = (await res.json()) as { code: string; traceId: string };
     expect(body.code).toBe("not_found");
@@ -48,7 +58,7 @@ describe("HTTP transport", () => {
   it("creates a business and fetches it through the REST API", async () => {
     const createRes = await fetch(`${baseUrl}/api/v1/businesses`, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-org-id": ORG_ID },
+      headers: { "content-type": "application/json", ...authHeader },
       body: JSON.stringify({
         name: "Acme Pest Control",
         industry: "pest_control",
@@ -65,7 +75,7 @@ describe("HTTP transport", () => {
     expect(created.business.name).toBe("Acme Pest Control");
 
     const getRes = await fetch(`${baseUrl}/api/v1/businesses/${created.business.id}`, {
-      headers: { "x-org-id": ORG_ID },
+      headers: authHeader,
     });
     expect(getRes.status).toBe(200);
     const fetched = (await getRes.json()) as { businessId: string };
@@ -75,7 +85,7 @@ describe("HTTP transport", () => {
   it("runs the mission control snapshot route end to end", async () => {
     const createRes = await fetch(`${baseUrl}/api/v1/businesses`, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-org-id": ORG_ID },
+      headers: { "content-type": "application/json", ...authHeader },
       body: JSON.stringify({
         name: "Acme MC",
         industry: "pest_control",
@@ -90,7 +100,7 @@ describe("HTTP transport", () => {
     const created = (await createRes.json()) as { business: { id: string } };
 
     const snapshotRes = await fetch(`${baseUrl}/api/v1/businesses/${created.business.id}/mission-control`, {
-      headers: { "x-org-id": ORG_ID },
+      headers: authHeader,
     });
     expect(snapshotRes.status).toBe(200);
     const snapshot = (await snapshotRes.json()) as {
