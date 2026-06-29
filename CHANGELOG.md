@@ -5,6 +5,23 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 14: Web Application
+- `apps/web` is now a real Next.js 14 App Router app (Tailwind 3, dark
+  theme, Syne/DM Sans, `#C8102E` accent per CLAUDE.md) instead of a
+  one-line placeholder. Three routes: `/` (landing), `/business/new`
+  (Business Setup form), `/business/[businessId]/mission-control` (reads
+  the Goal 13 Mission Control endpoint) — a thin, fully-working vertical
+  slice rather than the full page set originally described by TD-001.
+- `apps/web/src/lib/apiClient.ts` (new): thin typed fetch wrapper over the
+  Goal 13 HTTP API, mirroring `ApiClientError` onto the API's error
+  envelope so pages can render real error states.
+- `apps/web/src/lib/demoOrg.ts` (new): `DEMO_ORG_ID` placeholder mirroring
+  the HTTP layer's `x-org-id` placeholder (TD-006).
+- Designed loading/empty/error states per CLAUDE.md's UI conventions on
+  both pages.
+- `docs/adr/0013-web-application-scaffold.md`.
+- Tech Debt Register: TD-001 narrowed (not resolved); TD-029 added.
+
 ### Added — Goal 13: Customer-Facing HTTP API
 - `apps/api/src/http/server.ts` (new): `createHttpServer(api)` — thin
   Express transport mapping every existing controller method onto a REST

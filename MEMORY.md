@@ -827,10 +827,48 @@ scheduling/TD-017).
 apps/api) and `pnpm run arch:check` all pass (146 modules, 434 dependencies
 cruised, knip clean).
 
-**Recommended next step:** Goal 14 — the actual web application
-(`apps/web`, closing TD-001): a real Next.js app consuming the Goal 13 HTTP
-API for Business Setup, MRI, DNA, Health, Constraints, Recommendations,
-and Mission Control views. Goal 15 (production hardening — real auth
-closing TD-006, secrets via TD-014, real provider adapters via TD-013,
-scheduling via TD-017) should follow once there is a UI that actually
-needs those guarantees.
+**Recommended next step (superseded below):** Goal 14 — the actual web
+application (`apps/web`, closing TD-001): a real Next.js app consuming the
+Goal 13 HTTP API for Business Setup, MRI, DNA, Health, Constraints,
+Recommendations, and Mission Control views. Goal 15 (production hardening
+— real auth closing TD-006, secrets via TD-014, real provider adapters via
+TD-013, scheduling via TD-017) should follow once there is a UI that
+actually needs those guarantees.
+
+## Goal 14: Web Application (complete)
+
+- `apps/web` is now a real Next.js 14 App Router app (Tailwind 3, dark
+  theme, Syne/DM Sans, `#C8102E` accent per CLAUDE.md), not the one-line
+  placeholder TD-001 described. Intentionally scoped to one working
+  vertical slice rather than the full page set: `/` (landing), `/business/new`
+  (Business Setup form), `/business/[businessId]/mission-control` (reads
+  the Goal 13 HTTP API).
+- `apps/web/src/lib/apiClient.ts` (new): thin typed fetch wrapper over the
+  Goal 13 HTTP API (`createBusiness`, `getMissionControlSnapshot`),
+  mirroring `ApiClientError` onto the API's `{code, message, details,
+  traceId}` envelope.
+- `apps/web/src/lib/demoOrg.ts` (new): `DEMO_ORG_ID` placeholder, mirroring
+  the HTTP layer's `x-org-id` placeholder from Goal 13 — both tracked
+  under TD-006.
+- UI states designed per CLAUDE.md conventions within this slice: Business
+  Setup has an inline `ApiClientError` error state and a disabled-button
+  loading state; Mission Control has an explicit empty state ("No
+  execution evidence yet…") distinct from its loaded state, plus an error
+  state.
+- `apps/web/package.json`: `next`/`react`/`react-dom`/`tailwindcss` added;
+  `tsx` (the old placeholder's dev runner) removed since `next dev`
+  replaces it (caught by `knip` as an unused dependency after the script
+  change).
+- `docs/adr/0013-web-application-scaffold.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-001 narrowed (not resolved — the
+  placeholder is gone but MRI/DNA/Health/Constraints/Recommendations
+  pages don't exist yet); TD-029 added to track exactly that gap.
+- `CHANGELOG.md`: Goal 14 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (156 modules, 439 dependencies cruised, knip clean).
+
+**Recommended next step:** Goal 15 — production hardening: real auth
+closing TD-006 (which TD-027's `x-org-id` header and TD-029's `DEMO_ORG_ID`
+both depend on), secrets via TD-014, real provider adapters via TD-013,
+scheduling via TD-017.
