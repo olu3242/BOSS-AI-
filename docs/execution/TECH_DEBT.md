@@ -30,6 +30,7 @@ Each entry should be small enough to become a single PR.
 | TD-023 | All seeded `general-smb` AI employee archetypes have `lifecycle: "draft"`, so the new "ai" task handler will escalate every real task against them rather than execute — no employee can be promoted to `"available"` without a future admin/lifecycle-management capability | Goal 11 | Medium | unassigned | open |
 | TD-024 | The AI Employee runtime's "ai" task handler resolves whether an employee *may* invoke a capability, but performs no actual AI/LLM inference — `AIEmployee.inputs`/`outputs` schemas, `policies`, and real reasoning (Claude API) from CLAUDE.md's contract are not yet implemented | Goal 11 | High | unassigned | open |
 | TD-025 | `memory_records` has no expiry sweeper — `expires_at` is persisted but nothing reads it to purge or ignore expired rows | Goal 11 | Low | unassigned | open |
+| TD-026 | `missionControlService.getSnapshot()` returns full unbounded history (all workflows/tasks/events/dead letters/timeline entries) for a business — no pagination or time-windowing | Goal 12 | Medium | unassigned | open |
 
 ## Process
 

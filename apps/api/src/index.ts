@@ -10,6 +10,7 @@ import { createBusinessRecommendationService } from "./services/businessRecommen
 import { createToolFabricService } from "./services/toolFabricService.js";
 import { createLoopRuntimeService } from "./services/loopRuntimeService.js";
 import { createWorkflowGenerationService } from "./services/workflowGenerationService.js";
+import { createMissionControlService } from "./services/missionControlService.js";
 import { createBusinessController } from "./controllers/businessController.js";
 import { createBusinessMriController } from "./controllers/businessMriController.js";
 import { createBusinessDnaController } from "./controllers/businessDnaController.js";
@@ -19,6 +20,7 @@ import { createBusinessTimelineController } from "./controllers/businessTimeline
 import { createBusinessConstraintController } from "./controllers/businessConstraintController.js";
 import { createBusinessRecommendationController } from "./controllers/businessRecommendationController.js";
 import { createToolFabricController } from "./controllers/toolFabricController.js";
+import { createMissionControlController } from "./controllers/missionControlController.js";
 
 export function createApi() {
   const repos = createPostgresContainer();
@@ -49,6 +51,7 @@ export function createApi() {
     toolFabric: createToolFabricController(toolFabric),
     loopRuntime,
     workflowGeneration,
+    missionControl: createMissionControlController(createMissionControlService(repos)),
   };
 }
 
@@ -64,3 +67,4 @@ export * from "./services/businessRecommendationService.js";
 export * from "./services/toolFabricService.js";
 export * from "./services/loopRuntimeService.js";
 export * from "./services/workflowGenerationService.js";
+export * from "./services/missionControlService.js";

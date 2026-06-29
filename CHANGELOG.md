@@ -5,6 +5,24 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 12: Mission Control
+- `apps/api/src/services/missionControlService.ts` (new): read-only
+  projection assembling a `MissionControlSnapshot` (`workflows` enriched
+  with their `tasks`/`events`, `deadLetters`, `timeline`) from existing
+  durable repositories — owns no state, performs no writes, never queries
+  the in-memory `EventBus`.
+- `apps/api/src/controllers/missionControlController.ts` (new): one-method
+  pass-through controller (`getSnapshot`), matching the existing controller
+  convention.
+- `apps/api/src/index.ts`: `createApi()` now returns a `missionControl`
+  field built from the new service/controller.
+- `apps/api/src/__tests__/missionControlFlow.test.ts` (new) — runs a full
+  business → MRI → constraints → recommendation → workflow-generation flow
+  and asserts the snapshot reflects the resulting workflow execution
+  (with tasks/events), timeline entry, and dead letters.
+- `docs/adr/0011-mission-control-projections.md`.
+- Tech Debt Register: TD-026.
+
 ### Added — Goal 11: AI Employee Runtime
 - `packages/mcp/src/intelligence/aiEmployeeRuntime.ts` (new):
   `decideAiEmployeeAction()` — deterministic decision over

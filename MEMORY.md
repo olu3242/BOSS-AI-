@@ -762,3 +762,38 @@ arch:check` all pass (139 modules, 412 dependencies cruised, knip clean).
 **Recommended next step:** Goal 12 — Mission Control projections and APIs
 built from execution evidence (workflow/task executions, dead letters,
 domain events, AI employee memory/escalations).
+
+## Goal 12: Mission Control (complete)
+
+- `apps/api/src/services/missionControlService.ts` (new):
+  `getSnapshot(orgId, businessId)` — a pure read-only projection over five
+  already-durable repositories (`workflowExecutions`, `taskExecutions`,
+  `executionEvents`, `deadLetters`, `businessTimeline`). Each workflow
+  execution is enriched in-place with its `tasks` and `events`
+  (`WorkflowExecutionSummary extends WorkflowExecution`). Mission Control
+  owns no state, performs no writes, and deliberately never queries the
+  in-memory `EventBus` (TD-021 — not durable/queryable).
+- `apps/api/src/controllers/missionControlController.ts` (new): one-method
+  pass-through controller matching the established `toolFabricController.ts`
+  convention.
+- `apps/api/src/index.ts`: `createApi()` now returns a `missionControl`
+  field; `missionControlService.js` re-exported alongside the other
+  services.
+- `apps/api/src/__tests__/missionControlFlow.test.ts` (new) — runs the
+  full business → MRI → constraints → recommendation-approval →
+  workflow-generation flow, then asserts the snapshot's `workflows` array
+  contains the generated execution (with non-empty `tasks`/`events`), the
+  `timeline` contains the `workflow_generated` entry, and `deadLetters` is
+  present (empty in the happy path).
+- `docs/adr/0011-mission-control-projections.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-026 added (no pagination/time-windowing
+  on `getSnapshot()`).
+- `CHANGELOG.md`: Goal 12 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (142 modules, 426 dependencies cruised, knip clean).
+
+**Recommended next step:** Goals 13-15 — customer-facing API (HTTP
+transport over the existing controllers, closing TD-002), web application
+(`apps/web`, closing TD-001), and production hardening (auth/TD-006,
+secrets/TD-014, real provider adapters/TD-013, scheduling/TD-017).
