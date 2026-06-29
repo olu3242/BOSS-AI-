@@ -709,3 +709,56 @@ arch:check` all pass (136 modules, 399 dependencies cruised, knip clean).
 
 **Recommended next step:** Goal 11 — AI Employee runtime on top of the
 Loop Runtime and Tool Fabric.
+
+## Goal 11: AI Employee Runtime (complete)
+
+User directive (via `/goal`): implement the AI Employee runtime on top of
+the Loop Runtime and Tool Fabric. Goals 12-15 queued after it (Mission
+Control, customer-facing API/web app/hardening).
+
+### Decisions
+- `decideAiEmployeeAction()` (`packages/mcp/src/intelligence/
+  aiEmployeeRuntime.ts`) is the brain: a pure function over
+  `aiEmployeeRegistry` data, no I/O, returning `{kind:"execute",
+  toolRequest}` or `{kind:"escalate", reason}` — same pattern as
+  `toolFabric.ts`'s `resolveCapability()`.
+- The `"ai"` task handler in `loopRuntimeService.ts` is the execution
+  side: calls the decision function, delegates `"execute"` to the
+  existing `toolFabric.requestTool()` path (no new execution logic
+  duplicated), records a `last_execution:<capabilityKey>` memory record,
+  publishes `ai_employee.task.completed`/`.failed`/
+  `ai_employee.escalation.triggered`. Wrapped in try/catch per the
+  handler-never-throws contract (ADR-0009).
+- `MemoryRecord` (ontology) gained `businessId`/`createdAt`/`updatedAt` —
+  it existed as a type with no persistence layer; added
+  `MemoryRecordRepository` (in-memory + Postgres,
+  `memory_records` table, migration `0011_ai_employee_memory.sql`) and
+  wired it onto `RepositoryContainer.memoryRecords`.
+- No real AI/LLM inference wired in — `decideAiEmployeeAction()` is
+  deterministic rule-based logic (consistent with TD-007); making an
+  actual Claude API call part of an employee's task execution is
+  explicitly deferred (TD-024).
+
+### Files
+- `packages/mcp/src/intelligence/aiEmployeeRuntime.ts` (new),
+  `packages/mcp/src/index.ts` (export added).
+- `apps/api/src/services/loopRuntimeService.ts` — "ai" handler
+  implemented (was `notImplementedHandler`).
+- `apps/api/src/container.ts` — `memoryRecords: MemoryRecordRepository`
+  added.
+- `packages/db`: `MemoryRecordRepository` (types.ts), in-memory impl,
+  Postgres impl, migration `0011_ai_employee_memory.sql`.
+- `packages/types/src/ontology.ts` — `MemoryRecord` extended.
+- `apps/api/package.json` — added `@boss/registries` dependency (tests
+  register ad-hoc employee entries directly).
+- `apps/api/src/__tests__/aiEmployeeRuntimeFlow.test.ts` (new).
+- `docs/adr/0010-ai-employee-runtime.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-023, TD-024, TD-025 added.
+- `CHANGELOG.md`: Goal 11 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (139 modules, 412 dependencies cruised, knip clean).
+
+**Recommended next step:** Goal 12 — Mission Control projections and APIs
+built from execution evidence (workflow/task executions, dead letters,
+domain events, AI employee memory/escalations).

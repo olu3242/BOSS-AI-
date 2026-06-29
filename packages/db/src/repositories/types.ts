@@ -30,6 +30,7 @@ import type {
   ExecutionEventRecord,
   DeadLetterEntry,
   ExecutionState,
+  MemoryRecord,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -226,4 +227,21 @@ export interface ExecutionEventRepository {
 export interface DeadLetterRepository {
   add(input: Omit<DeadLetterEntry, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<DeadLetterEntry>;
   listByBusinessId(orgId: string, businessId: string): Promise<DeadLetterEntry[]>;
+}
+
+export interface MemoryRecordRepository {
+  upsert(input: Omit<MemoryRecord, "id" | "createdAt" | "updatedAt">): Promise<MemoryRecord>;
+  get(
+    orgId: string,
+    businessId: string,
+    ownerType: MemoryRecord["ownerType"],
+    ownerId: string,
+    key: string
+  ): Promise<MemoryRecord | null>;
+  listByOwner(
+    orgId: string,
+    businessId: string,
+    ownerType: MemoryRecord["ownerType"],
+    ownerId: string
+  ): Promise<MemoryRecord[]>;
 }

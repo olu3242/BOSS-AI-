@@ -67,6 +67,9 @@ importers:
       '@boss/mcp':
         specifier: workspace:*
         version: link:../../packages/mcp
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
       '@boss/shared':
         specifier: workspace:*
         version: link:../../packages/shared

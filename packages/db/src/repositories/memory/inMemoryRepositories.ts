@@ -27,6 +27,7 @@ import type {
   TaskExecution,
   ExecutionEventRecord,
   DeadLetterEntry,
+  MemoryRecord,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -53,6 +54,7 @@ import type {
   TaskExecutionRepository,
   ExecutionEventRepository,
   DeadLetterRepository,
+  MemoryRecordRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -671,6 +673,49 @@ export function createInMemoryDeadLetterRepository(): DeadLetterRepository {
       return Array.from(entries.values())
         .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryMemoryRecordRepository(): MemoryRecordRepository {
+  const items = new Map<string, MemoryRecord>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (item) =>
+          item.orgId === input.orgId &&
+          item.businessId === input.businessId &&
+          item.ownerType === input.ownerType &&
+          item.ownerId === input.ownerId &&
+          item.key === input.key
+      );
+      const now = new Date().toISOString();
+      const record: MemoryRecord = existing
+        ? { ...existing, ...input, updatedAt: now }
+        : { id: randomUUID(), ...input, createdAt: now, updatedAt: now };
+      items.set(record.id, record);
+      return record;
+    },
+    async get(orgId, businessId, ownerType, ownerId, key) {
+      return (
+        Array.from(items.values()).find(
+          (item) =>
+            item.orgId === orgId &&
+            item.businessId === businessId &&
+            item.ownerType === ownerType &&
+            item.ownerId === ownerId &&
+            item.key === key
+        ) ?? null
+      );
+    },
+    async listByOwner(orgId, businessId, ownerType, ownerId) {
+      return Array.from(items.values()).filter(
+        (item) =>
+          item.orgId === orgId &&
+          item.businessId === businessId &&
+          item.ownerType === ownerType &&
+          item.ownerId === ownerId
+      );
     },
   };
 }

@@ -21,6 +21,7 @@ import {
   createPostgresTaskExecutionRepository,
   createPostgresExecutionEventRepository,
   createPostgresDeadLetterRepository,
+  createPostgresMemoryRecordRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -43,6 +44,7 @@ import {
   createInMemoryTaskExecutionRepository,
   createInMemoryExecutionEventRepository,
   createInMemoryDeadLetterRepository,
+  createInMemoryMemoryRecordRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -65,6 +67,7 @@ import {
   type TaskExecutionRepository,
   type ExecutionEventRepository,
   type DeadLetterRepository,
+  type MemoryRecordRepository,
 } from "@boss/db";
 import { createInMemoryEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
@@ -93,6 +96,7 @@ export interface RepositoryContainer {
   taskExecutions: TaskExecutionRepository;
   executionEvents: ExecutionEventRepository;
   deadLetters: DeadLetterRepository;
+  memoryRecords: MemoryRecordRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -121,6 +125,7 @@ export function createPostgresContainer(): RepositoryContainer {
     taskExecutions: createPostgresTaskExecutionRepository(),
     executionEvents: createPostgresExecutionEventRepository(),
     deadLetters: createPostgresDeadLetterRepository(),
+    memoryRecords: createPostgresMemoryRecordRepository(),
   };
 }
 
@@ -152,5 +157,6 @@ export function createInMemoryContainer(): RepositoryContainer {
     taskExecutions: createInMemoryTaskExecutionRepository(),
     executionEvents: createInMemoryExecutionEventRepository(),
     deadLetters: createInMemoryDeadLetterRepository(),
+    memoryRecords: createInMemoryMemoryRecordRepository(),
   };
 }

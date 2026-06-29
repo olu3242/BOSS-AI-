@@ -18,6 +18,7 @@
     "@boss/loop": "workspace:*",
     "@boss/events": "workspace:*",
     "@boss/db": "workspace:*",
+    "@boss/registries": "workspace:*",
     "@boss/industry-pack-general-smb": "workspace:*"
   },
   "devDependencies": {

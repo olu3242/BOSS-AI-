@@ -706,9 +706,12 @@ export interface Policy {
 
 export interface MemoryRecord extends TenantScoped {
   id: ID;
+  businessId: ID;
   ownerType: "agent" | "business";
   ownerId: ID;
   key: string;
   value: unknown;
   expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

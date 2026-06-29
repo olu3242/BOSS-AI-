@@ -27,6 +27,9 @@ Each entry should be small enough to become a single PR.
 | TD-020 | Loop Runtime tracks state via `ExecutionEventRecord` + the current `state` field only — no dedicated `execution_state_history`, `scheduler_jobs`, or `execution_metrics` tables | EP-1 Batch 5 prereq | Low | unassigned | open |
 | TD-021 | Canonical domain events (`business.mri.*`, `business.health.*`, `business.constraints.*`, `business.recommendations.*`, `tool.execution.*`) are live pub/sub only via the in-memory `EventBus` — no durable domain-event log, no cross-process delivery, no replay; a process restart drops all subscriptions | Goal 9 | Medium | unassigned | open |
 | TD-022 | `BusinessRecommendation.relatedCapabilities` is not guaranteed to map 1:1 onto registered tool capabilities (some entries are category-like labels) — the autonomous workflow generator produces one "tool" step per entry with no upstream validation, so unresolvable capabilities deterministically fail at execution time rather than at generation time | Goal 10 | Medium | unassigned | open |
+| TD-023 | All seeded `general-smb` AI employee archetypes have `lifecycle: "draft"`, so the new "ai" task handler will escalate every real task against them rather than execute — no employee can be promoted to `"available"` without a future admin/lifecycle-management capability | Goal 11 | Medium | unassigned | open |
+| TD-024 | The AI Employee runtime's "ai" task handler resolves whether an employee *may* invoke a capability, but performs no actual AI/LLM inference — `AIEmployee.inputs`/`outputs` schemas, `policies`, and real reasoning (Claude API) from CLAUDE.md's contract are not yet implemented | Goal 11 | High | unassigned | open |
+| TD-025 | `memory_records` has no expiry sweeper — `expires_at` is persisted but nothing reads it to purge or ignore expired rows | Goal 11 | Low | unassigned | open |
 
 ## Process
 

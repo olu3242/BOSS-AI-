@@ -5,6 +5,27 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 11: AI Employee Runtime
+- `packages/mcp/src/intelligence/aiEmployeeRuntime.ts` (new):
+  `decideAiEmployeeAction()` — deterministic decision over
+  `aiEmployeeRegistry` data; returns `{kind: "execute", toolRequest}` when
+  an employee is `"available"` and has the requested capability, or
+  `{kind: "escalate", reason}` otherwise. Performs no I/O.
+- `apps/api/src/services/loopRuntimeService.ts`: the `"ai"` task type is no
+  longer a stub — its handler calls `decideAiEmployeeAction()`, delegates
+  `"execute"` decisions to `toolFabric.requestTool()`, records a
+  `last_execution:<capabilityKey>` memory record, and publishes
+  `ai_employee.task.completed`/`.failed`/`ai_employee.escalation.triggered`.
+- `packages/types/src/ontology.ts`: `MemoryRecord` gained `businessId`,
+  `createdAt`, `updatedAt`.
+- `packages/db`: new `MemoryRecordRepository` (in-memory + Postgres),
+  migration `0011_ai_employee_memory.sql` (`memory_records` table), wired
+  onto `RepositoryContainer.memoryRecords`.
+- `apps/api/src/__tests__/aiEmployeeRuntimeFlow.test.ts` (new) — execute
+  path (capability resolved through Tool Fabric, memory recorded) and
+  escalate path (capability not granted to the employee).
+- `docs/adr/0010-ai-employee-runtime.md`.
+
 ### Added — Goal 10: Autonomous Workflow Generator
 - `packages/mcp/src/intelligence/workflowGenerator.ts` (new):
   `generateWorkflowGraph()` transforms a `BusinessRecommendation` into an
