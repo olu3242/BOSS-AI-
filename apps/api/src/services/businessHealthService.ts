@@ -53,6 +53,12 @@ export function createBusinessHealthService(repos: RepositoryContainer): Busines
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.health.calculated",
+        payload: { orgId, businessId, businessHealthId: health.id, overallScore: health.overallScore },
+        occurredAt: nowIso(),
+      });
+
       return { health, dimensions };
     },
     async getHealth(orgId, businessId) {

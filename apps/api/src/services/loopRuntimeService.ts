@@ -1,4 +1,3 @@
-import { createInMemoryEventBus, type EventBus } from "@boss/events";
 import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepSpec } from "@boss/loop";
 import type { WorkflowExecution } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
@@ -17,8 +16,7 @@ function notImplementedHandler(taskType: string) {
 
 export function createLoopRuntimeService(
   repos: RepositoryContainer,
-  toolFabric: ToolFabricService,
-  eventBus: EventBus = createInMemoryEventBus()
+  toolFabric: ToolFabricService
 ): LoopRuntimeService {
   const handlers = createTaskHandlerRegistry();
 
@@ -53,7 +51,7 @@ export function createLoopRuntimeService(
       deadLetters: repos.deadLetters,
     },
     handlers,
-    eventBus
+    repos.eventBus
   );
 
   return {

@@ -601,3 +601,54 @@ field.
 **Recommended next step:** EP-1 Batch 5 — Autonomous Workflow Generation
 (approved recommendation → registries → execution graph → this runtime →
 evidence → Mission Control), now unblocked by a real execution engine.
+
+## Goal 9: Domain Event Backbone (complete)
+
+User directive (via `/goal`, superseding prior EP-1 batch numbering):
+finish Goal 9 — wire canonical domain events into MRI, Health,
+Constraints, Recommendations, and Tool Fabric so the EventBus introduced
+for the Loop Runtime (ADR-0007) becomes the backbone of the platform.
+Goals 10-15 queued after it (autonomous workflow generator, AI Employee
+runtime, Mission Control, customer-facing API/web app/hardening).
+
+### Decisions
+- `eventBus: EventBus` added as a field on `RepositoryContainer`
+  (`apps/api/src/container.ts`) rather than a new parameter threaded
+  through every `createXService()` call — zero call sites needed to
+  change shape since every service already takes `repos` only. Both
+  `createPostgresContainer()` and `createInMemoryContainer()` construct
+  one `createInMemoryEventBus()` and attach it.
+- `loopRuntimeService.ts` now consumes `repos.eventBus` instead of
+  constructing its own — this is what makes the bus an actual shared
+  backbone instead of N independent instances.
+- Canonical event naming: `{context}.{entity}.{verb}` per CLAUDE.md's API
+  Conventions (matches the dot-separated style already used by
+  `packages/loop/src/runtime.ts`): `business.mri.started`,
+  `business.mri.completed`, `business.health.calculated`,
+  `business.constraints.analyzed`, `business.constraint.dismissed`,
+  `business.recommendations.generated`, `business.recommendation.approved`,
+  `tool.execution.requested`, `tool.execution.succeeded`/`.failed`.
+- Domain events are live pub/sub only, published alongside (not instead
+  of) each service's existing `businessTimeline.append()` /
+  `toolExecutions.addAuditRecord()` durable write. No new persistence
+  table or migration — logged as TD-021 (no durable domain-event log/
+  replay) rather than silently built speculatively.
+
+### Files
+- `apps/api/src/container.ts`, `apps/api/src/services/loopRuntimeService.ts`,
+  `businessMriService.ts`, `businessHealthService.ts`,
+  `businessConstraintService.ts`, `businessRecommendationService.ts`,
+  `toolFabricService.ts` — all edited.
+- `apps/api/src/__tests__/domainEventsFlow.test.ts` (new) — subscribes to
+  all 10 canonical event types, runs a full business → MRI → Health →
+  Constraints → Recommendations → Tool Fabric flow, asserts each fires.
+- `docs/adr/0008-domain-event-backbone.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-021 added.
+- `CHANGELOG.md`: Goal 9 entry added above the Loop Runtime entry.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (133 modules, 383 dependencies cruised, knip clean).
+
+**Recommended next step:** Goal 10 — autonomous workflow generator that
+transforms approved recommendations into executable graphs for the Loop
+Runtime, now that both the execution engine and the event backbone exist.

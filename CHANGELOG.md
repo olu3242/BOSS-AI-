@@ -5,6 +5,28 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 9: Domain Event Backbone
+- `apps/api/src/container.ts`: `RepositoryContainer` gained a shared
+  `eventBus: EventBus` field constructed once per container, so every
+  service built from the same container publishes onto the same bus.
+- `apps/api/src/services/loopRuntimeService.ts`: now consumes
+  `repos.eventBus` instead of constructing its own independent instance,
+  making the bus a genuine single backbone across Loop Runtime and
+  domain-level events.
+- `apps/api/src/services/{businessMriService,businessHealthService,
+  businessConstraintService,businessRecommendationService,
+  toolFabricService}.ts`: each now calls `eventBus.publish(...)` with a
+  canonical `{context}.{entity}.{verb}` event (`business.mri.started`,
+  `business.mri.completed`, `business.health.calculated`,
+  `business.constraints.analyzed`, `business.constraint.dismissed`,
+  `business.recommendations.generated`, `business.recommendation.approved`,
+  `tool.execution.requested`, `tool.execution.succeeded`/`.failed`)
+  alongside their existing durable timeline/audit writes.
+- `apps/api/src/__tests__/domainEventsFlow.test.ts` (new) — asserts all ten
+  canonical events fire across a full business → MRI → Health →
+  Constraints → Recommendations → Tool Fabric flow.
+- `docs/adr/0008-domain-event-backbone.md`.
+
 ### Added — EP-1 Batch 5 prerequisite: Loop Runtime core
 - `packages/loop`: real execution engine replacing the prior
   interface-only skeleton — `stateMachine.ts` (11-state machine with

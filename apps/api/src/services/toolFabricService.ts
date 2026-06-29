@@ -108,6 +108,12 @@ export function createToolFabricService(repos: RepositoryContainer): ToolFabricS
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "tool.execution.requested",
+        payload: { orgId, businessId, toolExecutionId: execution.id, toolKey: resolved.toolKey, providerKey: resolved.providerKey },
+        occurredAt: nowIso(),
+      });
+
       const result = executeToolRequestSimulated(resolved, request.input);
 
       execution = await repos.toolExecutions.updateStatus(orgId, execution.id, result.status, result.output, result.errorMessage);
@@ -119,6 +125,12 @@ export function createToolFabricService(repos: RepositoryContainer): ToolFabricS
         action: `tool.${result.status}`,
         actor: request.requestedBy,
         details: { output: result.output, errorMessage: result.errorMessage },
+        occurredAt: nowIso(),
+      });
+
+      await repos.eventBus.publish({
+        type: `tool.execution.${result.status}`,
+        payload: { orgId, businessId, toolExecutionId: execution.id, toolKey: resolved.toolKey, providerKey: resolved.providerKey },
         occurredAt: nowIso(),
       });
 

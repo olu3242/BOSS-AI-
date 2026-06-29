@@ -66,9 +66,11 @@ import {
   type ExecutionEventRepository,
   type DeadLetterRepository,
 } from "@boss/db";
+import { createInMemoryEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 
 export interface RepositoryContainer {
+  eventBus: EventBus;
   businesses: BusinessRepository;
   businessProfiles: BusinessProfileRepository;
   businessMri: BusinessMriRepository;
@@ -96,6 +98,7 @@ export interface RepositoryContainer {
 export function createPostgresContainer(): RepositoryContainer {
   installGeneralSmbPack();
   return {
+    eventBus: createInMemoryEventBus(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
     businessMri: createPostgresBusinessMriRepository(),
@@ -126,6 +129,7 @@ export function createInMemoryContainer(): RepositoryContainer {
   const businessConstraints = createInMemoryBusinessConstraintRepository();
   const businessRecommendations = createInMemoryBusinessRecommendationRepository();
   return {
+    eventBus: createInMemoryEventBus(),
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),
     businessMri: createInMemoryBusinessMriRepository(),

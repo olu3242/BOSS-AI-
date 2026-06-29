@@ -107,6 +107,12 @@ export function createBusinessConstraintService(repos: RepositoryContainer): Bus
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.constraints.analyzed",
+        payload: { orgId, businessId, count: constraints.length },
+        occurredAt: nowIso(),
+      });
+
       return { constraints, scores, priorities };
     },
     async list(orgId, businessId) {
@@ -119,6 +125,11 @@ export function createBusinessConstraintService(repos: RepositoryContainer): Bus
       const existing = await repos.businessConstraints.findById(orgId, constraintId);
       const updated = await repos.businessConstraints.updateStatus(orgId, constraintId, "dismissed");
       await repos.businessConstraints.recordHistory(constraintId, existing?.status ?? null, "dismissed", "Dismissed via API");
+      await repos.eventBus.publish({
+        type: "business.constraint.dismissed",
+        payload: { orgId, businessId: updated.businessId, constraintId },
+        occurredAt: nowIso(),
+      });
       return updated;
     },
   };
