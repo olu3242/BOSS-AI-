@@ -5,6 +5,30 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 10: Autonomous Workflow Generator
+- `packages/mcp/src/intelligence/workflowGenerator.ts` (new):
+  `generateWorkflowGraph()` transforms a `BusinessRecommendation` into an
+  executable step graph — one `"tool"` step per `relatedCapabilities`
+  entry — using a locally-defined structurally-identical shape to
+  `@boss/loop`'s `StepSpec` so MCP never imports from Loop.
+- `apps/api/src/services/workflowGenerationService.ts` (new):
+  `generateAndExecute()` looks up the recommendation, generates the graph,
+  records a `workflow_generated` timeline entry, publishes
+  `workflow.generated`/`workflow.completed`/`workflow.failed`, and runs the
+  graph through `loopRuntimeService`.
+- `apps/api/src/index.ts`: subscribes to `business.recommendation.approved`
+  and auto-triggers `workflowGeneration.generateAndExecute()`, fully
+  decoupling approval from execution.
+- `apps/api/src/services/loopRuntimeService.ts`: hardened the `"tool"`
+  handler with a try/catch around `toolFabric.requestTool()` so an
+  unresolvable capability fails one step gracefully instead of throwing
+  uncaught through the Loop Runtime's `runStep()`.
+- `packages/types/src/ontology.ts`: `TimelineEventType` gained
+  `"workflow_generated"`.
+- `apps/api/src/__tests__/workflowGenerationFlow.test.ts` (new) — approve →
+  generate → execute flow, plus the event-driven auto-trigger path.
+- `docs/adr/0009-autonomous-workflow-generator.md`.
+
 ### Added — Goal 9: Domain Event Backbone
 - `apps/api/src/container.ts`: `RepositoryContainer` gained a shared
   `eventBus: EventBus` field constructed once per container, so every

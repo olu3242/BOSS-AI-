@@ -55,13 +55,15 @@ describe("domain event wiring", () => {
     await healthService.generate(ORG_ID, business.id, mri.id);
 
     const { constraints } = await constraintService.analyze(ORG_ID, business.id, mri.id);
-    if (constraints.length > 0) {
-      await constraintService.dismiss(ORG_ID, constraints[0].id);
+    const firstConstraint = constraints[0];
+    if (firstConstraint) {
+      await constraintService.dismiss(ORG_ID, firstConstraint.id);
     }
 
     const { recommendations } = await recommendationService.analyze(ORG_ID, business.id);
-    if (recommendations.length > 0) {
-      await recommendationService.approve(ORG_ID, recommendations[0].id);
+    const firstRecommendation = recommendations[0];
+    if (firstRecommendation) {
+      await recommendationService.approve(ORG_ID, firstRecommendation.id);
     }
 
     await toolFabric.connectIntegration(ORG_ID, business.id, "gmail");

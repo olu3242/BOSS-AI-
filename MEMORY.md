@@ -652,3 +652,60 @@ arch:check` all pass (133 modules, 383 dependencies cruised, knip clean).
 **Recommended next step:** Goal 10 — autonomous workflow generator that
 transforms approved recommendations into executable graphs for the Loop
 Runtime, now that both the execution engine and the event backbone exist.
+
+## Goal 10: Autonomous Workflow Generator (complete)
+
+User directive (via `/goal`): build the autonomous workflow generator that
+transforms recommendations into executable graphs for the Loop Runtime.
+Goals 11-15 queued after it (AI Employee runtime, Mission Control,
+customer-facing API/web app/hardening).
+
+### Decisions
+- `generateWorkflowGraph()` lives in `packages/mcp/src/intelligence/
+  workflowGenerator.ts`. It cannot import `StepSpec` from `@boss/loop`
+  (`mcp-never-imports-loop`), so it defines a structurally identical local
+  `GeneratedWorkflowStep`/`GeneratedWorkflowGraph` shape; TypeScript's
+  structural typing lets `apps/api` pass the generated steps straight into
+  `loopRuntime.execute(..., steps: StepSpec[])` with no adapter.
+- One `"tool"` step per entry in `BusinessRecommendation.relatedCapabilities`
+  — no new workflow-template registry. `WorkflowDefinitionEntry` was
+  confirmed metadata-only (no `steps` field) and nothing else maps
+  `definitionKey` to an executable graph, so deriving steps directly from
+  the field that already exists was the non-speculative choice.
+- New `workflowGenerationService` (`apps/api`) is the orchestration seam:
+  looks up the recommendation, generates the graph, appends a
+  `workflow_generated` timeline entry, publishes `workflow.generated`,
+  executes via `loopRuntime.execute()`, then publishes
+  `workflow.completed`/`workflow.failed`.
+- Auto-trigger wired through the existing event backbone: `apps/api/src/
+  index.ts` subscribes to `business.recommendation.approved` (from Goal 9)
+  and calls `workflowGeneration.generateAndExecute()` — approval and
+  execution stay fully decoupled.
+- `TimelineEventType` gained `"workflow_generated"` (closed union, required
+  extension).
+- Hardened `loopRuntimeService.ts`'s `"tool"` handler with a try/catch
+  around `toolFabric.requestTool()`. `runtime.ts`'s `runStep()` has no
+  surrounding try/catch around the handler call — handlers are
+  contractually required to always resolve to `{ output, errorMessage }`,
+  never throw. This was a latent gap exposed by generated (not hand-written)
+  steps whose `capabilityKey` may not resolve to a registered tool.
+
+### Files
+- `packages/mcp/src/intelligence/workflowGenerator.ts` (new),
+  `packages/mcp/src/index.ts` (export added).
+- `apps/api/src/services/workflowGenerationService.ts` (new).
+- `apps/api/src/services/loopRuntimeService.ts` — try/catch hardening.
+- `apps/api/src/index.ts` — auto-trigger subscription, service exposed.
+- `packages/types/src/ontology.ts` — `"workflow_generated"` added to
+  `TimelineEventType`.
+- `apps/api/src/__tests__/workflowGenerationFlow.test.ts` (new) — approve →
+  generate → execute flow, plus the event-driven auto-trigger path.
+- `docs/adr/0009-autonomous-workflow-generator.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-022 added.
+- `CHANGELOG.md`: Goal 10 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
+arch:check` all pass (136 modules, 399 dependencies cruised, knip clean).
+
+**Recommended next step:** Goal 11 — AI Employee runtime on top of the
+Loop Runtime and Tool Fabric.

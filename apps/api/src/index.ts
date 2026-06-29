@@ -9,6 +9,7 @@ import { createBusinessConstraintService } from "./services/businessConstraintSe
 import { createBusinessRecommendationService } from "./services/businessRecommendationService.js";
 import { createToolFabricService } from "./services/toolFabricService.js";
 import { createLoopRuntimeService } from "./services/loopRuntimeService.js";
+import { createWorkflowGenerationService } from "./services/workflowGenerationService.js";
 import { createBusinessController } from "./controllers/businessController.js";
 import { createBusinessMriController } from "./controllers/businessMriController.js";
 import { createBusinessDnaController } from "./controllers/businessDnaController.js";
@@ -22,6 +23,19 @@ import { createToolFabricController } from "./controllers/toolFabricController.j
 export function createApi() {
   const repos = createPostgresContainer();
   const toolFabric = createToolFabricService(repos);
+  const loopRuntime = createLoopRuntimeService(repos, toolFabric);
+  const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; recommendationId: string }>(
+    "business.recommendation.approved",
+    (event) => {
+      void workflowGeneration.generateAndExecute(
+        event.payload.orgId,
+        event.payload.businessId,
+        event.payload.recommendationId
+      );
+    }
+  );
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -33,7 +47,8 @@ export function createApi() {
     businessConstraint: createBusinessConstraintController(createBusinessConstraintService(repos)),
     businessRecommendation: createBusinessRecommendationController(createBusinessRecommendationService(repos)),
     toolFabric: createToolFabricController(toolFabric),
-    loopRuntime: createLoopRuntimeService(repos, toolFabric),
+    loopRuntime,
+    workflowGeneration,
   };
 }
 
@@ -48,3 +63,4 @@ export * from "./services/businessConstraintService.js";
 export * from "./services/businessRecommendationService.js";
 export * from "./services/toolFabricService.js";
 export * from "./services/loopRuntimeService.js";
+export * from "./services/workflowGenerationService.js";

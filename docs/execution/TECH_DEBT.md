@@ -26,6 +26,7 @@ Each entry should be small enough to become a single PR.
 | TD-019 | Loop Runtime executes workflow steps strictly sequentially — no parallel step execution and no conditional branching based on prior step output | EP-1 Batch 5 prereq | Medium | unassigned | open |
 | TD-020 | Loop Runtime tracks state via `ExecutionEventRecord` + the current `state` field only — no dedicated `execution_state_history`, `scheduler_jobs`, or `execution_metrics` tables | EP-1 Batch 5 prereq | Low | unassigned | open |
 | TD-021 | Canonical domain events (`business.mri.*`, `business.health.*`, `business.constraints.*`, `business.recommendations.*`, `tool.execution.*`) are live pub/sub only via the in-memory `EventBus` — no durable domain-event log, no cross-process delivery, no replay; a process restart drops all subscriptions | Goal 9 | Medium | unassigned | open |
+| TD-022 | `BusinessRecommendation.relatedCapabilities` is not guaranteed to map 1:1 onto registered tool capabilities (some entries are category-like labels) — the autonomous workflow generator produces one "tool" step per entry with no upstream validation, so unresolvable capabilities deterministically fail at execution time rather than at generation time | Goal 10 | Medium | unassigned | open |
 
 ## Process
 

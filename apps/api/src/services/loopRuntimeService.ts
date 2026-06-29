@@ -29,14 +29,18 @@ export function createLoopRuntimeService(
       requestedBy: string;
     } & Record<string, unknown>;
 
-    const execution = await toolFabric.requestTool(orgId, businessId, {
-      capabilityKey,
-      roleKey,
-      requestedBy,
-      input: rest,
-    });
+    try {
+      const execution = await toolFabric.requestTool(orgId, businessId, {
+        capabilityKey,
+        roleKey,
+        requestedBy,
+        input: rest,
+      });
 
-    return { output: execution.output, errorMessage: execution.errorMessage };
+      return { output: execution.output, errorMessage: execution.errorMessage };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
   });
 
   handlers.register("ai", notImplementedHandler("ai"));

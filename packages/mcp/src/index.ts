@@ -26,3 +26,4 @@ export * from "./intelligence/capabilityGraph.js";
 export * from "./intelligence/constraintEngine.js";
 export * from "./intelligence/recommendationEngine.js";
 export * from "./intelligence/toolFabric.js";
+export * from "./intelligence/workflowGenerator.js";
