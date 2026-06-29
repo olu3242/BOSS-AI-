@@ -1,4 +1,4 @@
-import { createPostgresContainer } from "./container.js";
+import { createPostgresContainer, type RepositoryContainer } from "./container.js";
 import { createBusinessProfileService } from "./services/businessProfileService.js";
 import { createBusinessMriService } from "./services/businessMriService.js";
 import { createBusinessDnaService } from "./services/businessDnaService.js";
@@ -23,7 +23,10 @@ import { createToolFabricController } from "./controllers/toolFabricController.j
 import { createMissionControlController } from "./controllers/missionControlController.js";
 
 export function createApi() {
-  const repos = createPostgresContainer();
+  return createApiFromContainer(createPostgresContainer());
+}
+
+export function createApiFromContainer(repos: RepositoryContainer) {
   const toolFabric = createToolFabricService(repos);
   const loopRuntime = createLoopRuntimeService(repos, toolFabric);
   const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);

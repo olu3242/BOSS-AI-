@@ -5,6 +5,27 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Goal 13: Customer-Facing HTTP API
+- `apps/api/src/http/server.ts` (new): `createHttpServer(api)` — thin
+  Express transport mapping every existing controller method onto a REST
+  route under `/api/v1` (`/api/v1/{context}/{resource}` convention from
+  CLAUDE.md), uniform `{ code, message, details, traceId }` error envelope,
+  tenancy read from an `x-org-id` header (placeholder for JWT-derived
+  org_id — no auth system exists yet, TD-006/TD-027).
+- `apps/api/src/server.ts` (new): process entrypoint (`app.listen()`),
+  separate from the testable `createHttpServer`.
+- `apps/api/src/index.ts`: `createApi()` split into `createApi()`
+  (Postgres) and `createApiFromContainer(repos)` (container-agnostic), so
+  the HTTP layer can be tested against `createInMemoryContainer()`.
+- `apps/api/package.json`: added `express`/`@types/express`; `dev` now
+  runs `src/server.ts`, new `start` script runs the built server.
+- `apps/api/src/__tests__/httpServerFlow.test.ts` (new) — missing-header
+  401, unmatched-route 404 envelope, full create→fetch round trip, and the
+  Mission Control snapshot route, all exercised against a real listening
+  HTTP server.
+- `docs/adr/0012-customer-facing-http-api.md`.
+- Tech Debt Register: TD-002 resolved; TD-027, TD-028 added.
+
 ### Added — Goal 12: Mission Control
 - `apps/api/src/services/missionControlService.ts` (new): read-only
   projection assembling a `MissionControlSnapshot` (`workflows` enriched

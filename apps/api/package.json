@@ -5,23 +5,26 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@boss/types": "workspace:*",
-    "@boss/shared": "workspace:*",
-    "@boss/mcp": "workspace:*",
-    "@boss/loop": "workspace:*",
-    "@boss/events": "workspace:*",
     "@boss/db": "workspace:*",
+    "@boss/events": "workspace:*",
+    "@boss/industry-pack-general-smb": "workspace:*",
+    "@boss/loop": "workspace:*",
+    "@boss/mcp": "workspace:*",
     "@boss/registries": "workspace:*",
-    "@boss/industry-pack-general-smb": "workspace:*"
+    "@boss/shared": "workspace:*",
+    "@boss/types": "workspace:*",
+    "express": "4"
   },
   "devDependencies": {
+    "@types/express": "4",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"

@@ -793,7 +793,44 @@ domain events, AI employee memory/escalations).
 **Validation:** `pnpm -r typecheck/lint/build/test` and `pnpm run
 arch:check` all pass (142 modules, 426 dependencies cruised, knip clean).
 
-**Recommended next step:** Goals 13-15 — customer-facing API (HTTP
-transport over the existing controllers, closing TD-002), web application
-(`apps/web`, closing TD-001), and production hardening (auth/TD-006,
-secrets/TD-014, real provider adapters/TD-013, scheduling/TD-017).
+**Recommended next step (superseded below):** Goals 13-15 — customer-facing
+API (HTTP transport over the existing controllers, closing TD-002), web
+application (`apps/web`, closing TD-001), and production hardening
+(auth/TD-006, secrets/TD-014, real provider adapters/TD-013,
+scheduling/TD-017).
+
+## Goal 13: Customer-Facing HTTP API (complete)
+
+- `apps/api/src/http/server.ts` (new): `createHttpServer(api)` — a single
+  Express transport, one route per existing controller method, all under
+  `/api/v1`. Every handler is a literal one-line pass-through; no business
+  logic was added anywhere in this layer. Tenancy comes from an `x-org-id`
+  header — an honest placeholder, not real auth (TD-006 still open;
+  TD-027 added specifically for this header's spoofability).
+- `apps/api/src/index.ts`: `createApi()` is now `createApiFromContainer`
+  bound to `createPostgresContainer()`; the container-agnostic function is
+  exported so tests can bind it to `createInMemoryContainer()` instead.
+- `apps/api/src/server.ts` (new): the actual `app.listen()` process
+  entrypoint; `package.json`'s `dev`/`start` scripts point at it.
+- `apps/api/src/__tests__/httpServerFlow.test.ts` (new, 4 tests): real
+  HTTP requests against a live server bound to an in-memory container —
+  401 on missing org header, 404 envelope on an unknown route, a full
+  business create→fetch round trip, and the Mission Control snapshot
+  route returning real data.
+- `docs/adr/0012-customer-facing-http-api.md` (new).
+- `docs/execution/TECH_DEBT.md`: TD-002 marked resolved; TD-027
+  (header-based tenancy, not JWT) and TD-028 (no request body validation)
+  added.
+- `CHANGELOG.md`: Goal 13 entry added.
+
+**Validation:** `pnpm -r typecheck/lint/build/test` (19/19 tests in
+apps/api) and `pnpm run arch:check` all pass (146 modules, 434 dependencies
+cruised, knip clean).
+
+**Recommended next step:** Goal 14 — the actual web application
+(`apps/web`, closing TD-001): a real Next.js app consuming the Goal 13 HTTP
+API for Business Setup, MRI, DNA, Health, Constraints, Recommendations,
+and Mission Control views. Goal 15 (production hardening — real auth
+closing TD-006, secrets via TD-014, real provider adapters via TD-013,
+scheduling via TD-017) should follow once there is a UI that actually
+needs those guarantees.

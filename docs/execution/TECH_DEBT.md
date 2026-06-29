@@ -6,7 +6,7 @@ Each entry should be small enough to become a single PR.
 | ID | Description | Introduced | Severity | Owner | Status |
 |----|--------------|-----------|----------|-------|--------|
 | TD-001 | `apps/web` is a placeholder TS entrypoint, not a real Next.js app — no Business Setup/MRI/DNA/Health/Timeline pages yet | Goal 0 | High | unassigned | open |
-| TD-002 | `apps/api` has typed services/controllers (Goal 2) but no HTTP transport (Express/Fastify/Next route handlers) wired up yet | Goal 0 | High | unassigned | open |
+| TD-002 | ~~`apps/api` has typed services/controllers (Goal 2) but no HTTP transport (Express/Fastify/Next route handlers) wired up yet~~ — resolved Goal 13 (`apps/api/src/http/server.ts`) | Goal 0 | High | unassigned | resolved |
 | TD-003 | Database/Supabase wiring implemented for the Business Intelligence Layer only (Goal 2); the rest of `docs/architecture/ARCHITECTURE.md` §6 schema is not implemented | Goal 0 | High | unassigned | open |
 | TD-004 | `packages/ui`, `packages/loop`, `packages/events` are typed interfaces only, no runtime implementation (`packages/mcp` gained real derivation logic in Goal 2) | Goal 0 | Medium | unassigned | open |
 | TD-005 | Registries are in-memory only — no persistence, no admin UI to edit entries | Goal 0.5 | Medium | unassigned | open |
@@ -31,6 +31,8 @@ Each entry should be small enough to become a single PR.
 | TD-024 | The AI Employee runtime's "ai" task handler resolves whether an employee *may* invoke a capability, but performs no actual AI/LLM inference — `AIEmployee.inputs`/`outputs` schemas, `policies`, and real reasoning (Claude API) from CLAUDE.md's contract are not yet implemented | Goal 11 | High | unassigned | open |
 | TD-025 | `memory_records` has no expiry sweeper — `expires_at` is persisted but nothing reads it to purge or ignore expired rows | Goal 11 | Low | unassigned | open |
 | TD-026 | `missionControlService.getSnapshot()` returns full unbounded history (all workflows/tasks/events/dead letters/timeline entries) for a business — no pagination or time-windowing | Goal 12 | Medium | unassigned | open |
+| TD-027 | `apps/api`'s new HTTP transport (`http/server.ts`) reads tenancy from a raw `x-org-id` header instead of a verified JWT — no auth at all (still tracked by TD-006); the header is trivially spoofable and must be replaced before any production traffic | Goal 13 | High | unassigned | open |
+| TD-028 | HTTP transport has no input validation (Zod or otherwise) on request bodies — malformed bodies are passed straight into service methods and fail however the underlying service happens to fail, not with a clean 400 | Goal 13 | Medium | unassigned | open |
 
 ## Process
 
