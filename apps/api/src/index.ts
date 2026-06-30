@@ -26,6 +26,7 @@ import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeServ
 import { createBusinessDecisionService } from "./services/businessDecisionService.js";
 import { createScenarioService } from "./services/scenarioService.js";
 import { createKpiMeasurementService } from "./services/kpiMeasurementService.js";
+import { createRootCauseService } from "./services/rootCauseService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -53,6 +54,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   );
 
   const kpiMeasurement = createKpiMeasurementService(repos);
+  const rootCause = createRootCauseService(repos);
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -72,6 +74,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     businessDecision,
     scenario,
     kpiMeasurement,
+    rootCause,
   };
 }
 
@@ -93,3 +96,4 @@ export * from "./services/multiAgentRuntimeService.js";
 export * from "./services/businessDecisionService.js";
 export * from "./services/scenarioService.js";
 export * from "./services/kpiMeasurementService.js";
+export * from "./services/rootCauseService.js";

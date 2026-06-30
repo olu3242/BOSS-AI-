@@ -36,3 +36,4 @@ export * from "./intelligence/scenarioEngine.js";
 export * from "./intelligence/executiveBrief.js";
 export * from "./intelligence/decisionOptimization.js";
 export * from "./intelligence/kpiDerivation.js";
+export * from "./intelligence/rootCauseEngine.js";

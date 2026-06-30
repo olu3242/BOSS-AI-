@@ -7,6 +7,7 @@ import type {
   BusinessDecision,
   BusinessScenario,
 } from "@boss/types";
+import { deriveKpiReadings, type KpiReading } from "@boss/mcp";
 import type { RepositoryContainer } from "../container.js";
 
 export interface WorkflowExecutionSummary extends WorkflowExecution {
@@ -27,6 +28,7 @@ export interface MissionControlSnapshot {
   timeline: BusinessTimelineEntry[];
   decisions: DecisionQueueSummary;
   activeScenarios: BusinessScenario[];
+  kpiReadings: KpiReading[];
 }
 
 export interface MissionControlService {
@@ -41,12 +43,15 @@ export interface MissionControlService {
 export function createMissionControlService(repos: RepositoryContainer): MissionControlService {
   return {
     async getSnapshot(orgId, businessId) {
-      const [workflows, deadLetters, timeline, allDecisions, scenarios] = await Promise.all([
+      const [workflows, deadLetters, timeline, allDecisions, scenarios, health, events, wfExecutions] = await Promise.all([
         repos.workflowExecutions.listByBusinessId(orgId, businessId),
         repos.deadLetters.listByBusinessId(orgId, businessId),
         repos.businessTimeline.listByBusinessId(orgId, businessId),
         repos.businessDecisions.listByBusinessId(orgId, businessId),
         repos.businessScenarios.listByBusinessId(orgId, businessId),
+        repos.businessHealth.findByBusinessId(orgId, businessId),
+        repos.eventLog.listByOrgId(orgId),
+        repos.workflowExecutions.listByBusinessId(orgId, businessId),
       ]);
 
       const workflowSummaries = await Promise.all(
@@ -68,7 +73,16 @@ export function createMissionControlService(repos: RepositoryContainer): Mission
 
       const activeScenarios = scenarios.filter((s) => s.status === "calculated" || s.status === "approved");
 
-      return { workflows: workflowSummaries, deadLetters, timeline, decisions, activeScenarios };
+      const toolExecutionCount = events.filter((e) => e.type === "tool.execution.succeeded").length;
+      const workflowCompletionCount = wfExecutions.filter((w) => w.state === "completed").length;
+      const kpiReadings = deriveKpiReadings({
+        overallHealthScore: health?.overallScore,
+        toolExecutionCount,
+        workflowCompletionCount,
+        measuredAt: new Date().toISOString(),
+      });
+
+      return { workflows: workflowSummaries, deadLetters, timeline, decisions, activeScenarios, kpiReadings };
     },
   };
 }

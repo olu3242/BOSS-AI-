@@ -356,6 +356,12 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.kpiMeasurement.measure(await requireOrgId(req), param(req, "businessId")))
   );
 
+  // Root Cause Analysis — Goal 20 Business Decision OS
+  v1.get(
+    "/businesses/:businessId/rootcause",
+    wrap(async (req) => api.rootCause.analyze(await requireOrgId(req), param(req, "businessId")))
+  );
+
   v1.get(
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())

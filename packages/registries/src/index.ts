@@ -22,4 +22,8 @@ export * from "./registries/providerDefinition.js";
 export * from "./registries/toolDefinition.js";
 export * from "./registries/insight.js";
 export * from "./registries/metric.js";
+export * from "./registries/decision.js";
+export * from "./registries/forecast.js";
+export * from "./registries/playbook.js";
+export * from "./registries/businessRule.js";
 export * from "./seed/index.js";
