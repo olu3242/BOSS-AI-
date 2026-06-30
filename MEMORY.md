@@ -979,3 +979,33 @@ calls for the remaining 18 providers.
 46 tests pass (13 test files). Full workspace `typecheck/build/lint/arch:check` all green.
 
 **Recommended next step:** Super Batch B — Enterprise Scheduler + Observability + Multi-Agent Coordination + Production Certification (Goals 17–20).
+
+## Super Batch B (Goals 17–20): Enterprise Production Platform (complete)
+
+**Branch:** `claude/boss-repo-normalization-n1jdx5`
+**Commit series:** 9545ed8 (Goal 17), 88ea8ba (Goal 18), 9929c53 (Goal 19), Goal 20 = this entry
+
+### What was built
+
+**Goal 17 — Enterprise Scheduler**: `scheduler_jobs` table (migration 0014); `SchedulerJob` + `SchedulerJobRepository`; `SchedulerService` (scheduleImmediate/Delayed/Cron, cancel, listPending, runDue). Step-level `timeoutMs` enforced via `Promise.race`; timed-out tasks → `timed_out` state (TD-018 resolved). `ParallelStepGroup` + `StepEntry = StepSpec | ParallelStepGroup` for fan-out/fan-in execution via `Promise.all` (TD-019 resolved). TD-017, TD-018, TD-019 all resolved.
+
+**Goal 18 — Observability**: `ObservabilityService` (7 counters + P50/P95 latency ring buffer); `requestTracing` middleware (`x-trace-id` propagation, latency recording); `GET /health` (unauthenticated); `GET /api/v1/metrics` (authenticated). Domain events auto-increment counters.
+
+**Goal 19 — Multi-Agent Runtime**: `planMultiAgentTask` (MCP) matches available employees to capabilities and optionally groups parallel workers. `reflectOnOutcomes` (MCP) synthesizes outcomes deterministically (≥80% = achieved). `MultiAgentRuntimeService` (apps/api) coordinates: Plan → StepEntry[] with ParallelStepGroups → Loop execution → reflect. Law 1 strictly preserved: MCP never calls Loop, Loop never calls MCP.
+
+**Goal 20 — Production Certification**: ADR 0017, CHANGELOG, TECH_DEBT updates. TD-017/018/019 resolved.
+
+### Validation
+
+68 tests pass (16 test files). Full workspace `typecheck/build/lint/arch:check` all green.
+
+### Key remaining gaps (open tech debt)
+
+- TD-013: 13/19 providers still simulated
+- TD-014: No external KMS driver (Vault, AWS Secrets Manager)
+- TD-020: No dedicated `execution_metrics` table (scheduler_jobs serves as partial replacement)
+- TD-021: Domain events are in-process only — no durable log, no replay
+- TD-023: All seeded employees are `lifecycle: "draft"` — no lifecycle management UI yet
+- TD-024: AI Employee "ai" handler has no real LLM inference (Claude API not called yet)
+- TD-028: No Zod input validation on HTTP request bodies
+- TD-030: `POST /api/v1/auth/dev-token` is the only token issuance path (no real auth/signup)

@@ -5,6 +5,14 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Super Batch B (Goals 17–20): Enterprise Production Platform
+
+- **Goal 17 — Enterprise Scheduler**: `scheduler_jobs` table (migration 0014); `SchedulerJob` type + `SchedulerJobRepository` (postgres + in-memory); `SchedulerService` with `scheduleImmediate/scheduleDelayed/scheduleCron/cancel/listPending/runDue`; `timeoutMs` on `StepSpec` with `Promise.race` timeout enforcement (TD-018 resolved); `ParallelStepGroup` type + `StepEntry` union for fan-out/fan-in parallel execution (TD-019 resolved); `isParallelGroup()` type guard; `LoopRuntimeService.execute()` upgraded to `StepEntry[]`
+- **Goal 18 — Observability**: `ObservabilityService` with 7 domain-event-driven counters and P50/P95 latency ring buffer; `requestTracing` middleware propagates `x-trace-id` header; `GET /health` (unauthenticated); `GET /api/v1/metrics` (authenticated); event subscriptions auto-increment counters for workflow, tool, scheduler, circuit breaker, and evidence events
+- **Goal 19 — Multi-Agent Runtime**: `multiAgentPlanner.ts` (MCP intelligence — `planMultiAgentTask` matches available employees to capabilities, groups parallel workers); `multiAgentReflection.ts` (MCP intelligence — deterministic ≥80% success threshold, `ReflectionResult` with failedSteps + nextActions); `MultiAgentRuntimeService` (apps/api coordinator — Plan → StepEntry[] with ParallelStepGroups → Loop execution → reflection); domain events `multi_agent.plan.created/execution.completed/reflection.completed`
+- **Goal 20 — Production Certification**: Full convergence audit; ADR 0017; TD-017/018/019 resolved, TD-020 narrowed; 16 test files, 68 tests all passing
+- TD-017 resolved, TD-018 resolved, TD-019 resolved, TD-020 narrowed
+
 ### Added — Super Batch A (Goals 16A–16C): Production Execution Platform
 
 - **Goal 16A — Provider Adapter Foundation**: `ProviderErrorCode` enum + `mapProviderError` + `isRetryableErrorCode` (`errorMapping.ts`); `ProviderEvidence` ontology type + `ProviderEvidenceRepository` (postgres + in-memory); migration `0013_provider_evidence.sql`; error classification wired into retry decision and dispatcher catch
