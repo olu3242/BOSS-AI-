@@ -25,10 +25,18 @@ export interface SecretAuditEntry {
  * A production KMS-backed implementation (Vault, AWS Secrets Manager) is
  * the next resolution step for TD-014.
  */
+export interface SecretVersion {
+  version: number;
+  rotatedAt: string;
+  actor: string;
+}
+
 export interface SecretStore {
   get(ref: SecretRef, actor: string): Promise<string | null>;
   put(ref: SecretRef, value: string, meta: SecretMeta): Promise<void>;
   rotate(ref: SecretRef, newValue: string, actor: string): Promise<void>;
   delete(ref: SecretRef, actor: string): Promise<void>;
   audit(ref: SecretRef): Promise<SecretAuditEntry[]>;
+  /** Returns version history for the secret (newest first). */
+  listVersions(ref: SecretRef): Promise<SecretVersion[]>;
 }

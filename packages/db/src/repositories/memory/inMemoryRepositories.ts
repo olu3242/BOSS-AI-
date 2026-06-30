@@ -66,6 +66,8 @@ import type {
   MemoryRecordRepository,
   ProviderEvidenceRepository,
   SchedulerJobRepository,
+  EventLogRepository,
+  EventLogEntry,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -887,6 +889,37 @@ export function createInMemoryBusinessScenarioRepository(): BusinessScenarioRepo
       return Array.from(comparisons.values()).filter(
         (c) => c.orgId === orgId && c.businessId === businessId
       );
+    },
+  };
+}
+
+export function createInMemoryEventLogRepository(): EventLogRepository {
+  const entries: EventLogEntry[] = [];
+  const now = () => new Date().toISOString();
+  return {
+    async append(input) {
+      const entry: EventLogEntry = {
+        id: randomUUID(),
+        ...input,
+        orgId: input.orgId ?? null,
+        correlationId: input.correlationId ?? null,
+        causationId: input.causationId ?? null,
+        createdAt: now(),
+      };
+      entries.push(entry);
+      return entry;
+    },
+    async listByType(type, limit = 100) {
+      return entries.filter((e) => e.type === type).slice(-limit).reverse();
+    },
+    async listByOrgId(orgId, limit = 200) {
+      return entries.filter((e) => e.orgId === orgId).slice(-limit).reverse();
+    },
+    async listByCorrelationId(correlationId) {
+      return entries.filter((e) => e.correlationId === correlationId);
+    },
+    async listSince(since, limit = 500) {
+      return entries.filter((e) => e.occurredAt >= since).slice(0, limit);
     },
   };
 }

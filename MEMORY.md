@@ -1,5 +1,30 @@
 # BOSS Implementation Memory
 
+## RC1 — Production Infrastructure (complete)
+
+**Status:** 114 tests passing, all checks green.
+
+**WS1 Provider Adapters (8 real HTTP):**
+- New: `googleCalendarAdapter.ts` (Google Calendar API v3), `quickbooksAdapter.ts` (QuickBooks Online API)
+- Existing: twilio, messagebird, gmail, microsoft365, slack, teams
+
+**WS2 Secret Versioning:**
+- `SecretStore.listVersions()` — version history with actor + timestamp
+- `EncryptedInMemorySecretStore` tracks rotation count per secret
+
+**WS3 Scheduler Cron:**
+- `computeNextCronRun()` — 5-field cron parser, no deps
+- `recoverFailed()` — exponential backoff retry for failed jobs
+
+**WS4 Durable Event Log:**
+- Migration `0017_event_log.sql`
+- `EventLogRepository` + `createDurableEventBus()` in `@boss/events`
+- All containers use DurableEventBus — every event persisted to DB
+
+**WS5 RBAC:**
+- `UserRole` type + `requireRole()` in `apps/api/src/http/auth.ts`
+- 4-level hierarchy: owner > admin > member > viewer
+
 ## Goals 21–23 — Decision Intelligence Operating System (complete)
 
 **Status:** Done. 91 tests passing, lint clean, typecheck clean.

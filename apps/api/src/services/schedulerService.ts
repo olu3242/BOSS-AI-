@@ -4,6 +4,50 @@ import type { SchedulerJob } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 import type { LoopRuntimeService } from "./loopRuntimeService.js";
 
+// Computes the next UTC run time from a 5-field cron expression (min hr dom mon dow).
+// Supports: * (every), star/n (every n), single values, comma-separated lists.
+// Returns an ISO string at most 1 year in the future, or null if expression is invalid.
+export function computeNextCronRun(expression: string, after: Date = new Date()): string | null {
+  const fields = expression.trim().split(/\s+/);
+  if (fields.length !== 5) return null;
+  const [minExpr, hrExpr, domExpr, monExpr, dowExpr] = fields as [string, string, string, string, string];
+
+  function parse(expr: string, min: number, max: number): number[] {
+    if (expr === "*") return Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    if (expr.startsWith("*/")) {
+      const step = parseInt(expr.slice(2), 10);
+      if (isNaN(step) || step < 1) return [];
+      return Array.from({ length: max - min + 1 }, (_, i) => i + min).filter((v) => (v - min) % step === 0);
+    }
+    return expr.split(",").map(Number).filter((v) => !isNaN(v) && v >= min && v <= max);
+  }
+
+  const minutes = parse(minExpr, 0, 59);
+  const hours = parse(hrExpr, 0, 23);
+  const doms = parse(domExpr, 1, 31);
+  const months = parse(monExpr, 1, 12);
+  const dows = parse(dowExpr, 0, 6);
+  if (!minutes.length || !hours.length || !doms.length || !months.length || !dows.length) return null;
+
+  // Advance by at least 1 minute to avoid returning 'after' itself
+  const candidate = new Date(after.getTime() + 60_000);
+  candidate.setUTCSeconds(0, 0);
+
+  const deadline = new Date(after.getTime() + 365 * 24 * 3600_000);
+  while (candidate < deadline) {
+    if (
+      months.includes(candidate.getUTCMonth() + 1) &&
+      (domExpr === "*" || dowExpr === "*" ? true : doms.includes(candidate.getUTCDate()) || dows.includes(candidate.getUTCDay())) &&
+      hours.includes(candidate.getUTCHours()) &&
+      minutes.includes(candidate.getUTCMinutes())
+    ) {
+      return candidate.toISOString();
+    }
+    candidate.setUTCMinutes(candidate.getUTCMinutes() + 1);
+  }
+  return null;
+}
+
 export interface ScheduleOpts {
   timezone?: string;
   payload?: Record<string, unknown>;
@@ -41,11 +85,11 @@ export interface SchedulerService {
 
   listPending(orgId: string, businessId?: string): Promise<SchedulerJob[]>;
 
-  /**
-   * Poll and execute all jobs whose run_at <= now.
-   * Returns the count of jobs that were executed.
-   */
+  /** Poll and execute all jobs whose run_at <= now. Returns the count executed. */
   runDue(): Promise<number>;
+
+  /** Retry failed jobs that have not exceeded maxRuns, re-queuing them with exponential backoff. */
+  recoverFailed(orgId: string, businessId: string): Promise<number>;
 }
 
 export function createSchedulerService(
@@ -148,14 +192,17 @@ export function createSchedulerService(
 
           const newCount = job.runCount + 1;
           const isOneShot = job.maxRuns !== null && newCount >= job.maxRuns;
+          let nextRunAt: string | null | undefined = undefined;
+          if (!isOneShot && job.cronExpression) {
+            nextRunAt = computeNextCronRun(job.cronExpression) ?? null;
+          } else if (isOneShot) {
+            nextRunAt = null;
+          }
 
           await repos.schedulerJobs.updateState(job.orgId, job.id, isOneShot ? "completed" : "pending", {
             lastRunAt: nowIso(),
             runCount: newCount,
-            // For cron jobs that aren't done yet, keep state as pending with updated run_at
-            // (A real pg_cron integration would compute nextRunAt from the expression;
-            //  here we leave nextRunAt null — the job is done or stays for manual re-scheduling)
-            nextRunAt: isOneShot ? null : undefined,
+            nextRunAt,
           });
         } catch (err) {
           await repos.schedulerJobs.updateState(job.orgId, job.id, "failed", {
@@ -174,6 +221,22 @@ export function createSchedulerService(
       }
 
       return executed;
+    },
+
+    async recoverFailed(orgId, businessId) {
+      const jobs = await repos.schedulerJobs.listByBusiness(orgId, businessId);
+      const failed = jobs.filter(
+        (j) => j.state === "failed" && (j.maxRuns === null || j.runCount < j.maxRuns)
+      );
+      let recovered = 0;
+      for (const job of failed) {
+        // Exponential backoff: 2^runCount minutes, capped at 60 minutes
+        const backoffMs = Math.min(Math.pow(2, job.runCount) * 60_000, 3_600_000);
+        const retryAt = new Date(Date.now() + backoffMs).toISOString();
+        await repos.schedulerJobs.updateState(job.orgId, job.id, "pending", { nextRunAt: retryAt });
+        recovered += 1;
+      }
+      return recovered;
     },
   };
 }

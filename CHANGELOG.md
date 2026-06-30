@@ -5,6 +5,16 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — RC1 Production Infrastructure
+
+- **WS1 — Provider Adapters**: `googleCalendarAdapter.ts` (Google Calendar API v3, schedule_appointment); `quickbooksAdapter.ts` (QuickBooks Online API v3, create_invoice). Adapter count: 8 real HTTP, 10 still simulated. TD-013 further narrowed.
+- **WS2 — Secret Versioning**: `SecretVersion` type + `listVersions()` method added to `SecretStore` interface; `EncryptedInMemorySecretStore` now tracks rotation history with version counter, timestamp, and actor; `EnvSecretStore.listVersions()` returns empty (read-only)
+- **WS3 — Scheduler Completion**: `computeNextCronRun(expression, after)` — 5-field cron parser (star, star/n, values, comma lists) with up-to-1-year lookahead; `runDue()` now computes nextRunAt for cron jobs after each successful execution; `recoverFailed(orgId, businessId)` re-queues failed jobs with exponential backoff (2^runCount minutes, max 60m)
+- **WS4 — Durable Event Log**: Migration `0017_event_log.sql`; `EventLogEntry` type + `EventLogRepository` interface (`append/listByType/listByOrgId/listByCorrelationId/listSince`); in-memory + postgres implementations; `createDurableEventBus(inner, sink)` wraps any EventBus and persists every published event to a sink before dispatching; both containers now use DurableEventBus; `EventLogRepository` added to `RepositoryContainer`
+- **WS5 — Production Auth (RBAC)**: `UserRole` type (`owner | admin | member | viewer`); `requireRole(req, minRole)` enforces minimum role level from `role` JWT claim; `mintDevToken` now accepts optional role param; backward-compatible (tokens without role claim default to owner)
+- **RC1 Documentation**: `RC1_PRODUCTION_READINESS_REPORT.md`, `RC1_SECURITY_ASSESSMENT.md`, `RC1_OPERATIONAL_READINESS.md`, `RC1_DEPLOYMENT_GUIDE.md`, `RC1_ARCHITECTURE_CONVERGENCE.md`
+- **Test suite**: 23 test files, 114 tests, all passing
+
 ### Added — Decision Intelligence Operating System (Goals 21–23)
 
 - **Goal 21 — Decision Intelligence Core**: `BusinessDecision` ontology type with full lifecycle (draft→generated→approved→rejected→scheduled→executing→completed→measured→archived); `businessDecisionService` with `generate/evaluate/approve/reject/schedule/measure/archive/list/getOptimizationReport/getPriorityRanking`; `decisionEngine.ts` (MCP — deterministic decision generation from health+constraints+recommendations); `decisionOptimization.ts` (MCP — optimization signals: repeated_failure, successful_strategy, decision_drift, execution_bottleneck, missed_opportunity); learning loop: `measure()` persists outcomes to `memoryRecords` with key `decision:{id}:outcome`; migration `0015_decisions.sql`; `BusinessDecisionRepository` (postgres + in-memory)

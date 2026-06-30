@@ -11,6 +11,9 @@ import {
   createPostgresBusinessScenarioRepository,
   createInMemoryBusinessScenarioRepository,
   type BusinessScenarioRepository,
+  createPostgresEventLogRepository,
+  createInMemoryEventLogRepository,
+  type EventLogRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -81,12 +84,13 @@ import {
   type DeadLetterRepository,
   type MemoryRecordRepository,
 } from "@boss/db";
-import { createInMemoryEventBus, type EventBus } from "@boss/events";
+import { createInMemoryEventBus, createDurableEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
 import { createEnvSecretStore, type SecretStore } from "./services/secretVault/index.js";
 
 export interface RepositoryContainer {
   eventBus: EventBus;
+  eventLog: EventLogRepository;
   secretStore: SecretStore;
   businesses: BusinessRepository;
   businessProfiles: BusinessProfileRepository;
@@ -119,8 +123,10 @@ export interface RepositoryContainer {
 
 export function createPostgresContainer(): RepositoryContainer {
   installGeneralSmbPack();
+  const eventLog = createPostgresEventLogRepository();
   return {
-    eventBus: createInMemoryEventBus(),
+    eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
+    eventLog,
     secretStore: createEnvSecretStore(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
@@ -156,8 +162,10 @@ export function createInMemoryContainer(): RepositoryContainer {
   installGeneralSmbPack();
   const businessConstraints = createInMemoryBusinessConstraintRepository();
   const businessRecommendations = createInMemoryBusinessRecommendationRepository();
+  const eventLog = createInMemoryEventLogRepository();
   return {
-    eventBus: createInMemoryEventBus(),
+    eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
+    eventLog,
     secretStore: createEnvSecretStore(),
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),

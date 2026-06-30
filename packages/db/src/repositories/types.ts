@@ -290,3 +290,22 @@ export interface BusinessScenarioRepository {
   createComparison(input: Omit<ScenarioComparison, "id" | "createdAt">): Promise<ScenarioComparison>;
   listComparisons(orgId: string, businessId: string): Promise<ScenarioComparison[]>;
 }
+
+export interface EventLogEntry {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+  orgId: string | null;
+  correlationId: string | null;
+  causationId: string | null;
+  createdAt: string;
+}
+
+export interface EventLogRepository {
+  append(entry: Omit<EventLogEntry, "id" | "createdAt">): Promise<EventLogEntry>;
+  listByType(type: string, limit?: number): Promise<EventLogEntry[]>;
+  listByOrgId(orgId: string, limit?: number): Promise<EventLogEntry[]>;
+  listByCorrelationId(correlationId: string): Promise<EventLogEntry[]>;
+  listSince(since: string, limit?: number): Promise<EventLogEntry[]>;
+}

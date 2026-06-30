@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import type { SecretStore, SecretRef, SecretMeta, SecretAuditEntry } from "./types.js";
+import type { SecretStore, SecretRef, SecretMeta, SecretAuditEntry, SecretVersion } from "./types.js";
 
 interface EncryptedEntry {
   iv: string;
@@ -7,6 +7,7 @@ interface EncryptedEntry {
   meta: SecretMeta;
   createdAt: string;
   updatedAt: string;
+  version: number;
 }
 
 /**
@@ -51,6 +52,7 @@ function decrypt(iv: string, ciphertext: string, key: Buffer): string {
 export function createEncryptedInMemorySecretStore(): SecretStore {
   const store = new Map<string, EncryptedEntry>();
   const auditLog = new Map<string, SecretAuditEntry[]>();
+  const versionHistory = new Map<string, SecretVersion[]>();
 
   function storeKey(ref: SecretRef): string {
     return `${ref.orgId}:${ref.key}`;
@@ -78,7 +80,9 @@ export function createEncryptedInMemorySecretStore(): SecretStore {
       const key = deriveKey();
       const { iv, ciphertext } = encrypt(value, key);
       const now = new Date().toISOString();
-      store.set(storeKey(ref), { iv, ciphertext, meta, createdAt: now, updatedAt: now });
+      const existing = store.get(storeKey(ref));
+      const version = (existing?.version ?? 0) + 1;
+      store.set(storeKey(ref), { iv, ciphertext, meta, createdAt: existing?.createdAt ?? now, updatedAt: now, version });
       logEntry(ref, "put", "system");
     },
     async rotate(ref, newValue, actor) {
@@ -87,13 +91,19 @@ export function createEncryptedInMemorySecretStore(): SecretStore {
       const key = deriveKey();
       const { iv, ciphertext } = encrypt(newValue, key);
       const now = new Date().toISOString();
+      const newVersion = existing.version + 1;
       store.set(storeKey(ref), {
         iv,
         ciphertext,
         meta: { ...existing.meta, rotatedAt: now },
         createdAt: existing.createdAt,
         updatedAt: now,
+        version: newVersion,
       });
+      const sKey = storeKey(ref);
+      const history = versionHistory.get(sKey) ?? [];
+      history.unshift({ version: newVersion, rotatedAt: now, actor });
+      versionHistory.set(sKey, history);
       logEntry(ref, "rotate", actor);
     },
     async delete(ref, actor) {
@@ -102,6 +112,9 @@ export function createEncryptedInMemorySecretStore(): SecretStore {
     },
     async audit(ref) {
       return auditLog.get(storeKey(ref)) ?? [];
+    },
+    async listVersions(ref) {
+      return versionHistory.get(storeKey(ref)) ?? [];
     },
   };
 }

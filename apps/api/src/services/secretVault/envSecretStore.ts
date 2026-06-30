@@ -37,5 +37,8 @@ export function createEnvSecretStore(): SecretStore {
     async audit(ref) {
       return auditLog.get(`${ref.orgId}:${ref.key}`) ?? [];
     },
+    async listVersions(_ref) {
+      return [];
+    },
   };
 }
