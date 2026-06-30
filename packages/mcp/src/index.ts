@@ -30,3 +30,4 @@ export * from "./intelligence/workflowGenerator.js";
 export * from "./intelligence/aiEmployeeRuntime.js";
 export * from "./intelligence/multiAgentPlanner.js";
 export * from "./intelligence/multiAgentReflection.js";
+export * from "./intelligence/claudeInference.js";
