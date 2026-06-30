@@ -71,8 +71,8 @@ describe("RC1.5 WS6 — Tenant Isolation", () => {
 
   it("tool executions are scoped per org", async () => {
     const now = nowIso();
-    await c.toolExecutions.create({ orgId: "org-1", businessId: "biz-1", toolKey: "twilio.send_sms", capabilityKey: "send_sms", providerKey: "twilio", requestedBy: "u1", status: "completed", input: {}, output: {}, errorMessage: null, startedAt: now, completedAt: now });
-    await c.toolExecutions.create({ orgId: "org-2", businessId: "biz-2", toolKey: "gmail.send_email", capabilityKey: "send_email", providerKey: "gmail", requestedBy: "u2", status: "completed", input: {}, output: {}, errorMessage: null, startedAt: now, completedAt: now });
+    await c.toolExecutions.create({ orgId: "org-1", businessId: "biz-1", toolKey: "twilio.send_sms", capabilityKey: "send_sms", providerKey: "twilio", requestedBy: "u1", status: "succeeded", input: {}, output: {}, errorMessage: null, startedAt: now, completedAt: now });
+    await c.toolExecutions.create({ orgId: "org-2", businessId: "biz-2", toolKey: "gmail.send_email", capabilityKey: "send_email", providerKey: "gmail", requestedBy: "u2", status: "succeeded", input: {}, output: {}, errorMessage: null, startedAt: now, completedAt: now });
 
     const exec1 = await c.toolExecutions.listByBusinessId("org-1", "biz-1");
     const exec2 = await c.toolExecutions.listByBusinessId("org-2", "biz-2");

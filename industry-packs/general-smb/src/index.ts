@@ -25,8 +25,13 @@ import { seedDecisions } from "./data/decisions.js";
 import { seedForecasts } from "./data/forecasts.js";
 import { seedPlaybooks } from "./data/playbooks.js";
 import { seedBusinessRules } from "./data/businessRules.js";
+import { seedOperatingLoops } from "./data/operatingLoops.js";
+import { seedPlannings } from "./data/plannings.js";
+import { seedVerifications } from "./data/verifications.js";
+import { seedOptimizations } from "./data/optimizations.js";
+import { seedLearnings } from "./data/learnings.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.6.0";
+export const GENERAL_SMB_PACK_VERSION = "0.7.0";
 
 let installed = false;
 
@@ -55,6 +60,11 @@ export function installGeneralSmbPack(): void {
   seedForecasts();
   seedPlaybooks();
   seedBusinessRules();
+  seedOperatingLoops();
+  seedPlannings();
+  seedVerifications();
+  seedOptimizations();
+  seedLearnings();
 }
 
 export {
@@ -78,4 +88,9 @@ export {
   seedForecasts,
   seedPlaybooks,
   seedBusinessRules,
+  seedOperatingLoops,
+  seedPlannings,
+  seedVerifications,
+  seedOptimizations,
+  seedLearnings,
 };

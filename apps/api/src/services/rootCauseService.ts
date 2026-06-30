@@ -44,9 +44,6 @@ export function createRootCauseService(repos: RepositoryContainer): RootCauseSer
             detectedAt,
           },
           occurredAt: detectedAt,
-          orgId,
-          correlationId: null,
-          causationId: null,
         });
       }
 

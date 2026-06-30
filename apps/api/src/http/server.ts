@@ -362,6 +362,44 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.rootCause.analyze(await requireOrgId(req), param(req, "businessId")))
   );
 
+  // Goal 21 — Autonomous Business Operating Loop
+  v1.post(
+    "/businesses/:businessId/operating-loop/run",
+    wrap(async (req) => api.businessOperatingLoop.run(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/plans/:decisionId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.executionPlan.createPlan(orgId, param(req, "businessId"), param(req, "decisionId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/plans/:decisionId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.executionPlan.getPlan(orgId, param(req, "businessId"), param(req, "decisionId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/verification/:decisionId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.outcomeVerification.verify(orgId, param(req, "businessId"), param(req, "decisionId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/verification/:decisionId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.outcomeVerification.getVerification(orgId, param(req, "businessId"), param(req, "decisionId"));
+    })
+  );
+
   v1.get(
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())

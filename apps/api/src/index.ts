@@ -27,6 +27,9 @@ import { createBusinessDecisionService } from "./services/businessDecisionServic
 import { createScenarioService } from "./services/scenarioService.js";
 import { createKpiMeasurementService } from "./services/kpiMeasurementService.js";
 import { createRootCauseService } from "./services/rootCauseService.js";
+import { createExecutionPlanService } from "./services/executionPlanService.js";
+import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
+import { createBusinessOperatingLoopService } from "./services/businessOperatingLoopService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -55,6 +58,9 @@ export function createApiFromContainer(repos: RepositoryContainer) {
 
   const kpiMeasurement = createKpiMeasurementService(repos);
   const rootCause = createRootCauseService(repos);
+  const executionPlan = createExecutionPlanService(repos);
+  const outcomeVerification = createOutcomeVerificationService(repos);
+  const businessOperatingLoop = createBusinessOperatingLoopService(repos);
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -75,6 +81,9 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     scenario,
     kpiMeasurement,
     rootCause,
+    executionPlan,
+    outcomeVerification,
+    businessOperatingLoop,
   };
 }
 
@@ -97,3 +106,6 @@ export * from "./services/businessDecisionService.js";
 export * from "./services/scenarioService.js";
 export * from "./services/kpiMeasurementService.js";
 export * from "./services/rootCauseService.js";
+export * from "./services/executionPlanService.js";
+export * from "./services/outcomeVerificationService.js";
+export * from "./services/businessOperatingLoopService.js";

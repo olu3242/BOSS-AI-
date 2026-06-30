@@ -36,9 +36,6 @@ export function createKpiMeasurementService(repos: RepositoryContainer): KpiMeas
         type: "business.kpi.measured",
         payload: { orgId, businessId, readingCount: readings.length, measuredAt },
         occurredAt: measuredAt,
-        orgId,
-        correlationId: null,
-        causationId: null,
       });
 
       return { readings, measuredAt };
