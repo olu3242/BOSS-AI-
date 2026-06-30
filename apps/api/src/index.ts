@@ -22,6 +22,7 @@ import { createBusinessRecommendationController } from "./controllers/businessRe
 import { createToolFabricController } from "./controllers/toolFabricController.js";
 import { createMissionControlController } from "./controllers/missionControlController.js";
 import { createObservabilityService } from "./services/observabilityService.js";
+import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -33,6 +34,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);
   const observability = createObservabilityService();
   observability.attachToEventBus(repos);
+  const multiAgentRuntime = createMultiAgentRuntimeService(repos, loopRuntime);
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; recommendationId: string }>(
     "business.recommendation.approved",
@@ -59,6 +61,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     workflowGeneration,
     missionControl: createMissionControlController(createMissionControlService(repos)),
     observability,
+    multiAgentRuntime,
   };
 }
 
@@ -76,3 +79,4 @@ export * from "./services/loopRuntimeService.js";
 export * from "./services/workflowGenerationService.js";
 export * from "./services/missionControlService.js";
 export * from "./services/observabilityService.js";
+export * from "./services/multiAgentRuntimeService.js";
