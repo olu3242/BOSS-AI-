@@ -24,4 +24,5 @@ export * from "./repositories/postgres/taskExecutionRepository.js";
 export * from "./repositories/postgres/executionEventRepository.js";
 export * from "./repositories/postgres/deadLetterRepository.js";
 export * from "./repositories/postgres/memoryRecordRepository.js";
+export * from "./repositories/postgres/providerEvidenceRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";

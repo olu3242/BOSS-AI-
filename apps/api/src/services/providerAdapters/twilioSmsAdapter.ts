@@ -1,6 +1,6 @@
-import type { ProviderAdapter, ProviderAdapterResult, ResolvedCredential } from "./types.js";
+import type { ProviderAdapter, ProviderAdapterResult, ResolvedCredential, FetchLike } from "./types.js";
 
-export type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
+
 
 /**
  * Real Twilio REST API client for the `send_sms` capability. Twilio is the

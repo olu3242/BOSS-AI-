@@ -28,6 +28,7 @@ import type {
   ExecutionEventRecord,
   DeadLetterEntry,
   MemoryRecord,
+  ProviderEvidence,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -55,6 +56,7 @@ import type {
   ExecutionEventRepository,
   DeadLetterRepository,
   MemoryRecordRepository,
+  ProviderEvidenceRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -730,6 +732,27 @@ export function createInMemoryMemoryRecordRepository(): MemoryRecordRepository {
           item.businessId === businessId &&
           item.ownerType === ownerType &&
           item.ownerId === ownerId
+      );
+    },
+  };
+}
+
+export function createInMemoryProviderEvidenceRepository(): ProviderEvidenceRepository {
+  const records = new Map<string, ProviderEvidence>();
+  return {
+    async create(input) {
+      const record: ProviderEvidence = { id: randomUUID(), ...input, ...stamp() };
+      records.set(record.id, record);
+      return record;
+    },
+    async listByToolExecutionId(orgId, toolExecutionId) {
+      return Array.from(records.values()).filter(
+        (r) => r.orgId === orgId && r.toolExecutionId === toolExecutionId && !r.deletedAt
+      );
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(records.values()).filter(
+        (r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt
       );
     },
   };

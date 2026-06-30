@@ -1,18 +1,12 @@
 import type { RepositoryContainer } from "../../container.js";
+import type { SecretStore } from "../secretVault/index.js";
 import type { ResolvedCredential } from "./types.js";
 
-/**
- * Placeholder credential resolver for Goal 16. Resolves a CredentialReference's
- * secretRef to a value by reading process.env[secretRef] — there is no real
- * secret store yet (TD-014). Encryption, rotation, and versioning are deferred
- * to Goal 17 (Secret Vault & Credential Management); this must not be mistaken
- * for a production-grade implementation.
- */
 export interface CredentialResolver {
   resolve(orgId: string, businessId: string, providerKey: string): Promise<ResolvedCredential | null>;
 }
 
-export function createCredentialResolver(repos: RepositoryContainer): CredentialResolver {
+export function createCredentialResolver(repos: RepositoryContainer, secretStore: SecretStore): CredentialResolver {
   return {
     async resolve(orgId, businessId, providerKey) {
       const account = await repos.integrationAccounts.findByProvider(orgId, businessId, providerKey);
@@ -23,7 +17,7 @@ export function createCredentialResolver(repos: RepositoryContainer): Credential
       if (!credential) {
         return null;
       }
-      const value = process.env[credential.secretRef];
+      const value = await secretStore.get({ orgId, key: credential.secretRef }, "credential-resolver");
       if (!value) {
         return null;
       }

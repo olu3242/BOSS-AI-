@@ -717,3 +717,16 @@ export interface MemoryRecord extends TenantScoped {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ProviderEvidence extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolExecutionId: ID;
+  providerKey: string;
+  toolKey: string;
+  status: "succeeded" | "failed";
+  latencyMs: number;
+  attemptCount: number;
+  errorCode: string | null;
+  responseSnapshot: Record<string, unknown> | null;
+}

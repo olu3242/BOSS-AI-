@@ -1,4 +1,7 @@
 import {
+  createPostgresProviderEvidenceRepository,
+  createInMemoryProviderEvidenceRepository,
+  type ProviderEvidenceRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -71,9 +74,11 @@ import {
 } from "@boss/db";
 import { createInMemoryEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
+import { createEnvSecretStore, type SecretStore } from "./services/secretVault/index.js";
 
 export interface RepositoryContainer {
   eventBus: EventBus;
+  secretStore: SecretStore;
   businesses: BusinessRepository;
   businessProfiles: BusinessProfileRepository;
   businessMri: BusinessMriRepository;
@@ -97,12 +102,14 @@ export interface RepositoryContainer {
   executionEvents: ExecutionEventRepository;
   deadLetters: DeadLetterRepository;
   memoryRecords: MemoryRecordRepository;
+  providerEvidence: ProviderEvidenceRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
   installGeneralSmbPack();
   return {
     eventBus: createInMemoryEventBus(),
+    secretStore: createEnvSecretStore(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
     businessMri: createPostgresBusinessMriRepository(),
@@ -126,6 +133,7 @@ export function createPostgresContainer(): RepositoryContainer {
     executionEvents: createPostgresExecutionEventRepository(),
     deadLetters: createPostgresDeadLetterRepository(),
     memoryRecords: createPostgresMemoryRecordRepository(),
+    providerEvidence: createPostgresProviderEvidenceRepository(),
   };
 }
 
@@ -135,6 +143,7 @@ export function createInMemoryContainer(): RepositoryContainer {
   const businessRecommendations = createInMemoryBusinessRecommendationRepository();
   return {
     eventBus: createInMemoryEventBus(),
+    secretStore: createEnvSecretStore(),
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),
     businessMri: createInMemoryBusinessMriRepository(),
@@ -158,5 +167,6 @@ export function createInMemoryContainer(): RepositoryContainer {
     executionEvents: createInMemoryExecutionEventRepository(),
     deadLetters: createInMemoryDeadLetterRepository(),
     memoryRecords: createInMemoryMemoryRecordRepository(),
+    providerEvidence: createInMemoryProviderEvidenceRepository(),
   };
 }

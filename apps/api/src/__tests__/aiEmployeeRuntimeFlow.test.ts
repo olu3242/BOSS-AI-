@@ -39,7 +39,7 @@ describe("AI Employee runtime", () => {
       businessHours: "Mon-Fri 8am-5pm",
     });
 
-    await toolFabric.connectIntegration(ORG_ID, business.id, "gmail");
+    await toolFabric.connectIntegration(ORG_ID, business.id, "smtp");
     await toolFabric.setPermission(ORG_ID, business.id, {
       toolKey: "tool_send_email",
       roleKey: "test_available_employee",

@@ -955,3 +955,27 @@ other 18 registered providers retain the simulated fallback.
 AWS Secrets Manager driver), credential lifecycle, rotation support, encryption at rest,
 secret versioning, and tenant isolation. Closes TD-014; unblocks real outbound provider
 calls for the remaining 18 providers.
+
+## Super Batch A (Goals 16A–16C): Production Execution Platform (complete)
+
+**Branch:** `claude/boss-repo-normalization-n1jdx5`
+
+### What was built
+
+**16A — Foundation extensions**: `ProviderErrorCode` + `mapProviderError` + `isRetryableErrorCode` for structured error classification across all adapters. `ProviderEvidence` type + repository (postgres + in-memory) + migration `0013`. Error codes now drive retry decisions (retryable vs fatal) via `isRetryableErrorCode` in the dispatcher. Uncaught adapter throws are mapped via `mapProviderError` so the dispatcher never propagates raw exceptions.
+
+**16B — Secret Vault**: `SecretStore` interface with `get/put/rotate/delete/audit`. Two implementations: `EnvSecretStore` (read-only, env-var backed — dev/test placeholder) and `EncryptedInMemorySecretStore` (AES-256-GCM at-rest encryption, per-`orgId` tenant isolation, rotation, full audit trail, key from `SECRET_VAULT_KEY`). `CredentialResolver` now uses `SecretStore.get()` instead of direct `process.env` access. `RepositoryContainer` gains `secretStore` and `providerEvidence` fields.
+
+**16C — Production Adapters**: 5 new real adapters (MessageBird, Gmail, Microsoft 365, Slack, Teams) added alongside Goal 16's Twilio. All use injectable `fetch` for testability. All map HTTP/API error codes to `ProviderErrorCode`. `AdapterRegistry` now registers 6 adapters. 13 providers still use the simulated fallback.
+
+### Key gaps remaining
+
+- Real KMS/secret-store driver (Vault, AWS Secrets Manager) — SecretStore interface exists but no external backing
+- 13 of 19 providers still simulated (smtp, google_calendar, outlook_calendar, crm stack, accounting stack, storage stack, whatsapp)
+- Scheduler, observability, multi-agent coordination — Super Batch B
+
+### Validation
+
+46 tests pass (13 test files). Full workspace `typecheck/build/lint/arch:check` all green.
+
+**Recommended next step:** Super Batch B — Enterprise Scheduler + Observability + Multi-Agent Coordination + Production Certification (Goals 17–20).

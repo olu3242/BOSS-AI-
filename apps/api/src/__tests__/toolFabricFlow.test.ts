@@ -23,9 +23,10 @@ describe("tool fabric flow", () => {
       businessHours: "Mon-Fri 8am-5pm",
     });
 
-    await toolFabric.connectIntegration(ORG_ID, business.id, "gmail");
+    // smtp has no production adapter — exercises the simulated fallback path
+    await toolFabric.connectIntegration(ORG_ID, business.id, "smtp");
     const integrations = await toolFabric.listIntegrations(ORG_ID, business.id);
-    expect(integrations.map((i) => i.providerKey)).toContain("gmail");
+    expect(integrations.map((i) => i.providerKey)).toContain("smtp");
 
     await toolFabric.setPermission(ORG_ID, business.id, {
       toolKey: "tool_send_email",
@@ -43,7 +44,7 @@ describe("tool fabric flow", () => {
     });
 
     expect(execution.status).toBe("succeeded");
-    expect(execution.providerKey).toBe("gmail");
+    expect(execution.providerKey).toBe("smtp");
     expect(execution.toolKey).toBe("tool_send_email");
     expect(execution.output).not.toBeNull();
 

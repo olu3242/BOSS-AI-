@@ -5,12 +5,14 @@ import { createAdapterRegistry } from "./adapterRegistry.js";
 import { createCredentialResolver } from "./credentialResolver.js";
 import { createCircuitBreaker, type CircuitBreaker } from "./circuitBreaker.js";
 import { defaultRetryPolicy, withRetry } from "./retryPolicy.js";
+import { isRetryableErrorCode, mapProviderError } from "./errorMapping.js";
 import type { ProviderAdapterResult } from "./types.js";
 
 export interface DispatchOutcome {
   status: "succeeded" | "failed";
   output: Record<string, unknown> | null;
   errorMessage: string | null;
+  errorCode: string | null;
   attemptCount: number;
   latencyMs: number;
 }
@@ -23,13 +25,14 @@ export async function dispatchProviderExecution(
   orgId: string,
   businessId: string,
   resolved: ResolvedTool,
-  input: Record<string, unknown>
+  input: Record<string, unknown>,
+  toolExecutionId: string
 ): Promise<DispatchOutcome> {
   const adapter = adapterRegistry.get(resolved.providerKey);
 
   if (!adapter) {
     const simulated = executeToolRequestSimulated(resolved, input);
-    return { ...simulated, attemptCount: 1, latencyMs: 0 };
+    return { ...simulated, errorCode: null, attemptCount: 1, latencyMs: 0 };
   }
 
   await repos.eventBus.publish({
@@ -48,13 +51,15 @@ export async function dispatchProviderExecution(
       status: "failed",
       output: null,
       errorMessage: `Provider "${resolved.providerKey}" is temporarily unavailable (circuit open)`,
+      errorCode: "PROVIDER_UNAVAILABLE",
       attemptCount: 0,
       latencyMs: 0,
     };
   }
 
-  const credentialResolver = createCredentialResolver(repos);
+  const credentialResolver = createCredentialResolver(repos, repos.secretStore);
   const credential = await credentialResolver.resolve(orgId, businessId, resolved.providerKey);
+
   if (!credential) {
     await repos.eventBus.publish({
       type: "tool.provider.unavailable",
@@ -65,6 +70,7 @@ export async function dispatchProviderExecution(
       status: "failed",
       output: null,
       errorMessage: `No usable credential is available for provider "${resolved.providerKey}"`,
+      errorCode: "AUTH_FAILED",
       attemptCount: 0,
       latencyMs: 0,
     };
@@ -84,8 +90,15 @@ export async function dispatchProviderExecution(
 
   const { result, attemptCount } = await withRetry<ProviderAdapterResult>(
     defaultRetryPolicy,
-    () => adapter.execute(resolved, input, credential),
-    (r) => r.status === "failed",
+    async () => {
+      try {
+        return await adapter.execute(resolved, input, credential);
+      } catch (err) {
+        const mapped = mapProviderError(err, resolved.providerKey);
+        return { status: "failed" as const, output: null, errorMessage: mapped.message, errorCode: mapped.code, latencyMs: 0 };
+      }
+    },
+    (r) => r.status === "failed" && isRetryableErrorCode(r.errorCode ?? null),
     (attemptNumber, delayMs) => {
       void repos.eventBus.publish({
         type: "tool.retry.scheduled",
@@ -120,15 +133,43 @@ export async function dispatchProviderExecution(
     }
     await repos.eventBus.publish({
       type: "tool.execution.failed",
-      payload: { orgId, businessId, providerKey: resolved.providerKey, toolKey: resolved.toolKey, errorMessage: result.errorMessage },
+      payload: {
+        orgId,
+        businessId,
+        providerKey: resolved.providerKey,
+        toolKey: resolved.toolKey,
+        errorMessage: result.errorMessage,
+        errorCode: result.errorCode,
+      },
       occurredAt: nowIso(),
     });
   }
+
+  // Persist provider evidence
+  await repos.providerEvidence.create({
+    orgId,
+    businessId,
+    toolExecutionId,
+    providerKey: resolved.providerKey,
+    toolKey: resolved.toolKey,
+    status: result.status,
+    latencyMs: result.latencyMs,
+    attemptCount,
+    errorCode: result.errorCode ?? null,
+    responseSnapshot: result.output,
+  });
+
+  await repos.eventBus.publish({
+    type: "tool.evidence.persisted",
+    payload: { orgId, businessId, providerKey: resolved.providerKey, toolKey: resolved.toolKey, status: result.status },
+    occurredAt: nowIso(),
+  });
 
   return {
     status: result.status,
     output: result.output,
     errorMessage: result.errorMessage,
+    errorCode: result.errorCode ?? null,
     attemptCount,
     latencyMs: result.latencyMs,
   };

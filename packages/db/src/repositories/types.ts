@@ -31,6 +31,7 @@ import type {
   DeadLetterEntry,
   ExecutionState,
   MemoryRecord,
+  ProviderEvidence,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -248,4 +249,12 @@ export interface MemoryRecordRepository {
     ownerType: MemoryRecord["ownerType"],
     ownerId: string
   ): Promise<MemoryRecord[]>;
+}
+
+export interface ProviderEvidenceRepository {
+  create(
+    input: Omit<ProviderEvidence, "id" | "createdAt" | "updatedAt" | "deletedAt">
+  ): Promise<ProviderEvidence>;
+  listByToolExecutionId(orgId: string, toolExecutionId: string): Promise<ProviderEvidence[]>;
+  listByBusinessId(orgId: string, businessId: string): Promise<ProviderEvidence[]>;
 }

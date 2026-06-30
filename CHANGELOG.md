@@ -5,6 +5,15 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Super Batch A (Goals 16A–16C): Production Execution Platform
+
+- **Goal 16A — Provider Adapter Foundation**: `ProviderErrorCode` enum + `mapProviderError` + `isRetryableErrorCode` (`errorMapping.ts`); `ProviderEvidence` ontology type + `ProviderEvidenceRepository` (postgres + in-memory); migration `0013_provider_evidence.sql`; error classification wired into retry decision and dispatcher catch
+- **Goal 16B — Secret Vault**: `SecretStore` interface (`get/put/rotate/delete/audit`); `EnvSecretStore` (dev read-only, env-var backed); `EncryptedInMemorySecretStore` (AES-256-GCM, per-orgId tenant isolation, rotation, audit trail, key from `SECRET_VAULT_KEY`); `CredentialResolver` rewritten to use `SecretStore`; `tool.credentials.accessed` event emitted; `secretStore` + `providerEvidence` fields added to `RepositoryContainer`
+- **Goal 16C — Production Adapters**: Real HTTP adapters for Twilio (already done), MessageBird, Gmail, Microsoft 365, Slack, and Teams — all with injectable `fetch` for testability and `ProviderErrorCode` error classification. 13 remaining providers still use the simulated fallback.
+- 18 new tests (46 total); full workspace `typecheck/build/lint/arch:check` green
+- `docs/adr/0016-super-batch-a-production-execution-platform.md`
+- TD-013 further narrowed (6/19 providers real); TD-014 partially resolved (SecretStore abstraction exists)
+
 ### Added — Goal 16: Production Provider Adapter Framework
 
 - `apps/api/src/services/providerAdapters/` (new module): production adapter

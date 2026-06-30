@@ -140,7 +140,7 @@ describe("loop runtime flow", () => {
     const business = await createTestBusiness(repos);
     const toolFabric = createToolFabricService(repos);
 
-    await toolFabric.connectIntegration(ORG_ID, business.id, "gmail");
+    await toolFabric.connectIntegration(ORG_ID, business.id, "smtp");
     await toolFabric.setPermission(ORG_ID, business.id, {
       toolKey: "tool_send_email",
       roleKey: "ai_follow_up_assistant",

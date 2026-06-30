@@ -115,7 +115,7 @@ export function createToolFabricService(repos: RepositoryContainer): ToolFabricS
         occurredAt: nowIso(),
       });
 
-      const result = await dispatchProviderExecution(repos, orgId, businessId, resolved, request.input);
+      const result = await dispatchProviderExecution(repos, orgId, businessId, resolved, request.input, execution.id);
 
       execution = await repos.toolExecutions.updateStatus(orgId, execution.id, result.status, result.output, result.errorMessage, {
         attemptCount: result.attemptCount,
