@@ -21,6 +21,7 @@ import { createBusinessConstraintController } from "./controllers/businessConstr
 import { createBusinessRecommendationController } from "./controllers/businessRecommendationController.js";
 import { createToolFabricController } from "./controllers/toolFabricController.js";
 import { createMissionControlController } from "./controllers/missionControlController.js";
+import { createObservabilityService } from "./services/observabilityService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -30,6 +31,8 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const toolFabric = createToolFabricService(repos);
   const loopRuntime = createLoopRuntimeService(repos, toolFabric);
   const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);
+  const observability = createObservabilityService();
+  observability.attachToEventBus(repos);
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; recommendationId: string }>(
     "business.recommendation.approved",
@@ -55,6 +58,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     loopRuntime,
     workflowGeneration,
     missionControl: createMissionControlController(createMissionControlService(repos)),
+    observability,
   };
 }
 
@@ -71,3 +75,4 @@ export * from "./services/toolFabricService.js";
 export * from "./services/loopRuntimeService.js";
 export * from "./services/workflowGenerationService.js";
 export * from "./services/missionControlService.js";
+export * from "./services/observabilityService.js";

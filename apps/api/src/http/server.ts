@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
 import { mintDevToken, requireOrgId } from "./auth.js";
+import { requestTracing } from "./telemetry.js";
 
 type Api = ReturnType<typeof createApi>;
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -34,6 +35,13 @@ function wrap(handler: Handler) {
 export function createHttpServer(api: Api): Express {
   const app = express();
   app.use(express.json());
+  app.use(requestTracing(api.observability));
+
+  // Unauthenticated health endpoint — standard ops probe
+  app.get("/health", (_req, res) => {
+    const snap = api.observability.getSnapshot();
+    res.json({ status: "ok", ...snap });
+  });
 
   const v1 = express.Router();
 
@@ -198,6 +206,11 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/businesses/:businessId/mission-control",
     wrap(async (req) => api.missionControl.getSnapshot(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.get(
+    "/metrics",
+    wrap(async (_req) => api.observability.getSnapshot())
   );
 
   app.use("/api/v1", v1);
