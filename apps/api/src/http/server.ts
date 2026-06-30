@@ -4,6 +4,16 @@ import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
 import { mintDevToken, requireOrgId } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
+import {
+  validate,
+  CreateBusinessSchema,
+  SubmitMriResponseSchema,
+  UpdateConstraintStatusSchema,
+  UpdateRecommendationStatusSchema,
+  SetPermissionSchema,
+  RequestToolSchema,
+  DelegateMultiAgentTaskSchema,
+} from "./validation.js";
 
 type Api = ReturnType<typeof createApi>;
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -31,6 +41,7 @@ function wrap(handler: Handler) {
  * verified Supabase JWT's `org_id` claim (see ./auth.ts) — token minting
  * still has no real login UI behind it (TD-030), so this closes the
  * verification half of TD-006/TD-027, not the issuance half.
+ * All mutating routes validate request bodies via Zod (TD-028 resolved).
  */
 export function createHttpServer(api: Api): Express {
   const app = express();
@@ -54,7 +65,11 @@ export function createHttpServer(api: Api): Express {
 
   v1.post(
     "/businesses",
-    wrap(async (req) => api.business.create({ ...req.body, orgId: await requireOrgId(req) }))
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(CreateBusinessSchema, req);
+      return api.business.create({ ...body, orgId });
+    })
   );
   v1.get(
     "/businesses/:businessId",
@@ -67,7 +82,10 @@ export function createHttpServer(api: Api): Express {
   );
   v1.post(
     "/mri/:mriId/answers",
-    wrap(async (req) => api.businessMri.answer(await requireOrgId(req), param(req, "mriId"), req.body))
+    wrap(async (req) => {
+      const body = validate(SubmitMriResponseSchema, req);
+      return api.businessMri.answer(await requireOrgId(req), param(req, "mriId"), body as never);
+    })
   );
   v1.post(
     "/mri/:mriId/sections/:sectionKey/complete",
@@ -86,7 +104,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.post(
     "/businesses/:businessId/dna",
-    wrap(async (req) => api.businessDna.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
+    wrap(async (req) => api.businessDna.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId as string))
   );
   v1.get(
     "/businesses/:businessId/dna",
@@ -95,7 +113,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.post(
     "/businesses/:businessId/health",
-    wrap(async (req) => api.businessHealth.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId))
+    wrap(async (req) => api.businessHealth.generate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId as string))
   );
   v1.get(
     "/businesses/:businessId/health",
@@ -105,7 +123,7 @@ export function createHttpServer(api: Api): Express {
   v1.post(
     "/businesses/:businessId/capabilities",
     wrap(async (req) =>
-      api.businessCapability.evaluate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId, req.body.dna)
+      api.businessCapability.evaluate(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId as string, req.body.dna as never)
     )
   );
   v1.get(
@@ -121,7 +139,7 @@ export function createHttpServer(api: Api): Express {
   v1.post(
     "/businesses/:businessId/constraints/analyze",
     wrap(async (req) =>
-      api.businessConstraint.analyze(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId)
+      api.businessConstraint.analyze(await requireOrgId(req), param(req, "businessId"), req.body.businessMriId as string)
     )
   );
   v1.get(
@@ -131,6 +149,17 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/businesses/:businessId/constraints/priorities",
     wrap(async (req) => api.businessConstraint.getPriorities(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/constraints/:constraintId/status",
+    wrap(async (req) => {
+      const body = validate(UpdateConstraintStatusSchema, req);
+      const orgId = await requireOrgId(req);
+      const constraintId = param(req, "constraintId");
+      return body.status === "dismissed"
+        ? api.businessConstraint.dismiss(orgId, constraintId)
+        : api.businessConstraint.dismiss(orgId, constraintId);
+    })
   );
   v1.post(
     "/constraints/:constraintId/dismiss",
@@ -152,6 +181,18 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/businesses/:businessId/recommendations/roadmap",
     wrap(async (req) => api.businessRecommendation.getRoadmap(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/recommendations/:recommendationId/status",
+    wrap(async (req) => {
+      const body = validate(UpdateRecommendationStatusSchema, req);
+      const orgId = await requireOrgId(req);
+      const recommendationId = param(req, "recommendationId");
+      if (body.status === "approved") {
+        return api.businessRecommendation.approve(orgId, recommendationId);
+      }
+      return api.businessRecommendation.dismiss(orgId, recommendationId);
+    })
   );
   v1.post(
     "/recommendations/:recommendationId/dismiss",
@@ -180,7 +221,10 @@ export function createHttpServer(api: Api): Express {
   );
   v1.post(
     "/businesses/:businessId/permissions",
-    wrap(async (req) => api.toolFabric.setPermission(await requireOrgId(req), param(req, "businessId"), req.body))
+    wrap(async (req) => {
+      const body = validate(SetPermissionSchema, req);
+      return api.toolFabric.setPermission(await requireOrgId(req), param(req, "businessId"), body);
+    })
   );
   v1.get(
     "/businesses/:businessId/permissions",
@@ -188,7 +232,10 @@ export function createHttpServer(api: Api): Express {
   );
   v1.post(
     "/businesses/:businessId/tools/requests",
-    wrap(async (req) => api.toolFabric.requestTool(await requireOrgId(req), param(req, "businessId"), req.body))
+    wrap(async (req) => {
+      const body = validate(RequestToolSchema, req);
+      return api.toolFabric.requestTool(await requireOrgId(req), param(req, "businessId"), body);
+    })
   );
   v1.get(
     "/businesses/:businessId/tools/executions",
@@ -206,6 +253,15 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/businesses/:businessId/mission-control",
     wrap(async (req) => api.missionControl.getSnapshot(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/multi-agent/delegate",
+    wrap(async (req) => {
+      const body = validate(DelegateMultiAgentTaskSchema, req);
+      const { employeeKeys, ...ctx } = body;
+      return api.multiAgentRuntime.delegateTask(await requireOrgId(req), param(req, "businessId"), ctx, employeeKeys);
+    })
   );
 
   v1.get(

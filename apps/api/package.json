@@ -22,7 +22,8 @@
     "@boss/shared": "workspace:*",
     "@boss/types": "workspace:*",
     "express": "4",
-    "jose": "^6.2.3"
+    "jose": "^6.2.3",
+    "zod": "^3.0.0"
   },
   "devDependencies": {
     "@types/express": "4",

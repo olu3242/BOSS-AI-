@@ -47,6 +47,18 @@ describe("HTTP transport", () => {
     expect(body.code).toBe("missing_token");
   });
 
+  it("returns 400 validation_error when request body is invalid", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/businesses`, {
+      method: "POST",
+      headers: { "content-type": "application/json", ...authHeader },
+      body: JSON.stringify({ name: "" }), // name must be min(1), all other required fields missing
+    });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { code: string; message: string };
+    expect(body.code).toBe("validation_error");
+    expect(body.message).toMatch(/industry|employeeCount|name/);
+  });
+
   it("returns 404 with the standard error envelope for an unknown route", async () => {
     const res = await fetch(`${baseUrl}/api/v1/nope`, { headers: authHeader });
     expect(res.status).toBe(404);
