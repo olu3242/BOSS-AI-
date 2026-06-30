@@ -738,6 +738,138 @@ export interface SchedulerJob extends TenantScoped, Timestamped {
   errorMessage: string | null;
 }
 
+// ─── Decision Intelligence (Goal 21) ─────────────────────────────────────────
+
+export type DecisionStatus =
+  | "draft"
+  | "generated"
+  | "reviewed"
+  | "approved"
+  | "rejected"
+  | "scheduled"
+  | "executing"
+  | "completed"
+  | "measured"
+  | "archived";
+
+export type DecisionType =
+  | "operational"
+  | "strategic"
+  | "financial"
+  | "marketing"
+  | "hiring"
+  | "technology"
+  | "expansion"
+  | "risk_mitigation"
+  | "customer_success"
+  | "pricing";
+
+export type DecisionImpactLevel = "low" | "medium" | "high" | "critical";
+
+export interface DecisionOption {
+  key: string;
+  label: string;
+  description: string;
+  expectedRoi: number;
+  expectedCost: number;
+  expectedRisk: DecisionImpactLevel;
+  confidence: number;
+  tradeoffs: string[];
+  estimatedTimelineDays: number;
+}
+
+export interface DecisionImpact {
+  revenueImpact: number;
+  costImpact: number;
+  profitImpact: number;
+  operationalImpact: DecisionImpactLevel;
+  customerImpact: DecisionImpactLevel;
+  riskLevel: DecisionImpactLevel;
+  affectedDomains: string[];
+  estimatedTimelineDays: number;
+}
+
+export interface BusinessDecision extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  decisionType: DecisionType;
+  objective: string;
+  context: string;
+  supportingRecommendationIds: string[];
+  supportingConstraintIds: string[];
+  appliedPolicyKeys: string[];
+  options: DecisionOption[];
+  selectedOptionKey: string | null;
+  expectedImpact: DecisionImpact;
+  expectedRoi: number;
+  expectedCost: number;
+  confidenceScore: number;
+  status: DecisionStatus;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  completedAt: string | null;
+  measuredAt: string | null;
+  actualRoi: number | null;
+  lessonsLearned: string | null;
+  executiveSummary: string | null;
+  generatedWorkflowId: string | null;
+}
+
+// ─── Scenario Simulation (Goal 22) ───────────────────────────────────────────
+
+export type ScenarioType =
+  | "revenue"
+  | "marketing"
+  | "sales"
+  | "finance"
+  | "operations"
+  | "hiring"
+  | "pricing"
+  | "expansion"
+  | "customer_success"
+  | "automation"
+  | "technology"
+  | "risk";
+
+export type ForecastPeriod = "30d" | "90d" | "180d" | "365d";
+
+export type ScenarioStatus = "draft" | "calculated" | "approved" | "rejected" | "archived";
+
+export interface ScenarioAssumption {
+  key: string;
+  label: string;
+  value: number;
+  unit: string;
+}
+
+export interface BusinessScenario extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  scenarioType: ScenarioType;
+  objective: string;
+  assumptions: ScenarioAssumption[];
+  affectedDomains: string[];
+  projectedRevenue: number;
+  projectedCost: number;
+  projectedProfit: number;
+  operationalImpact: DecisionImpactLevel;
+  customerImpact: DecisionImpactLevel;
+  riskLevel: DecisionImpactLevel;
+  confidenceScore: number;
+  forecastPeriod: ForecastPeriod;
+  version: number;
+  status: ScenarioStatus;
+}
+
+export interface ScenarioComparison extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  scenarioIds: string[];
+  recommendedScenarioId: string;
+  rationale: string;
+  createdAt: string;
+}
+
 export interface ProviderEvidence extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;

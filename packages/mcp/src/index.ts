@@ -31,3 +31,7 @@ export * from "./intelligence/aiEmployeeRuntime.js";
 export * from "./intelligence/multiAgentPlanner.js";
 export * from "./intelligence/multiAgentReflection.js";
 export * from "./intelligence/claudeInference.js";
+export * from "./intelligence/decisionEngine.js";
+export * from "./intelligence/scenarioEngine.js";
+export * from "./intelligence/executiveBrief.js";
+export * from "./intelligence/decisionOptimization.js";

@@ -1,5 +1,28 @@
 # BOSS Implementation Memory
 
+## Goals 21–23 — Decision Intelligence Operating System (complete)
+
+**Status:** Done. 91 tests passing, lint clean, typecheck clean.
+
+**Decision Intelligence (Goal 21):**
+- `packages/mcp/src/intelligence/decisionEngine.ts` — generates decisions from health+constraints+recommendations; evaluates decision health
+- `packages/mcp/src/intelligence/decisionOptimization.ts` — optimization signals + priority ranking
+- `apps/api/src/services/businessDecisionService.ts` — full lifecycle service
+- Learning loop: `measure()` → `memoryRecords.upsert()` with key `decision:{id}:outcome`
+- Migration: `packages/db/migrations/0015_decisions.sql`
+
+**Scenario Simulation (Goal 22):**
+- `packages/mcp/src/intelligence/scenarioEngine.ts` — deterministic math (no LLM in calculations)
+- `apps/api/src/services/scenarioService.ts` — create/list/compare/getForecast
+- Migration: `packages/db/migrations/0016_scenarios.sql`
+
+**Executive Intelligence (Goal 23):**
+- `packages/mcp/src/intelligence/executiveBrief.ts` — Claude-powered or deterministic fallback
+- Mission Control snapshot extended with `decisions: DecisionQueueSummary` + `activeScenarios`
+- ADR-0018; Goal 21/22/23 certification docs
+
+**Tech Debt Closed:** TD-028 (Zod validation), TD-024 (Claude inference in AI Employee)
+
 ## Goal 0 — Repository Normalization (complete)
 
 **Status:** Done. Monorepo scaffolded, tooling configured, all pipelines green.

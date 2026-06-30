@@ -5,6 +5,14 @@ All notable changes to BOSS are recorded here. Format follows
 
 ## [Unreleased]
 
+### Added — Decision Intelligence Operating System (Goals 21–23)
+
+- **Goal 21 — Decision Intelligence Core**: `BusinessDecision` ontology type with full lifecycle (draft→generated→approved→rejected→scheduled→executing→completed→measured→archived); `businessDecisionService` with `generate/evaluate/approve/reject/schedule/measure/archive/list/getOptimizationReport/getPriorityRanking`; `decisionEngine.ts` (MCP — deterministic decision generation from health+constraints+recommendations); `decisionOptimization.ts` (MCP — optimization signals: repeated_failure, successful_strategy, decision_drift, execution_bottleneck, missed_opportunity); learning loop: `measure()` persists outcomes to `memoryRecords` with key `decision:{id}:outcome`; migration `0015_decisions.sql`; `BusinessDecisionRepository` (postgres + in-memory)
+- **Goal 22 — Scenario Simulation Engine**: `BusinessScenario` + `ScenarioComparison` ontology types; `scenarioEngine.ts` (MCP — deterministic math per scenario type: revenue/marketing/hiring/pricing/expansion/finance); `calculateScenario/generateForecast/compareScenarios` functions; `scenarioService` with `create/list/compare/getForecast`; multi-period forecast (30d/90d/180d/365d) with confidence decay; `scenario.created` + `scenario.compared` domain events; migration `0016_scenarios.sql`; `BusinessScenarioRepository` (postgres + in-memory)
+- **Goal 23 — Executive Decision Intelligence**: `executiveBrief.ts` (MCP — Claude-powered or deterministic fallback when no API key); `generateExecutiveBrief` produces executiveSummary, businessHealthSummary, topOpportunities, risks, nextActions; `getExecutiveBrief` persists summary back to decision record; `MissionControlSnapshot` extended with `decisions: DecisionQueueSummary` and `activeScenarios`; ADR-0018; 3 certification docs; 22 new tests (Goals 21–23)
+- **TD-028 resolved**: Zod request body validation on all mutating HTTP routes; `validate<S extends z.ZodTypeAny>()` generic correctly infers output types for `.default()` fields; auth-before-validation ordering preserves 401 on unauthenticated requests
+- **TD-024 resolved**: Claude API LLM inference in AI Employee runtime via `runAiEmployeeInference()`; inference gated on `ANTHROPIC_API_KEY` for deterministic tests
+
 ### Added — Super Batch B (Goals 17–20): Enterprise Production Platform
 
 - **Goal 17 — Enterprise Scheduler**: `scheduler_jobs` table (migration 0014); `SchedulerJob` type + `SchedulerJobRepository` (postgres + in-memory); `SchedulerService` with `scheduleImmediate/scheduleDelayed/scheduleCron/cancel/listPending/runDue`; `timeoutMs` on `StepSpec` with `Promise.race` timeout enforcement (TD-018 resolved); `ParallelStepGroup` type + `StepEntry` union for fan-out/fan-in parallel execution (TD-019 resolved); `isParallelGroup()` type guard; `LoopRuntimeService.execute()` upgraded to `StepEntry[]`

@@ -31,6 +31,10 @@ import type {
   ProviderEvidence,
   SchedulerJob,
   SchedulerJobState,
+  BusinessDecision,
+  DecisionStatus,
+  BusinessScenario,
+  ScenarioComparison,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -48,6 +52,8 @@ import type {
   StoredRecommendationEvidence,
   RecommendationScoreRepository,
   RecommendationPriorityRepository,
+  BusinessDecisionRepository,
+  BusinessScenarioRepository,
   TransformationRoadmapRepository,
   IntegrationAccountRepository,
   PermissionPolicyRepository,
@@ -803,6 +809,84 @@ export function createInMemorySchedulerJobRepository(): SchedulerJobRepository {
       if (job && job.orgId === orgId) {
         jobs.set(id, { ...job, state: "cancelled" as SchedulerJobState, updatedAt: new Date().toISOString() });
       }
+    },
+  };
+}
+
+export function createInMemoryBusinessDecisionRepository(): BusinessDecisionRepository {
+  const items = new Map<string, BusinessDecision>();
+  const now = () => new Date().toISOString();
+  return {
+    async create(input) {
+      const decision: BusinessDecision = {
+        id: randomUUID(), ...input,
+        createdAt: now(), updatedAt: now(), deletedAt: null,
+      };
+      items.set(decision.id, decision);
+      return decision;
+    },
+    async findById(orgId, id) {
+      const found = items.get(id);
+      return found && found.orgId === orgId && !found.deletedAt ? found : null;
+    },
+    async update(orgId, id, patch) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Decision ${id} not found`);
+      const updated: BusinessDecision = { ...existing, ...patch, updatedAt: now() };
+      items.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter(
+        (d) => d.orgId === orgId && d.businessId === businessId && !d.deletedAt
+      );
+    },
+    async listByStatus(orgId, businessId, status: DecisionStatus) {
+      return Array.from(items.values()).filter(
+        (d) => d.orgId === orgId && d.businessId === businessId && d.status === status && !d.deletedAt
+      );
+    },
+  };
+}
+
+export function createInMemoryBusinessScenarioRepository(): BusinessScenarioRepository {
+  const scenarios = new Map<string, BusinessScenario>();
+  const comparisons = new Map<string, ScenarioComparison>();
+  const now = () => new Date().toISOString();
+  return {
+    async create(input) {
+      const scenario: BusinessScenario = {
+        id: randomUUID(), ...input,
+        createdAt: now(), updatedAt: now(), deletedAt: null,
+      };
+      scenarios.set(scenario.id, scenario);
+      return scenario;
+    },
+    async findById(orgId, id) {
+      const found = scenarios.get(id);
+      return found && found.orgId === orgId && !found.deletedAt ? found : null;
+    },
+    async update(orgId, id, patch) {
+      const existing = scenarios.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Scenario ${id} not found`);
+      const updated: BusinessScenario = { ...existing, ...patch, updatedAt: now() };
+      scenarios.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(scenarios.values()).filter(
+        (s) => s.orgId === orgId && s.businessId === businessId && !s.deletedAt
+      );
+    },
+    async createComparison(input) {
+      const comparison: ScenarioComparison = { id: randomUUID(), createdAt: now(), ...input };
+      comparisons.set(comparison.id, comparison);
+      return comparison;
+    },
+    async listComparisons(orgId, businessId) {
+      return Array.from(comparisons.values()).filter(
+        (c) => c.orgId === orgId && c.businessId === businessId
+      );
     },
   };
 }

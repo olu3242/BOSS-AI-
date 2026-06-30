@@ -4,6 +4,8 @@ import type {
   ExecutionEventRecord,
   TaskExecution,
   WorkflowExecution,
+  BusinessDecision,
+  BusinessScenario,
 } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 
@@ -12,10 +14,19 @@ export interface WorkflowExecutionSummary extends WorkflowExecution {
   events: ExecutionEventRecord[];
 }
 
+export interface DecisionQueueSummary {
+  pending: BusinessDecision[];
+  approved: BusinessDecision[];
+  executing: BusinessDecision[];
+  completed: BusinessDecision[];
+}
+
 export interface MissionControlSnapshot {
   workflows: WorkflowExecutionSummary[];
   deadLetters: DeadLetterEntry[];
   timeline: BusinessTimelineEntry[];
+  decisions: DecisionQueueSummary;
+  activeScenarios: BusinessScenario[];
 }
 
 export interface MissionControlService {
@@ -24,14 +35,19 @@ export interface MissionControlService {
 
 /**
  * Read-only projection over execution evidence already persisted by the
- * Loop Runtime, Tool Fabric, and business services. Mission Control owns
- * no state of its own — it never writes, only assembles a snapshot from
- * existing durable repositories.
+ * Loop Runtime, Tool Fabric, business services, and the Decision Intelligence
+ * layer. Mission Control owns no state — it assembles from existing repositories.
  */
 export function createMissionControlService(repos: RepositoryContainer): MissionControlService {
   return {
     async getSnapshot(orgId, businessId) {
-      const workflows = await repos.workflowExecutions.listByBusinessId(orgId, businessId);
+      const [workflows, deadLetters, timeline, allDecisions, scenarios] = await Promise.all([
+        repos.workflowExecutions.listByBusinessId(orgId, businessId),
+        repos.deadLetters.listByBusinessId(orgId, businessId),
+        repos.businessTimeline.listByBusinessId(orgId, businessId),
+        repos.businessDecisions.listByBusinessId(orgId, businessId),
+        repos.businessScenarios.listByBusinessId(orgId, businessId),
+      ]);
 
       const workflowSummaries = await Promise.all(
         workflows.map(async (workflow): Promise<WorkflowExecutionSummary> => {
@@ -43,12 +59,16 @@ export function createMissionControlService(repos: RepositoryContainer): Mission
         })
       );
 
-      const [deadLetters, timeline] = await Promise.all([
-        repos.deadLetters.listByBusinessId(orgId, businessId),
-        repos.businessTimeline.listByBusinessId(orgId, businessId),
-      ]);
+      const decisions: DecisionQueueSummary = {
+        pending: allDecisions.filter((d) => d.status === "generated" || d.status === "reviewed"),
+        approved: allDecisions.filter((d) => d.status === "approved" || d.status === "scheduled"),
+        executing: allDecisions.filter((d) => d.status === "executing"),
+        completed: allDecisions.filter((d) => d.status === "completed" || d.status === "measured"),
+      };
 
-      return { workflows: workflowSummaries, deadLetters, timeline };
+      const activeScenarios = scenarios.filter((s) => s.status === "calculated" || s.status === "approved");
+
+      return { workflows: workflowSummaries, deadLetters, timeline, decisions, activeScenarios };
     },
   };
 }

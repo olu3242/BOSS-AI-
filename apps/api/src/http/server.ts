@@ -13,6 +13,10 @@ import {
   SetPermissionSchema,
   RequestToolSchema,
   DelegateMultiAgentTaskSchema,
+  GenerateDecisionSchema,
+  MeasureDecisionSchema,
+  CreateScenarioSchema,
+  CompareScenarioSchema,
 } from "./validation.js";
 
 type Api = ReturnType<typeof createApi>;
@@ -262,6 +266,88 @@ export function createHttpServer(api: Api): Express {
       const { employeeKeys, ...ctx } = body;
       return api.multiAgentRuntime.delegateTask(await requireOrgId(req), param(req, "businessId"), ctx, employeeKeys);
     })
+  );
+
+  // ─── Decision Intelligence (Goal 21) ───────────────────────────────────────
+
+  v1.post(
+    "/businesses/:businessId/decisions/generate",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(GenerateDecisionSchema, req);
+      return api.businessDecision.generate(orgId, param(req, "businessId"), body);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/decisions",
+    wrap(async (req) => api.businessDecision.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/decisions/priorities",
+    wrap(async (req) => api.businessDecision.getPriorityRanking(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/decisions/optimize",
+    wrap(async (req) => api.businessDecision.getOptimizationReport(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/decisions/:decisionId/brief",
+    wrap(async (req) => api.businessDecision.getExecutiveBrief(await requireOrgId(req), param(req, "decisionId")))
+  );
+  v1.post(
+    "/decisions/:decisionId/evaluate",
+    wrap(async (req) => api.businessDecision.evaluate(await requireOrgId(req), param(req, "decisionId")))
+  );
+  v1.post(
+    "/decisions/:decisionId/approve",
+    wrap(async (req) => api.businessDecision.approve(await requireOrgId(req), param(req, "decisionId")))
+  );
+  v1.post(
+    "/decisions/:decisionId/reject",
+    wrap(async (req) => api.businessDecision.reject(await requireOrgId(req), param(req, "decisionId")))
+  );
+  v1.post(
+    "/decisions/:decisionId/schedule",
+    wrap(async (req) => api.businessDecision.schedule(await requireOrgId(req), param(req, "decisionId")))
+  );
+  v1.post(
+    "/decisions/:decisionId/measure",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(MeasureDecisionSchema, req);
+      return api.businessDecision.measure(orgId, param(req, "decisionId"), body);
+    })
+  );
+  v1.post(
+    "/decisions/:decisionId/archive",
+    wrap(async (req) => api.businessDecision.archive(await requireOrgId(req), param(req, "decisionId")))
+  );
+
+  // ─── Scenario Simulation (Goal 22) ─────────────────────────────────────────
+
+  v1.post(
+    "/businesses/:businessId/scenarios",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(CreateScenarioSchema, req);
+      return api.scenario.create(orgId, param(req, "businessId"), body);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/scenarios",
+    wrap(async (req) => api.scenario.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/scenarios/compare",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(CompareScenarioSchema, req);
+      return api.scenario.compare(orgId, param(req, "businessId"), body);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/forecasts",
+    wrap(async (req) => api.scenario.getForecast(await requireOrgId(req), param(req, "businessId")))
   );
 
   v1.get(

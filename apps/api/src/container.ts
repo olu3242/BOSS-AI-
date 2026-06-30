@@ -5,6 +5,12 @@ import {
   createPostgresSchedulerJobRepository,
   createInMemorySchedulerJobRepository,
   type SchedulerJobRepository,
+  createPostgresBusinessDecisionRepository,
+  createInMemoryBusinessDecisionRepository,
+  type BusinessDecisionRepository,
+  createPostgresBusinessScenarioRepository,
+  createInMemoryBusinessScenarioRepository,
+  type BusinessScenarioRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -107,6 +113,8 @@ export interface RepositoryContainer {
   memoryRecords: MemoryRecordRepository;
   providerEvidence: ProviderEvidenceRepository;
   schedulerJobs: SchedulerJobRepository;
+  businessDecisions: BusinessDecisionRepository;
+  businessScenarios: BusinessScenarioRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -139,6 +147,8 @@ export function createPostgresContainer(): RepositoryContainer {
     memoryRecords: createPostgresMemoryRecordRepository(),
     providerEvidence: createPostgresProviderEvidenceRepository(),
     schedulerJobs: createPostgresSchedulerJobRepository(),
+    businessDecisions: createPostgresBusinessDecisionRepository(),
+    businessScenarios: createPostgresBusinessScenarioRepository(),
   };
 }
 
@@ -174,5 +184,7 @@ export function createInMemoryContainer(): RepositoryContainer {
     memoryRecords: createInMemoryMemoryRecordRepository(),
     providerEvidence: createInMemoryProviderEvidenceRepository(),
     schedulerJobs: createInMemorySchedulerJobRepository(),
+    businessDecisions: createInMemoryBusinessDecisionRepository(),
+    businessScenarios: createInMemoryBusinessScenarioRepository(),
   };
 }

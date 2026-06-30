@@ -34,6 +34,10 @@ import type {
   ProviderEvidence,
   SchedulerJob,
   SchedulerJobState,
+  BusinessDecision,
+  DecisionStatus,
+  BusinessScenario,
+  ScenarioComparison,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -268,4 +272,21 @@ export interface SchedulerJobRepository {
   listDuePending(now: string): Promise<SchedulerJob[]>;
   listByBusiness(orgId: string, businessId: string): Promise<SchedulerJob[]>;
   cancel(orgId: string, id: string): Promise<void>;
+}
+
+export interface BusinessDecisionRepository {
+  create(input: Omit<BusinessDecision, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<BusinessDecision>;
+  findById(orgId: string, id: string): Promise<BusinessDecision | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<BusinessDecision, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<BusinessDecision>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessDecision[]>;
+  listByStatus(orgId: string, businessId: string, status: DecisionStatus): Promise<BusinessDecision[]>;
+}
+
+export interface BusinessScenarioRepository {
+  create(input: Omit<BusinessScenario, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<BusinessScenario>;
+  findById(orgId: string, id: string): Promise<BusinessScenario | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<BusinessScenario, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<BusinessScenario>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessScenario[]>;
+  createComparison(input: Omit<ScenarioComparison, "id" | "createdAt">): Promise<ScenarioComparison>;
+  listComparisons(orgId: string, businessId: string): Promise<ScenarioComparison[]>;
 }

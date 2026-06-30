@@ -75,6 +75,40 @@ export const DelegateMultiAgentTaskSchema = z.object({
 
 // ─── Scheduler ────────────────────────────────────────────────────────────────
 
+// ─── Decision Intelligence ────────────────────────────────────────────────────
+
+export const GenerateDecisionSchema = z.object({
+  recommendationIds: z.array(z.string()).default([]),
+  decisionType: z
+    .enum(["operational", "strategic", "financial", "marketing", "hiring", "technology", "expansion", "risk_mitigation", "customer_success", "pricing"])
+    .optional(),
+});
+
+export const MeasureDecisionSchema = z.object({
+  actualRoi: z.number(),
+  lessonsLearned: z.string().min(1),
+});
+
+// ─── Scenario Simulation ──────────────────────────────────────────────────────
+
+export const CreateScenarioSchema = z.object({
+  scenarioType: z.enum(["revenue", "marketing", "sales", "finance", "operations", "hiring", "pricing", "expansion", "customer_success", "automation", "technology", "risk"]),
+  objective: z.string().min(1).max(500),
+  assumptions: z.array(z.object({
+    key: z.string().min(1),
+    label: z.string().min(1),
+    value: z.number(),
+    unit: z.string().min(1),
+  })).default([]),
+  forecastPeriod: z.enum(["30d", "90d", "180d", "365d"]).default("90d"),
+});
+
+export const CompareScenarioSchema = z.object({
+  scenarioIds: z.array(z.string()).default([]),
+});
+
+// ─── Scheduler ────────────────────────────────────────────────────────────────
+
 export const ScheduleJobSchema = z.object({
   workflowKey: z.string().min(1),
   triggerType: z.enum(["immediate", "delayed", "cron"]),

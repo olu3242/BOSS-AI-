@@ -27,3 +27,5 @@ export * from "./repositories/postgres/memoryRecordRepository.js";
 export * from "./repositories/postgres/providerEvidenceRepository.js";
 export * from "./repositories/memory/inMemoryRepositories.js";
 export * from "./repositories/postgres/schedulerJobRepository.js";
+export * from "./repositories/postgres/businessDecisionRepository.js";
+export * from "./repositories/postgres/businessScenarioRepository.js";
