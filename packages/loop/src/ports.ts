@@ -46,5 +46,18 @@ export interface StepSpec {
   taskType: TaskType;
   input: Record<string, unknown>;
   maxRetries?: number;
+  timeoutMs?: number;
   compensationTaskType?: TaskType;
+}
+
+export interface ParallelStepGroup {
+  groupKey: string;
+  parallel: true;
+  steps: StepSpec[];
+}
+
+export type StepEntry = StepSpec | ParallelStepGroup;
+
+export function isParallelGroup(entry: StepEntry): entry is ParallelStepGroup {
+  return (entry as ParallelStepGroup).parallel === true;
 }

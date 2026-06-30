@@ -2,6 +2,9 @@ import {
   createPostgresProviderEvidenceRepository,
   createInMemoryProviderEvidenceRepository,
   type ProviderEvidenceRepository,
+  createPostgresSchedulerJobRepository,
+  createInMemorySchedulerJobRepository,
+  type SchedulerJobRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -103,6 +106,7 @@ export interface RepositoryContainer {
   deadLetters: DeadLetterRepository;
   memoryRecords: MemoryRecordRepository;
   providerEvidence: ProviderEvidenceRepository;
+  schedulerJobs: SchedulerJobRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -134,6 +138,7 @@ export function createPostgresContainer(): RepositoryContainer {
     deadLetters: createPostgresDeadLetterRepository(),
     memoryRecords: createPostgresMemoryRecordRepository(),
     providerEvidence: createPostgresProviderEvidenceRepository(),
+    schedulerJobs: createPostgresSchedulerJobRepository(),
   };
 }
 
@@ -168,5 +173,6 @@ export function createInMemoryContainer(): RepositoryContainer {
     deadLetters: createInMemoryDeadLetterRepository(),
     memoryRecords: createInMemoryMemoryRecordRepository(),
     providerEvidence: createInMemoryProviderEvidenceRepository(),
+    schedulerJobs: createInMemorySchedulerJobRepository(),
   };
 }

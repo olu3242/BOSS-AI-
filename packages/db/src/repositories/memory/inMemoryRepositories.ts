@@ -29,6 +29,8 @@ import type {
   DeadLetterEntry,
   MemoryRecord,
   ProviderEvidence,
+  SchedulerJob,
+  SchedulerJobState,
 } from "@boss/types";
 import type {
   BusinessRepository,
@@ -57,6 +59,7 @@ import type {
   DeadLetterRepository,
   MemoryRecordRepository,
   ProviderEvidenceRepository,
+  SchedulerJobRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -754,6 +757,52 @@ export function createInMemoryProviderEvidenceRepository(): ProviderEvidenceRepo
       return Array.from(records.values()).filter(
         (r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt
       );
+    },
+  };
+}
+
+export function createInMemorySchedulerJobRepository(): SchedulerJobRepository {
+  const jobs = new Map<string, SchedulerJob>();
+  return {
+    async create(input) {
+      const job: SchedulerJob = { id: randomUUID(), ...input, ...stamp() };
+      jobs.set(job.id, job);
+      return job;
+    },
+    async findById(orgId, id) {
+      const job = jobs.get(id);
+      return job && job.orgId === orgId && !job.deletedAt ? job : null;
+    },
+    async updateState(orgId, id, state, fields = {}) {
+      const job = jobs.get(id);
+      if (!job || job.orgId !== orgId) throw new Error(`SchedulerJob ${id} not found`);
+      const updated: SchedulerJob = {
+        ...job,
+        state,
+        lastRunAt: fields.lastRunAt ?? job.lastRunAt,
+        nextRunAt: fields.nextRunAt ?? job.nextRunAt,
+        runCount: fields.runCount ?? job.runCount,
+        errorMessage: fields.errorMessage ?? job.errorMessage,
+        updatedAt: new Date().toISOString(),
+      };
+      jobs.set(id, updated);
+      return updated;
+    },
+    async listDuePending(now) {
+      return Array.from(jobs.values()).filter(
+        (j) => j.state === "pending" && j.runAt <= now && !j.deletedAt
+      );
+    },
+    async listByBusiness(orgId, businessId) {
+      return Array.from(jobs.values()).filter(
+        (j) => j.orgId === orgId && j.businessId === businessId && !j.deletedAt
+      );
+    },
+    async cancel(orgId, id) {
+      const job = jobs.get(id);
+      if (job && job.orgId === orgId) {
+        jobs.set(id, { ...job, state: "cancelled" as SchedulerJobState, updatedAt: new Date().toISOString() });
+      }
     },
   };
 }

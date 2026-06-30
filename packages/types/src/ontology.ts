@@ -718,6 +718,26 @@ export interface MemoryRecord extends TenantScoped {
   updatedAt: string;
 }
 
+export type SchedulerTriggerType = "immediate" | "delayed" | "cron" | "recurring";
+export type SchedulerJobState = "pending" | "running" | "completed" | "failed" | "cancelled";
+
+export interface SchedulerJob extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  workflowKey: string;
+  triggerType: SchedulerTriggerType;
+  cronExpression: string | null;
+  timezone: string;
+  runAt: string;
+  state: SchedulerJobState;
+  lastRunAt: string | null;
+  nextRunAt: string | null;
+  runCount: number;
+  maxRuns: number | null;
+  payload: Record<string, unknown>;
+  errorMessage: string | null;
+}
+
 export interface ProviderEvidence extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;

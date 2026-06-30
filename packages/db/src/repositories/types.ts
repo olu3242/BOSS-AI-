@@ -32,6 +32,8 @@ import type {
   ExecutionState,
   MemoryRecord,
   ProviderEvidence,
+  SchedulerJob,
+  SchedulerJobState,
 } from "@boss/types";
 
 export interface BusinessRepository {
@@ -257,4 +259,13 @@ export interface ProviderEvidenceRepository {
   ): Promise<ProviderEvidence>;
   listByToolExecutionId(orgId: string, toolExecutionId: string): Promise<ProviderEvidence[]>;
   listByBusinessId(orgId: string, businessId: string): Promise<ProviderEvidence[]>;
+}
+
+export interface SchedulerJobRepository {
+  create(input: Omit<SchedulerJob, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<SchedulerJob>;
+  findById(orgId: string, id: string): Promise<SchedulerJob | null>;
+  updateState(orgId: string, id: string, state: SchedulerJobState, fields?: Partial<Pick<SchedulerJob, "lastRunAt" | "nextRunAt" | "runCount" | "errorMessage">>): Promise<SchedulerJob>;
+  listDuePending(now: string): Promise<SchedulerJob[]>;
+  listByBusiness(orgId: string, businessId: string): Promise<SchedulerJob[]>;
+  cancel(orgId: string, id: string): Promise<void>;
 }

@@ -1,4 +1,4 @@
-import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepSpec } from "@boss/loop";
+import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepEntry } from "@boss/loop";
 import { decideAiEmployeeAction } from "@boss/mcp";
 import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";
@@ -6,7 +6,7 @@ import type { RepositoryContainer } from "../container.js";
 import type { ToolFabricService } from "./toolFabricService.js";
 
 export interface LoopRuntimeService {
-  execute(orgId: string, businessId: string, workflowKey: string, steps: StepSpec[]): Promise<WorkflowExecution>;
+  execute(orgId: string, businessId: string, workflowKey: string, steps: StepEntry[]): Promise<WorkflowExecution>;
 }
 
 function notImplementedHandler(taskType: string) {
