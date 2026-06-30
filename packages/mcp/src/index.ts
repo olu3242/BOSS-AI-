@@ -35,3 +35,4 @@ export * from "./intelligence/decisionEngine.js";
 export * from "./intelligence/scenarioEngine.js";
 export * from "./intelligence/executiveBrief.js";
 export * from "./intelligence/decisionOptimization.js";
+export * from "./intelligence/kpiDerivation.js";

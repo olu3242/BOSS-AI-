@@ -350,6 +350,12 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.scenario.getForecast(await requireOrgId(req), param(req, "businessId")))
   );
 
+  // KPI Measurement — Goal 19 Business Intelligence
+  v1.get(
+    "/businesses/:businessId/kpis",
+    wrap(async (req) => api.kpiMeasurement.measure(await requireOrgId(req), param(req, "businessId")))
+  );
+
   v1.get(
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())

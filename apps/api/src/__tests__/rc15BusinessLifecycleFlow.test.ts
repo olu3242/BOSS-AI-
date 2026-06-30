@@ -9,7 +9,6 @@ import { createBusinessMriService } from "../services/businessMriService.js";
 import { createBusinessDnaService } from "../services/businessDnaService.js";
 import { createBusinessHealthService } from "../services/businessHealthService.js";
 import { createBusinessCapabilityService } from "../services/businessCapabilityService.js";
-import { createBusinessCapabilityService } from "../services/businessCapabilityService.js";
 import { createBusinessConstraintService } from "../services/businessConstraintService.js";
 import { createBusinessRecommendationService } from "../services/businessRecommendationService.js";
 import { createBusinessDecisionService } from "../services/businessDecisionService.js";

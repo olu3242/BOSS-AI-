@@ -25,6 +25,7 @@ import { createObservabilityService } from "./services/observabilityService.js";
 import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeService.js";
 import { createBusinessDecisionService } from "./services/businessDecisionService.js";
 import { createScenarioService } from "./services/scenarioService.js";
+import { createKpiMeasurementService } from "./services/kpiMeasurementService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -51,6 +52,8 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     }
   );
 
+  const kpiMeasurement = createKpiMeasurementService(repos);
+
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
     businessMri: createBusinessMriController(createBusinessMriService(repos)),
@@ -68,6 +71,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     multiAgentRuntime,
     businessDecision,
     scenario,
+    kpiMeasurement,
   };
 }
 
@@ -88,3 +92,4 @@ export * from "./services/observabilityService.js";
 export * from "./services/multiAgentRuntimeService.js";
 export * from "./services/businessDecisionService.js";
 export * from "./services/scenarioService.js";
+export * from "./services/kpiMeasurementService.js";

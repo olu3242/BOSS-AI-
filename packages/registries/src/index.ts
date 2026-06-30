@@ -20,4 +20,6 @@ export * from "./registries/recommendationDefinition.js";
 export * from "./registries/capabilityContract.js";
 export * from "./registries/providerDefinition.js";
 export * from "./registries/toolDefinition.js";
+export * from "./registries/insight.js";
+export * from "./registries/metric.js";
 export * from "./seed/index.js";
