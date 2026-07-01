@@ -665,6 +665,17 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.aiWorkforce.listActiveForOrg(await requireOrgId(req)))
   );
 
+  // ── Org Health routes ─────────────────────────────────────────────────────
+  v1.get(
+    "/org/health",
+    wrap(async (req) => api.orgHealth.getOrgSummary(await requireOrgId(req)))
+  );
+
+  v1.get(
+    "/businesses/:businessId/health-summary",
+    wrap(async (req) => api.orgHealth.getBusinessSummary(await requireOrgId(req), param(req, "businessId")))
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {

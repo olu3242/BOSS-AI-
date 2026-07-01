@@ -40,6 +40,7 @@ import { createMarketplaceService } from "./services/marketplaceService.js";
 import { createSchedulerService } from "./services/schedulerService.js";
 import { createBteService } from "./services/bteService.js";
 import { createAiWorkforceService } from "./services/aiWorkforceService.js";
+import { createOrgHealthService } from "./services/orgHealthService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -82,6 +83,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const scheduler = createSchedulerService(repos, loopRuntime, workflowStepRegistry);
   const bte = createBteService(repos, businessOperatingLoop, scheduler);
   const aiWorkforce = createAiWorkforceService(repos);
+  const orgHealth = createOrgHealthService(repos, bte, aiWorkforce);
 
   // Product analytics: bridge domain events → analytics events
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
@@ -175,6 +177,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     scheduler,
     bte,
     aiWorkforce,
+    orgHealth,
   };
 }
 
@@ -210,3 +213,4 @@ export * from "./services/betaInviteService.js";
 export * from "./services/schedulerService.js";
 export * from "./services/bteService.js";
 export * from "./services/aiWorkforceService.js";
+export * from "./services/orgHealthService.js";
