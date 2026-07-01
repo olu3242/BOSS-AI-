@@ -453,6 +453,110 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // NPS rating (post-MRI, post-workspace)
+  v1.post(
+    "/nps",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { businessId, score, comment } = req.body as { businessId?: string; score: number; comment?: string };
+      if (typeof score !== "number" || score < 0 || score > 10) {
+        throw new ApiError(400, "invalid_score", "score must be 0–10");
+      }
+      await api.productAnalytics.track({
+        type: "analytics.nps.submitted",
+        orgId,
+        businessId,
+        properties: { score, comment: comment ?? null },
+      });
+      return { status: "recorded" };
+    })
+  );
+
+  // Beta invite management (internal — no extra auth beyond org token)
+  v1.post(
+    "/beta/invites",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.betaInvite.generate(orgId);
+    })
+  );
+
+  v1.get(
+    "/beta/invites",
+    wrap(async () => {
+      return api.betaInvite.list();
+    })
+  );
+
+  v1.post(
+    "/beta/invites/:code/validate",
+    wrap(async (req) => {
+      const code = param(req, "code");
+      const invite = await api.betaInvite.validate(code);
+      return { valid: invite !== null, invite: invite ?? null };
+    })
+  );
+
+  v1.post(
+    "/beta/invites/:code/redeem",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const code = param(req, "code");
+      const { businessId } = req.body as { businessId: string };
+      if (!businessId) throw new ApiError(400, "missing_business_id", "businessId is required");
+      return api.betaInvite.redeem(code, businessId);
+    })
+  );
+
+  // Customer analytics (internal CS use)
+  v1.get(
+    "/analytics/activation",
+    wrap(async () => {
+      return api.productAnalytics.getActivationRate();
+    })
+  );
+
+  v1.get(
+    "/analytics/wab",
+    wrap(async () => {
+      const count = await api.productAnalytics.getWab();
+      return { wab: count };
+    })
+  );
+
+  v1.get(
+    "/analytics/mab",
+    wrap(async () => {
+      const count = await api.productAnalytics.getMab();
+      return { mab: count };
+    })
+  );
+
+  v1.get(
+    "/analytics/funnel/:orgId/:businessId",
+    wrap(async (req) => {
+      const orgId = param(req, "orgId");
+      const businessId = param(req, "businessId");
+      return api.productAnalytics.queryFunnel(orgId, businessId);
+    })
+  );
+
+  v1.get(
+    "/cs/health",
+    wrap(async () => {
+      return api.customerHealth.listScores([]);
+    })
+  );
+
+  v1.get(
+    "/cs/health/:orgId/:businessId",
+    wrap(async (req) => {
+      const orgId = param(req, "orgId");
+      const businessId = param(req, "businessId");
+      return api.customerHealth.computeScore(orgId, businessId);
+    })
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {

@@ -33,6 +33,9 @@ import { createBusinessOperatingLoopService } from "./services/businessOperating
 import { createWorkspaceService } from "./services/workspaceService.js";
 import { createFeatureFlagService } from "./services/featureFlagService.js";
 import { createSupportService } from "./services/supportService.js";
+import { createProductAnalyticsService } from "./services/productAnalyticsService.js";
+import { createCustomerHealthService } from "./services/customerHealthService.js";
+import { createBetaInviteService } from "./services/betaInviteService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -67,6 +70,69 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const workspace = createWorkspaceService(repos);
   const featureFlags = createFeatureFlagService();
   const support = createSupportService(repos);
+  const productAnalytics = createProductAnalyticsService(repos);
+  const customerHealth = createCustomerHealthService(repos);
+  const betaInvite = createBetaInviteService(repos);
+
+  // Product analytics: bridge domain events → analytics events
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
+    "business.created",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.business.created",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { industry: e.payload.industry ?? null, employeeCount: e.payload.employeeCount ?? null },
+      });
+    }
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; mriId: string }>(
+    "mri.completed",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.mri.completed",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { mriId: e.payload.mriId },
+      });
+    }
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; decisionId: string; decisionType?: string; confidenceScore?: number }>(
+    "decision.approved",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.recommendation.accepted",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { decisionId: e.payload.decisionId, decisionType: e.payload.decisionType ?? null, confidenceScore: e.payload.confidenceScore ?? null },
+      });
+    }
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; decisionId: string }>(
+    "decision.rejected",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.recommendation.rejected",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { decisionId: e.payload.decisionId },
+      });
+    }
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; feedbackId: string }>(
+    "support.feedback.submitted",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.feedback.submitted",
+        orgId: e.payload.orgId,
+        properties: { feedbackId: e.payload.feedbackId },
+      });
+    }
+  );
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -93,6 +159,9 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     workspace,
     featureFlags,
     support,
+    productAnalytics,
+    customerHealth,
+    betaInvite,
   };
 }
 
@@ -121,3 +190,6 @@ export * from "./services/businessOperatingLoopService.js";
 export * from "./services/workspaceService.js";
 export * from "./services/featureFlagService.js";
 export * from "./services/supportService.js";
+export * from "./services/productAnalyticsService.js";
+export * from "./services/customerHealthService.js";
+export * from "./services/betaInviteService.js";

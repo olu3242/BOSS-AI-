@@ -171,6 +171,19 @@ export const apiClient = {
       body: JSON.stringify(input),
     }),
 
+  submitNps: (orgId: string, input: { businessId: string; score: number; comment?: string }) =>
+    request<{ status: string }>(orgId, "/nps", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  validateBetaInvite: (code: string) =>
+    fetch(`${API_BASE_URL}/api/v1/beta/invites/${encodeURIComponent(code)}/validate`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({}),
+    }).then((r) => r.json() as Promise<{ valid: boolean; invite: unknown }>),
+
   getFlags: () =>
     fetch(`${API_BASE_URL}/api/v1/flags`).then((r) => r.json() as Promise<Record<string, boolean>>),
 
