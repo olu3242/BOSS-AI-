@@ -608,6 +608,63 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── BTE routes ────────────────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/bte/run",
+    wrap(async (req) => api.bte.runCycle(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/bte/schedule",
+    wrap(async (req) => api.bte.scheduleDailyCycle(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/bte/schedule",
+    wrap(async (req) => {
+      await api.bte.cancelDailyCycle(await requireOrgId(req), param(req, "businessId"));
+      return { status: "cancelled" };
+    })
+  );
+
+  v1.get(
+    "/bte/schedules",
+    wrap(async (req) => api.bte.listScheduled(await requireOrgId(req)))
+  );
+
+  // ── AI Workforce routes ───────────────────────────────────────────────────
+  v1.get(
+    "/ai-workforce",
+    wrap(async (_req) => api.aiWorkforce.listAll())
+  );
+
+  v1.get(
+    "/ai-workforce/:employeeKey",
+    wrap(async (req) => {
+      const employee = api.aiWorkforce.getEmployee(param(req, "employeeKey"));
+      if (!employee) throw new ApiError(404, "not_found", `AI employee '${param(req, "employeeKey")}' not found`);
+      return employee;
+    })
+  );
+
+  v1.post(
+    "/ai-workforce/:employeeKey/activate",
+    wrap(async (req) => api.aiWorkforce.activateEmployee(await requireOrgId(req), param(req, "employeeKey")))
+  );
+
+  v1.post(
+    "/ai-workforce/:employeeKey/deactivate",
+    wrap(async (req) => {
+      await api.aiWorkforce.deactivateEmployee(await requireOrgId(req), param(req, "employeeKey"));
+      return { status: "deactivated" };
+    })
+  );
+
+  v1.get(
+    "/ai-workforce/active",
+    wrap(async (req) => api.aiWorkforce.listActiveForOrg(await requireOrgId(req)))
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {
