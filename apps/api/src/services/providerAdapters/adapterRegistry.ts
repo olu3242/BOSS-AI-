@@ -7,6 +7,15 @@ import { createTeamsAdapter } from "./teamsAdapter.js";
 import { createMessageBirdAdapter } from "./messagebirdAdapter.js";
 import { createGoogleCalendarAdapter } from "./googleCalendarAdapter.js";
 import { createQuickBooksAdapter } from "./quickbooksAdapter.js";
+import { createMailchimpAdapter } from "./mailchimpAdapter.js";
+import { createActiveCampaignAdapter } from "./activeCampaignAdapter.js";
+import { createXeroAdapter } from "./xeroAdapter.js";
+import { createSalesforceAdapter } from "./salesforceAdapter.js";
+import { createHubSpotAdapter } from "./hubspotAdapter.js";
+import { createStripeAdapter } from "./stripeAdapter.js";
+import { createServiceTitanAdapter } from "./serviceTitanAdapter.js";
+import { createJobberAdapter } from "./jobberAdapter.js";
+import { createOutlookCalendarAdapter } from "./outlookCalendarAdapter.js";
 
 /**
  * AdapterRegistry — maps providerKey -> ProviderAdapter.
@@ -40,6 +49,15 @@ export function createAdapterRegistry(): Map<string, ProviderAdapter> {
     createTeamsAdapter(),
     createGoogleCalendarAdapter(),
     createQuickBooksAdapter(),
+    createMailchimpAdapter(),
+    createActiveCampaignAdapter(),
+    createXeroAdapter(),
+    createSalesforceAdapter(),
+    createHubSpotAdapter(),
+    createStripeAdapter(),
+    createServiceTitanAdapter(),
+    createJobberAdapter(),
+    createOutlookCalendarAdapter(),
   ];
   for (const adapter of adapters) {
     registry.set(adapter.providerKey, adapter);
