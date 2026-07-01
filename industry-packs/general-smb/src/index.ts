@@ -30,8 +30,13 @@ import { seedPlannings } from "./data/plannings.js";
 import { seedVerifications } from "./data/verifications.js";
 import { seedOptimizations } from "./data/optimizations.js";
 import { seedLearnings } from "./data/learnings.js";
+import { seedWorkspaces } from "./data/workspaces.js";
+import { seedTimelines } from "./data/timelines.js";
+import { seedApprovals } from "./data/approvals.js";
+import { seedAutomationCenter } from "./data/automationCenter.js";
+import { seedIntelligenceCenter } from "./data/intelligenceCenter.js";
 
-export const GENERAL_SMB_PACK_VERSION = "0.7.0";
+export const GENERAL_SMB_PACK_VERSION = "0.8.0";
 
 let installed = false;
 
@@ -65,6 +70,11 @@ export function installGeneralSmbPack(): void {
   seedVerifications();
   seedOptimizations();
   seedLearnings();
+  seedWorkspaces();
+  seedTimelines();
+  seedApprovals();
+  seedAutomationCenter();
+  seedIntelligenceCenter();
 }
 
 export {
@@ -93,4 +103,9 @@ export {
   seedVerifications,
   seedOptimizations,
   seedLearnings,
+  seedWorkspaces,
+  seedTimelines,
+  seedApprovals,
+  seedAutomationCenter,
+  seedIntelligenceCenter,
 };
