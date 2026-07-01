@@ -73,9 +73,9 @@ export const apiClient = {
       health: { overallScore: number; generatedAt: string } | null;
       kpis: { readings: Array<{ kpiKey: string; label: string; value: number | null; unit: string }> };
       decisions: {
-        pending: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
-        approved: Array<{ id: string; title: string; status: string }>;
-        recentlyCompleted: Array<{ id: string; title: string; status: string }>;
+        pending: Array<{ id: string; objective: string; status: string; confidenceScore: number }>;
+        approved: Array<{ id: string; objective: string; status: string }>;
+        recentlyCompleted: Array<{ id: string; objective: string; status: string }>;
       };
       approvalQueue: {
         pendingDecisions: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
@@ -93,7 +93,7 @@ export const apiClient = {
 
   getPendingApprovals: (orgId: string, businessId: string) =>
     request<{
-      pendingDecisions: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
+      pendingDecisions: Array<{ id: string; objective: string; status: string; confidenceScore: number }>;
       pendingRecommendations: Array<{ id: string; title: string; status: string }>;
       totalPending: number;
     }>(orgId, `/businesses/${businessId}/approvals`),
@@ -108,6 +108,12 @@ export const apiClient = {
     request<{ decision: { id: string; status: string } }>(orgId, `/decisions/${decisionId}/reject`, {
       method: "POST",
       body: JSON.stringify({ reason }),
+    }),
+
+  approveRecommendation: (orgId: string, recommendationId: string) =>
+    request<{ id: string; status: string }>(orgId, `/recommendations/${recommendationId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({}),
     }),
 
   startMri: (orgId: string, businessId: string) =>

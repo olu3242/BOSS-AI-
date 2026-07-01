@@ -119,7 +119,7 @@ export default async function WorkspacePage({ params }: Props) {
           <div className="flex flex-col gap-2">
             {decisions.pending.map((d) => (
               <div key={d.id} className="flex items-center justify-between rounded border border-yellow-900/50 bg-yellow-950/20 px-4 py-3">
-                <span className="text-sm">{d.title}</span>
+                <span className="text-sm">{d.objective}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-neutral-400">
                     {Math.round(d.confidenceScore * 100)}% confidence
@@ -132,7 +132,7 @@ export default async function WorkspacePage({ params }: Props) {
             ))}
             {decisions.approved.map((d) => (
               <div key={d.id} className="flex items-center justify-between rounded border border-green-900/50 bg-green-950/20 px-4 py-3">
-                <span className="text-sm">{d.title}</span>
+                <span className="text-sm">{d.objective}</span>
                 <span className="rounded bg-green-900/50 px-2 py-0.5 text-xs text-green-400">{d.status}</span>
               </div>
             ))}

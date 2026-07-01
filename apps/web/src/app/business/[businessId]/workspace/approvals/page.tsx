@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
 import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
   params: { businessId: string };
@@ -52,35 +53,16 @@ export default async function ApprovalsPage({ params }: Props) {
                   <div key={d.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-medium">{d.title}</p>
+                        <p className="font-medium">{d.objective}</p>
                         <p className="mt-1 text-sm text-neutral-400">
                           Confidence: {Math.round(d.confidenceScore * 100)}%
                         </p>
                       </div>
-                      <div className="flex shrink-0 gap-2">
-                        <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400">
-                          {d.status}
-                        </span>
-                      </div>
+                      <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400 shrink-0">
+                        {d.status}
+                      </span>
                     </div>
-                    <div className="mt-3 flex gap-2 border-t border-neutral-800 pt-3">
-                      <button
-                        type="button"
-                        disabled
-                        className="rounded bg-green-700 px-3 py-1.5 text-sm font-medium text-white opacity-50 cursor-not-allowed"
-                        title="Approval actions require authentication"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        disabled
-                        className="rounded bg-neutral-700 px-3 py-1.5 text-sm font-medium text-white opacity-50 cursor-not-allowed"
-                        title="Approval actions require authentication"
-                      >
-                        Reject
-                      </button>
-                    </div>
+                    <DecisionActions decisionId={d.id} />
                   </div>
                 ))}
               </div>
@@ -99,6 +81,7 @@ export default async function ApprovalsPage({ params }: Props) {
                       <p className="font-medium">{r.title}</p>
                       <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400">{r.status}</span>
                     </div>
+                    <RecommendationActions recommendationId={r.id} />
                   </div>
                 ))}
               </div>
