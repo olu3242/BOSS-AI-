@@ -1,13 +1,14 @@
 interface ForgotPasswordPageProps {
-  readonly searchParams: {
+  readonly searchParams: Promise<{
     readonly error?: string;
     readonly sent?: string;
-  };
+  }>;
 }
 
-export default function ForgotPasswordPage({
+export default async function ForgotPasswordPage({
   searchParams,
 }: ForgotPasswordPageProps) {
+  const query = await searchParams;
   return (
     <main className="auth-shell">
       <a className="brand-link" href="/">BOSS</a>
@@ -17,12 +18,12 @@ export default function ForgotPasswordPage({
         <p className="subtle">
           Enter your account email and we will send a secure recovery link.
         </p>
-        {searchParams.sent ? (
+        {query.sent ? (
           <p className="form-success" role="status">
             If that account exists, a recovery email is on its way.
           </p>
         ) : null}
-        {searchParams.error ? (
+        {query.error ? (
           <p className="form-error" role="alert">
             Password recovery is temporarily unavailable.
           </p>

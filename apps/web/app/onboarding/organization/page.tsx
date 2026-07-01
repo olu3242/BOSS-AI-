@@ -5,12 +5,13 @@ import {
 } from "../../../src/server/auth";
 
 interface OrganizationOnboardingProps {
-  readonly searchParams: { readonly error?: string };
+  readonly searchParams: Promise<{ readonly error?: string }>;
 }
 
 export default async function OrganizationOnboarding({
   searchParams,
 }: OrganizationOnboardingProps) {
+  const query = await searchParams;
   const session = await requireBrowserIdentity("/onboarding/organization");
   const { organizations } = createBrowserIdentityServices();
   if ((await organizations.list(session.identity.userId)).length > 0) {
@@ -24,7 +25,7 @@ export default async function OrganizationOnboarding({
         <p className="eyebrow">Organization setup</p>
         <h1 id="organization-title">Name your business</h1>
         <p className="subtle">This creates the secure tenant for your team and business data.</p>
-        {searchParams.error ? <p className="form-error" role="alert">{searchParams.error}</p> : null}
+        {query.error ? <p className="form-error" role="alert">{query.error}</p> : null}
         <form action="/api/organizations" method="post">
           <label>
             Business name
