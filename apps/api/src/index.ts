@@ -87,6 +87,14 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const orgHealth = createOrgHealthService(repos, bte, aiWorkforce);
   const insight = createInsightService(repos);
 
+  // Auto-enroll every new business in the daily BTE cycle (RC8)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
+    "business.created",
+    (e) => {
+      void bte.scheduleDailyCycle(e.payload.orgId, e.payload.businessId);
+    }
+  );
+
   // Product analytics: bridge domain events → analytics events
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
     "business.created",
