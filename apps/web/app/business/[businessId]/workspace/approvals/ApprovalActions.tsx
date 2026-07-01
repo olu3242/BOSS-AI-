@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface DecisionActionsProps {
   decisionId: string;

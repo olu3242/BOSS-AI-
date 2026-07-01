@@ -1,10 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FeedbackButton } from "../../../../components/FeedbackButton";
+import { FeedbackButton } from "../../../../src/components/FeedbackButton";
 
 interface WorkspaceLayoutProps {
   children: ReactNode;
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 const NAV_ITEMS = [
@@ -16,8 +16,9 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Settings" },
 ];
 
-export default function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
-  const base = `/business/${params.businessId}/workspace`;
+export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
+  const { businessId } = await params;
+  const base = `/business/${businessId}/workspace`;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -50,7 +51,7 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
         <div className="mx-auto flex max-w-6xl items-center justify-between text-xs text-neutral-600">
           <span>BOSS v0.9.0-rc1</span>
           <div className="flex items-center gap-4">
-            <FeedbackButton businessId={params.businessId} />
+            <FeedbackButton businessId={businessId} />
             <a
               href="mailto:support@boss.ai"
               className="hover:text-neutral-400 transition-colors"

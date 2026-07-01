@@ -1,8 +1,8 @@
-import { apiClient, ApiClientError } from "../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 function ScoreBar({ score }: { score: number }) {
@@ -15,9 +15,10 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export default async function WorkspacePage({ params }: Props) {
+  const { businessId } = await params;
   let snapshot;
   try {
-    snapshot = await apiClient.getWorkspace(DEMO_ORG_ID, params.businessId);
+    snapshot = await apiClient.getWorkspace(DEMO_ORG_ID, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load workspace.";
     return (

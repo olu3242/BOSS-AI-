@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiClient } from "../../lib/apiClient";
+import { apiClient } from "../../src/lib/apiClient";
 
 const DEMO_ORG_ID = "00000000-0000-0000-0000-000000000001";
 

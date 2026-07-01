@@ -1,15 +1,16 @@
-import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 export default async function ApprovalsPage({ params }: Props) {
+  const { businessId } = await params;
   let queue;
   try {
-    queue = await apiClient.getPendingApprovals(DEMO_ORG_ID, params.businessId);
+    queue = await apiClient.getPendingApprovals(DEMO_ORG_ID, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load approvals.";
     return (
