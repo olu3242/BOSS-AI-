@@ -676,6 +676,22 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.orgHealth.getBusinessSummary(await requireOrgId(req), param(req, "businessId")))
   );
 
+  // ── Insight routes ────────────────────────────────────────────────────────
+  v1.get(
+    "/org/insights",
+    wrap(async (req) => api.insight.getOrgInsights(await requireOrgId(req)))
+  );
+
+  v1.get(
+    "/org/constraint-frequencies",
+    wrap(async (req) => api.insight.getConstraintFrequencies(await requireOrgId(req)))
+  );
+
+  v1.get(
+    "/recommendations/templates",
+    wrap(async (_req) => api.insight.getRecommendationTemplates())
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {
