@@ -1,8 +1,8 @@
-import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -23,9 +23,10 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export default async function TimelinePage({ params }: Props) {
+  const { businessId } = await params;
   let data;
   try {
-    data = await apiClient.getTimeline(DEMO_ORG_ID, params.businessId);
+    data = await apiClient.getTimeline(DEMO_ORG_ID, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load timeline.";
     return (

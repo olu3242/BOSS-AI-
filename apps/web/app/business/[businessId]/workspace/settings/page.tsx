@@ -1,14 +1,15 @@
-import { apiClient } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 export default async function SettingsPage({ params }: Props) {
+  const { businessId } = await params;
   let business: Awaited<ReturnType<typeof apiClient.getBusiness>> | null = null;
   try {
-    business = await apiClient.getBusiness(DEMO_ORG_ID, params.businessId);
+    business = await apiClient.getBusiness(DEMO_ORG_ID, businessId);
   } catch {
     business = null;
   }
@@ -23,7 +24,7 @@ export default async function SettingsPage({ params }: Props) {
           <dl className="grid grid-cols-2 gap-4">
             <div>
               <dt className="text-xs text-neutral-500">Business ID</dt>
-              <dd className="mt-1 font-mono text-sm text-neutral-300">{params.businessId}</dd>
+              <dd className="mt-1 font-mono text-sm text-neutral-300">{businessId}</dd>
             </div>
             {business && (
               <>

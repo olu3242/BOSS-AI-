@@ -1,18 +1,19 @@
-import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 export default async function AutomationPage({ params }: Props) {
+  const { businessId } = await params;
   let integrations;
   let executions;
 
   try {
     [integrations, executions] = await Promise.all([
-      apiClient.getIntegrations(DEMO_ORG_ID, params.businessId),
-      apiClient.getToolExecutions(DEMO_ORG_ID, params.businessId),
+      apiClient.getIntegrations(DEMO_ORG_ID, businessId),
+      apiClient.getToolExecutions(DEMO_ORG_ID, businessId),
     ]);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load automation data.";

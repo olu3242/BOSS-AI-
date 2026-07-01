@@ -1,12 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { apiClient, ApiClientError } from "../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../lib/demoOrg";
+import { use, useState } from "react";
+import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 const QUESTIONS = [
@@ -48,6 +48,7 @@ const QUESTIONS = [
 ];
 
 export default function MriPage({ params }: Props) {
+  const { businessId } = use(params);
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -66,7 +67,7 @@ export default function MriPage({ params }: Props) {
     try {
       let activeMriId = mriId;
       if (!activeMriId) {
-        const mri = await apiClient.startMri(DEMO_ORG_ID, params.businessId);
+        const mri = await apiClient.startMri(DEMO_ORG_ID, businessId);
         activeMriId = mri.id;
         setMriId(activeMriId);
       }
@@ -89,7 +90,7 @@ export default function MriPage({ params }: Props) {
           await apiClient.completeMriSection(DEMO_ORG_ID, activeMriId, section);
         }
         await apiClient.completeMri(DEMO_ORG_ID, activeMriId);
-        router.push(`/business/${params.businessId}/mri/complete`);
+        router.push(`/business/${businessId}/mri/complete`);
       } else {
         setStep(step + 1);
       }

@@ -1,20 +1,21 @@
-import { apiClient, ApiClientError } from "../../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
 export default async function IntelligencePage({ params }: Props) {
+  const { businessId } = await params;
   let kpis;
   let rootCause;
   let decisions;
 
   try {
     [kpis, rootCause, decisions] = await Promise.all([
-      apiClient.getKpis(DEMO_ORG_ID, params.businessId),
-      apiClient.getRootCause(DEMO_ORG_ID, params.businessId).catch(() => null),
-      apiClient.getDecisions(DEMO_ORG_ID, params.businessId),
+      apiClient.getKpis(DEMO_ORG_ID, businessId),
+      apiClient.getRootCause(DEMO_ORG_ID, businessId).catch(() => null),
+      apiClient.getDecisions(DEMO_ORG_ID, businessId),
     ]);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load intelligence data.";

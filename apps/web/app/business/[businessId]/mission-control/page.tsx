@@ -1,10 +1,15 @@
-import { apiClient, ApiClientError } from "../../../../lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../lib/demoOrg";
+import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../src/lib/demoOrg";
 
-export default async function MissionControlPage({ params }: { params: { businessId: string } }) {
+export default async function MissionControlPage({
+  params,
+}: {
+  params: Promise<{ businessId: string }>;
+}) {
+  const { businessId } = await params;
   let snapshot;
   try {
-    snapshot = await apiClient.getMissionControlSnapshot(DEMO_ORG_ID, params.businessId);
+    snapshot = await apiClient.getMissionControlSnapshot(DEMO_ORG_ID, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load Mission Control.";
     return (

@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { NpsWidget } from "../../../../../components/NpsWidget";
+import { NpsWidget } from "../../../../../src/components/NpsWidget";
 
 interface Props {
-  params: { businessId: string };
+  params: Promise<{ businessId: string }>;
 }
 
-export default function MriCompletePage({ params }: Props) {
+export default async function MriCompletePage({ params }: Props) {
+  const { businessId } = await params;
   return (
     <main className="mx-auto flex max-w-2xl flex-col items-center gap-8 px-6 py-24">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-900/40 text-3xl">
@@ -22,7 +23,7 @@ export default function MriCompletePage({ params }: Props) {
 
       <div className="flex flex-col gap-3 w-full max-w-xs text-center">
         <Link
-          href={`/business/${params.businessId}/workspace`}
+          href={`/business/${businessId}/workspace`}
           className="rounded bg-accent px-6 py-3 font-display text-sm text-white"
         >
           View your workspace →
@@ -33,7 +34,7 @@ export default function MriCompletePage({ params }: Props) {
       </div>
 
       <div className="w-full max-w-lg">
-        <NpsWidget businessId={params.businessId} context="BOSS" />
+        <NpsWidget businessId={businessId} context="BOSS" />
       </div>
     </main>
   );
