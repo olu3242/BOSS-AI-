@@ -110,6 +110,32 @@ export const apiClient = {
       body: JSON.stringify({ reason }),
     }),
 
+  startMri: (orgId: string, businessId: string) =>
+    request<{ id: string; businessId: string; status: string; version: string; startedAt: string; completedAt: string | null }>(
+      orgId, `/businesses/${businessId}/mri`, { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  submitMriAnswer: (orgId: string, mriId: string, sectionKey: string, questionKey: string, value: unknown) =>
+    request<{ id: string; mriId: string; sectionKey: string; questionKey: string; value: unknown }>(
+      orgId, `/mri/${mriId}/answers`, {
+        method: "POST",
+        body: JSON.stringify({ sectionKey, questionKey, value }),
+      }
+    ),
+
+  completeMriSection: (orgId: string, mriId: string, sectionKey: string) =>
+    request<void>(orgId, `/mri/${mriId}/sections/${sectionKey}/complete`, { method: "POST", body: JSON.stringify({}) }),
+
+  completeMri: (orgId: string, mriId: string) =>
+    request<{ id: string; status: string; completedAt: string }>(
+      orgId, `/mri/${mriId}/complete`, { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  getMriResponses: (orgId: string, mriId: string) =>
+    request<Array<{ id: string; sectionKey: string; questionKey: string; value: unknown }>>(
+      orgId, `/mri/${mriId}/responses`
+    ),
+
   getKpis: (orgId: string, businessId: string) =>
     request<{ readings: Array<{ kpiKey: string; label: string; value: number | null; unit: string; trend: string | null }>; measuredAt: string }>(
       orgId, `/businesses/${businessId}/kpis`

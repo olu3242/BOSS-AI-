@@ -27,7 +27,7 @@ export default function NewBusinessPage() {
         locationCount: Number(form.get("locationCount")),
         businessHours: form.get("businessHours"),
       });
-      router.push(`/business/${business.id}/mission-control`);
+      router.push(`/business/${business.id}/mri`);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.body.message : "Something went wrong. Please try again.");
     } finally {
