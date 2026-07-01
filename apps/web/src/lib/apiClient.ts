@@ -60,4 +60,58 @@ export const apiClient = {
       deadLetters: unknown[];
       timeline: Array<{ id: string; type: string; description: string; occurredAt: string }>;
     }>(orgId, `/businesses/${businessId}/mission-control`),
+
+  getWorkspace: (orgId: string, businessId: string) =>
+    request<{
+      businessId: string;
+      workspaceKey: string;
+      health: { overallScore: number; generatedAt: string } | null;
+      kpis: { readings: Array<{ kpiKey: string; label: string; value: number | null; unit: string }> };
+      decisions: {
+        pending: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
+        approved: Array<{ id: string; title: string; status: string }>;
+        recentlyCompleted: Array<{ id: string; title: string; status: string }>;
+      };
+      approvalQueue: {
+        pendingDecisions: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
+        pendingRecommendations: Array<{ id: string; title: string; status: string }>;
+        totalPending: number;
+      };
+      loopStatus: { lastRunAt: string | null; activeConstraints: number; activeRecommendations: number };
+      assembledAt: string;
+    }>(orgId, `/businesses/${businessId}/workspace`),
+
+  getTimeline: (orgId: string, businessId: string) =>
+    request<{
+      entries: Array<{ id: string; type: string; description: string; occurredAt: string }>;
+    }>(orgId, `/businesses/${businessId}/timeline`),
+
+  getPendingApprovals: (orgId: string, businessId: string) =>
+    request<{
+      pendingDecisions: Array<{ id: string; title: string; status: string; confidenceScore: number }>;
+      pendingRecommendations: Array<{ id: string; title: string; status: string }>;
+      totalPending: number;
+    }>(orgId, `/businesses/${businessId}/approvals`),
+
+  approveDecision: (orgId: string, decisionId: string) =>
+    request<{ decision: { id: string; status: string } }>(orgId, `/decisions/${decisionId}/approve`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+
+  rejectDecision: (orgId: string, decisionId: string, reason: string) =>
+    request<{ decision: { id: string; status: string } }>(orgId, `/decisions/${decisionId}/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+
+  getIntegrations: (orgId: string, businessId: string) =>
+    request<{
+      integrations: Array<{ providerKey: string; status: string; connectedAt: string | null }>;
+    }>(orgId, `/businesses/${businessId}/integrations`),
+
+  getToolExecutions: (orgId: string, businessId: string) =>
+    request<{
+      executions: Array<{ id: string; providerKey: string; toolKey: string; status: string; executedAt: string }>;
+    }>(orgId, `/businesses/${businessId}/tools/executions`),
 };

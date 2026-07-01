@@ -400,6 +400,17 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // Goal 22 — Unified Business Workspace
+  v1.get(
+    "/businesses/:businessId/workspace",
+    wrap(async (req) => api.workspace.getWorkspace(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.get(
+    "/businesses/:businessId/approvals",
+    wrap(async (req) => api.workspace.getPendingApprovals(await requireOrgId(req), param(req, "businessId")))
+  );
+
   v1.get(
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())

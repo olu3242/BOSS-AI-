@@ -30,6 +30,7 @@ import { createRootCauseService } from "./services/rootCauseService.js";
 import { createExecutionPlanService } from "./services/executionPlanService.js";
 import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
 import { createBusinessOperatingLoopService } from "./services/businessOperatingLoopService.js";
+import { createWorkspaceService } from "./services/workspaceService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -61,6 +62,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const executionPlan = createExecutionPlanService(repos);
   const outcomeVerification = createOutcomeVerificationService(repos);
   const businessOperatingLoop = createBusinessOperatingLoopService(repos);
+  const workspace = createWorkspaceService(repos);
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -84,6 +86,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     executionPlan,
     outcomeVerification,
     businessOperatingLoop,
+    workspace,
   };
 }
 
@@ -109,3 +112,4 @@ export * from "./services/rootCauseService.js";
 export * from "./services/executionPlanService.js";
 export * from "./services/outcomeVerificationService.js";
 export * from "./services/businessOperatingLoopService.js";
+export * from "./services/workspaceService.js";
