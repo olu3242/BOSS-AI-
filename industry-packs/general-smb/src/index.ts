@@ -9,7 +9,9 @@ import { seedCapabilities } from "./data/capabilities.js";
 import { seedConstraints } from "./data/constraints.js";
 import { seedKpis } from "./data/kpis.js";
 import { seedAiEmployees } from "./data/aiEmployees.js";
+import { seedAgents } from "./data/agents.js";
 import { seedWorkflows } from "./data/workflows.js";
+import { seedTriggers } from "./data/triggers.js";
 import { seedPrompts } from "./data/prompts.js";
 import { seedMri } from "./data/mri.js";
 import { seedDnaDimensions } from "./data/dna.js";
@@ -35,8 +37,11 @@ import { seedTimelines } from "./data/timelines.js";
 import { seedApprovals } from "./data/approvals.js";
 import { seedAutomationCenter } from "./data/automationCenter.js";
 import { seedIntelligenceCenter } from "./data/intelligenceCenter.js";
+import { seedExecutionArchitecture } from "./data/executionArchitecture.js";
+import { seedGovernanceCertification } from "./data/governanceCertification.js";
+import { seedCoreRegistries } from "@boss/registries";
 
-export const GENERAL_SMB_PACK_VERSION = "0.8.0";
+export { GENERAL_SMB_PACK_VERSION } from "./version.js";
 
 let installed = false;
 
@@ -45,11 +50,14 @@ export function installGeneralSmbPack(): void {
     return;
   }
   installed = true;
+  seedCoreRegistries();
   seedCapabilities();
   seedConstraints();
   seedKpis();
   seedAiEmployees();
+  seedAgents();
   seedWorkflows();
+  seedTriggers();
   seedPrompts();
   seedMri();
   seedDnaDimensions();
@@ -75,6 +83,8 @@ export function installGeneralSmbPack(): void {
   seedApprovals();
   seedAutomationCenter();
   seedIntelligenceCenter();
+  seedExecutionArchitecture();
+  seedGovernanceCertification();
 }
 
 export {
@@ -82,7 +92,9 @@ export {
   seedConstraints,
   seedKpis,
   seedAiEmployees,
+  seedAgents,
   seedWorkflows,
+  seedTriggers,
   seedPrompts,
   seedMri,
   seedDnaDimensions,
@@ -108,4 +120,6 @@ export {
   seedApprovals,
   seedAutomationCenter,
   seedIntelligenceCenter,
+  seedExecutionArchitecture,
+  seedGovernanceCertification,
 };

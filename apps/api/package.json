@@ -5,7 +5,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/devServer.ts",
     "start": "node dist/server.js",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -21,6 +21,7 @@
     "@boss/registries": "workspace:*",
     "@boss/shared": "workspace:*",
     "@boss/types": "workspace:*",
+    "@supabase/supabase-js": "^2.45.0",
     "express": "4",
     "jose": "^6.2.3",
     "zod": "^3.0.0"

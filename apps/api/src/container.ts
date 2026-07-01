@@ -37,6 +37,9 @@ import {
   createPostgresExecutionEventRepository,
   createPostgresDeadLetterRepository,
   createPostgresMemoryRecordRepository,
+  createPostgresBusinessDiagnosticRepository,
+  createPostgresBusinessDiscoveryRepository,
+  createPostgresBusinessGraphRepository,
   createInMemoryBusinessRepository,
   createInMemoryBusinessProfileRepository,
   createInMemoryBusinessMriRepository,
@@ -60,6 +63,9 @@ import {
   createInMemoryExecutionEventRepository,
   createInMemoryDeadLetterRepository,
   createInMemoryMemoryRecordRepository,
+  createInMemoryBusinessDiagnosticRepository,
+  createInMemoryBusinessDiscoveryRepository,
+  createInMemoryBusinessGraphRepository,
   type BusinessRepository,
   type BusinessProfileRepository,
   type BusinessMriRepository,
@@ -83,6 +89,9 @@ import {
   type ExecutionEventRepository,
   type DeadLetterRepository,
   type MemoryRecordRepository,
+  type BusinessDiagnosticRepository,
+  type BusinessDiscoveryRepository,
+  type BusinessGraphRepository,
 } from "@boss/db";
 import { createInMemoryEventBus, createDurableEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
@@ -119,6 +128,9 @@ export interface RepositoryContainer {
   schedulerJobs: SchedulerJobRepository;
   businessDecisions: BusinessDecisionRepository;
   businessScenarios: BusinessScenarioRepository;
+  businessDiagnostics: BusinessDiagnosticRepository;
+  businessDiscovery: BusinessDiscoveryRepository;
+  businessGraph: BusinessGraphRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -155,6 +167,9 @@ export function createPostgresContainer(): RepositoryContainer {
     schedulerJobs: createPostgresSchedulerJobRepository(),
     businessDecisions: createPostgresBusinessDecisionRepository(),
     businessScenarios: createPostgresBusinessScenarioRepository(),
+    businessDiagnostics: createPostgresBusinessDiagnosticRepository(),
+    businessDiscovery: createPostgresBusinessDiscoveryRepository(),
+    businessGraph: createPostgresBusinessGraphRepository(),
   };
 }
 
@@ -194,5 +209,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     schedulerJobs: createInMemorySchedulerJobRepository(),
     businessDecisions: createInMemoryBusinessDecisionRepository(),
     businessScenarios: createInMemoryBusinessScenarioRepository(),
+    businessDiagnostics: createInMemoryBusinessDiagnosticRepository(),
+    businessDiscovery: createInMemoryBusinessDiscoveryRepository(),
+    businessGraph: createInMemoryBusinessGraphRepository(),
   };
 }

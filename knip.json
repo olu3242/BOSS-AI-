@@ -23,5 +23,6 @@
     "@boss/shared",
     "@boss/ui"
   ],
+  "ignoreBinaries": ["powershell"],
   "ignoreExportsUsedInFile": true
 }

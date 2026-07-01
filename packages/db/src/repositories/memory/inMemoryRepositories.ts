@@ -35,39 +35,55 @@ import type {
   DecisionStatus,
   BusinessScenario,
   ScenarioComparison,
+  BusinessDiagnosticReport,
+  Organization,
+  OrganizationWithMembership,
+  BusinessContextSnapshot,
+  BusinessDiscoveryHistoryEntry,
+  CanonicalBusinessContextData,
+  BusinessEdge,
+  BusinessGraphHistoryEntry,
+  BusinessNode,
+  GraphSnapshot,
 } from "@boss/types";
-import type {
-  BusinessRepository,
-  BusinessProfileRepository,
-  BusinessMriRepository,
-  BusinessDnaRepository,
-  BusinessHealthRepository,
-  BusinessCapabilityRepository,
-  BusinessTimelineRepository,
-  BusinessConstraintRepository,
-  StoredConstraintEvidence,
-  ConstraintScoreRepository,
-  ConstraintPriorityRepository,
-  BusinessRecommendationRepository,
-  StoredRecommendationEvidence,
-  RecommendationScoreRepository,
-  RecommendationPriorityRepository,
-  BusinessDecisionRepository,
-  BusinessScenarioRepository,
-  TransformationRoadmapRepository,
-  IntegrationAccountRepository,
-  PermissionPolicyRepository,
-  ToolExecutionRepository,
-  ProviderHealthRepository,
-  WorkflowExecutionRepository,
-  TaskExecutionRepository,
-  ExecutionEventRepository,
-  DeadLetterRepository,
-  MemoryRecordRepository,
-  ProviderEvidenceRepository,
-  SchedulerJobRepository,
-  EventLogRepository,
-  EventLogEntry,
+import {
+  BusinessDiscoveryConcurrencyError,
+  BusinessGraphConcurrencyError,
+  type BusinessRepository,
+  type BusinessProfileRepository,
+  type BusinessMriRepository,
+  type BusinessDnaRepository,
+  type BusinessHealthRepository,
+  type BusinessCapabilityRepository,
+  type BusinessTimelineRepository,
+  type BusinessConstraintRepository,
+  type StoredConstraintEvidence,
+  type ConstraintScoreRepository,
+  type ConstraintPriorityRepository,
+  type BusinessRecommendationRepository,
+  type StoredRecommendationEvidence,
+  type RecommendationScoreRepository,
+  type BusinessDiagnosticRepository,
+  type OrganizationRepository,
+  type RecommendationPriorityRepository,
+  type TransformationRoadmapRepository,
+  type IntegrationAccountRepository,
+  type PermissionPolicyRepository,
+  type ToolExecutionRepository,
+  type ProviderHealthRepository,
+  type WorkflowExecutionRepository,
+  type TaskExecutionRepository,
+  type ExecutionEventRepository,
+  type DeadLetterRepository,
+  type MemoryRecordRepository,
+  type ProviderEvidenceRepository,
+  type SchedulerJobRepository,
+  type EventLogRepository,
+  type EventLogEntry,
+  type BusinessDecisionRepository,
+  type BusinessScenarioRepository,
+  type BusinessDiscoveryRepository,
+  type BusinessGraphRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -923,6 +939,447 @@ export function createInMemoryEventLogRepository(): EventLogRepository {
     },
     async listSince(since, limit = 500) {
       return entries.filter((e) => e.occurredAt >= since).slice(0, limit);
+    },
+  };
+}
+
+function freezeContext(
+  context: CanonicalBusinessContextData,
+): CanonicalBusinessContextData {
+  return Object.freeze(structuredClone(context));
+}
+
+function freezeDiscoverySnapshot(
+  snapshot: BusinessContextSnapshot,
+): BusinessContextSnapshot {
+  return Object.freeze({
+    ...snapshot,
+    context: freezeContext(snapshot.context),
+  });
+}
+
+export function createInMemoryBusinessDiscoveryRepository(): BusinessDiscoveryRepository {
+  const current = new Map<string, BusinessContextSnapshot>();
+  const versions = new Map<string, BusinessContextSnapshot[]>();
+  const history = new Map<string, BusinessDiscoveryHistoryEntry[]>();
+  const key = (orgId: string, businessId: string): string =>
+    `${orgId}:${businessId}`;
+
+  const appendHistory = (
+    aggregateKey: string,
+    entry: Omit<BusinessDiscoveryHistoryEntry, "id" | "occurredAt">,
+  ): void => {
+    const entries = history.get(aggregateKey) ?? [];
+    entries.push(
+      Object.freeze({
+        id: randomUUID(),
+        occurredAt: new Date().toISOString(),
+        ...entry,
+      }),
+    );
+    history.set(aggregateKey, entries);
+  };
+
+  return {
+    async create(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      if (current.has(aggregateKey)) {
+        throw new Error("A canonical Business Discovery already exists.");
+      }
+      const now = new Date().toISOString();
+      const snapshot = freezeDiscoverySnapshot({
+        id: randomUUID(),
+        orgId: input.orgId,
+        businessId: input.businessId,
+        status: "draft",
+        discoveryVersion: 1,
+        lockVersion: 1,
+        schemaVersion: input.schemaVersion,
+        createdBy: input.mutation.actorId,
+        createdAt: now,
+        updatedAt: now,
+        context: input.context,
+        versionCreatedBy: input.mutation.actorId,
+        versionCreatedAt: now,
+      });
+      current.set(aggregateKey, snapshot);
+      versions.set(aggregateKey, [snapshot]);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        discoveryId: snapshot.id,
+        discoveryVersion: 1,
+        action: "created",
+        previousStatus: null,
+        newStatus: "draft",
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async getCurrent(orgId, businessId) {
+      return current.get(key(orgId, businessId)) ?? null;
+    },
+
+    async saveContext(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      const existing = current.get(aggregateKey);
+      if (
+        !existing ||
+        existing.lockVersion !== input.expectedLockVersion ||
+        !["draft", "in_progress"].includes(existing.status)
+      ) {
+        throw new BusinessDiscoveryConcurrencyError();
+      }
+      const now = new Date().toISOString();
+      const snapshot = freezeDiscoverySnapshot({
+        ...existing,
+        discoveryVersion: existing.discoveryVersion + 1,
+        lockVersion: existing.lockVersion + 1,
+        updatedAt: now,
+        context: input.context,
+        versionCreatedBy: input.mutation.actorId,
+        versionCreatedAt: now,
+      });
+      current.set(aggregateKey, snapshot);
+      versions.set(aggregateKey, [
+        ...(versions.get(aggregateKey) ?? []),
+        snapshot,
+      ]);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        discoveryId: snapshot.id,
+        discoveryVersion: snapshot.discoveryVersion,
+        action: "updated",
+        previousStatus: existing.status,
+        newStatus: snapshot.status,
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async transition(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      const existing = current.get(aggregateKey);
+      if (!existing || existing.lockVersion !== input.expectedLockVersion) {
+        throw new BusinessDiscoveryConcurrencyError();
+      }
+      const snapshot = freezeDiscoverySnapshot({
+        ...existing,
+        status: input.status,
+        lockVersion: existing.lockVersion + 1,
+        updatedAt: new Date().toISOString(),
+      });
+      current.set(aggregateKey, snapshot);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        discoveryId: snapshot.id,
+        discoveryVersion: snapshot.discoveryVersion,
+        action: "transitioned",
+        previousStatus: existing.status,
+        newStatus: snapshot.status,
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async listVersions(orgId, businessId) {
+      return Object.freeze([...(versions.get(key(orgId, businessId)) ?? [])]);
+    },
+
+    async listHistory(orgId, businessId) {
+      return Object.freeze([...(history.get(key(orgId, businessId)) ?? [])]);
+    },
+  };
+}
+
+function freezeGraphSnapshot(snapshot: GraphSnapshot): GraphSnapshot {
+  return Object.freeze({
+    ...snapshot,
+    nodes: Object.freeze(
+      snapshot.nodes.map((node) =>
+        Object.freeze({
+          ...node,
+          metadata: Object.freeze(structuredClone(node.metadata)),
+        }),
+      ),
+    ),
+    edges: Object.freeze(
+      snapshot.edges.map((edge) =>
+        Object.freeze({
+          ...edge,
+          metadata: Object.freeze(structuredClone(edge.metadata)),
+        }),
+      ),
+    ),
+    metadata: Object.freeze(structuredClone(snapshot.metadata)),
+  });
+}
+
+export function createInMemoryBusinessGraphRepository(): BusinessGraphRepository {
+  const current = new Map<string, GraphSnapshot>();
+  const versions = new Map<string, GraphSnapshot[]>();
+  const history = new Map<string, BusinessGraphHistoryEntry[]>();
+  const key = (orgId: string, businessId: string): string =>
+    `${orgId}:${businessId}`;
+
+  const appendHistory = (
+    aggregateKey: string,
+    entry: Omit<BusinessGraphHistoryEntry, "id" | "occurredAt">,
+  ): void => {
+    const entries = history.get(aggregateKey) ?? [];
+    entries.push(
+      Object.freeze({
+        id: randomUUID(),
+        occurredAt: new Date().toISOString(),
+        ...entry,
+      }),
+    );
+    history.set(aggregateKey, entries);
+  };
+
+  const materialize = (
+    graphId: string,
+    nodes: readonly Omit<BusinessNode, "graphId">[],
+    edges: readonly Omit<BusinessEdge, "graphId">[],
+  ): {
+    nodes: readonly BusinessNode[];
+    edges: readonly BusinessEdge[];
+  } => ({
+    nodes: nodes.map((node) => ({ ...node, graphId })),
+    edges: edges.map((edge) => ({ ...edge, graphId })),
+  });
+
+  return {
+    async create(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      if (current.has(aggregateKey)) {
+        throw new Error("A Business Knowledge Graph already exists.");
+      }
+      const graphId = randomUUID();
+      const now = new Date().toISOString();
+      const content = materialize(graphId, input.nodes, input.edges);
+      const snapshot = freezeGraphSnapshot({
+        graphId,
+        orgId: input.orgId,
+        businessId: input.businessId,
+        version: 1,
+        lockVersion: 1,
+        status: "draft",
+        sourceDiscoveryVersion: input.sourceDiscoveryVersion,
+        createdBy: input.mutation.actorId,
+        createdAt: now,
+        ...content,
+        metadata: input.metadata,
+      });
+      current.set(aggregateKey, snapshot);
+      versions.set(aggregateKey, [snapshot]);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        graphId,
+        graphVersion: 1,
+        action: "created",
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async getCurrent(orgId, businessId) {
+      return current.get(key(orgId, businessId)) ?? null;
+    },
+
+    async saveSnapshot(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      const existing = current.get(aggregateKey);
+      if (
+        !existing ||
+        existing.lockVersion !== input.expectedLockVersion ||
+        existing.status === "archived"
+      ) {
+        throw new BusinessGraphConcurrencyError();
+      }
+      const content = materialize(
+        existing.graphId,
+        input.nodes,
+        input.edges,
+      );
+      const snapshot = freezeGraphSnapshot({
+        ...existing,
+        version: existing.version + 1,
+        lockVersion: existing.lockVersion + 1,
+        sourceDiscoveryVersion: input.sourceDiscoveryVersion,
+        createdBy: input.mutation.actorId,
+        createdAt: new Date().toISOString(),
+        ...content,
+        metadata: input.metadata,
+      });
+      current.set(aggregateKey, snapshot);
+      versions.set(aggregateKey, [
+        ...(versions.get(aggregateKey) ?? []),
+        snapshot,
+      ]);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        graphId: snapshot.graphId,
+        graphVersion: snapshot.version,
+        action: input.action,
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async transition(input) {
+      const aggregateKey = key(input.orgId, input.businessId);
+      const existing = current.get(aggregateKey);
+      if (!existing || existing.lockVersion !== input.expectedLockVersion) {
+        throw new BusinessGraphConcurrencyError();
+      }
+      const snapshot = freezeGraphSnapshot({
+        ...existing,
+        version: existing.version + 1,
+        lockVersion: existing.lockVersion + 1,
+        status: input.status,
+        createdBy: input.mutation.actorId,
+        createdAt: new Date().toISOString(),
+      });
+      current.set(aggregateKey, snapshot);
+      versions.set(aggregateKey, [
+        ...(versions.get(aggregateKey) ?? []),
+        snapshot,
+      ]);
+      appendHistory(aggregateKey, {
+        orgId: input.orgId,
+        graphId: snapshot.graphId,
+        graphVersion: snapshot.version,
+        action: input.status === "published" ? "published" : "archived",
+        actorId: input.mutation.actorId,
+        reason: input.mutation.reason,
+        correlationId: input.mutation.correlationId,
+        traceId: input.mutation.traceId,
+      });
+      return snapshot;
+    },
+
+    async getVersion(orgId, businessId, version) {
+      return (
+        versions
+          .get(key(orgId, businessId))
+          ?.find((snapshot) => snapshot.version === version) ?? null
+      );
+    },
+
+    async listVersions(orgId, businessId) {
+      return Object.freeze([...(versions.get(key(orgId, businessId)) ?? [])]);
+    },
+
+    async listHistory(orgId, businessId) {
+      return Object.freeze([...(history.get(key(orgId, businessId)) ?? [])]);
+    },
+  };
+}
+
+export function createInMemoryBusinessDiagnosticRepository(): BusinessDiagnosticRepository {
+  const reports = new Map<string, BusinessDiagnosticReport>();
+  return {
+    async save(report) {
+      reports.set(report.id, structuredClone(report));
+    },
+    async findLatest(orgId, businessId) {
+      return (
+        Array.from(reports.values())
+          .filter(
+            (report) =>
+              report.orgId === orgId && report.businessId === businessId,
+          )
+          .sort((left, right) => right.version - left.version)[0] ?? null
+      );
+    },
+    async listVersions(orgId, businessId) {
+      return Array.from(reports.values())
+        .filter(
+          (report) =>
+            report.orgId === orgId && report.businessId === businessId,
+        )
+        .sort((left, right) => right.version - left.version);
+    },
+  };
+}
+
+export function createInMemoryOrganizationRepository(): OrganizationRepository {
+  const organizations = new Map<string, Organization>();
+  const memberships = new Map<string, OrganizationWithMembership["membership"]>();
+  const active = new Map<string, string>();
+  return {
+    async create(userId, input) {
+      if (
+        Array.from(organizations.values()).some(
+          (organization) => organization.slug === input.slug,
+        )
+      ) {
+        throw new Error(`Organization slug "${input.slug}" already exists.`);
+      }
+      const organization: Organization = Object.freeze({
+        id: randomUUID(),
+        name: input.name,
+        slug: input.slug,
+        plan: "trial",
+        status: "trial",
+        createdAt: new Date().toISOString(),
+      });
+      const membership = Object.freeze({
+        userId,
+        orgId: organization.id,
+        role: "owner" as const,
+        status: "active" as const,
+      });
+      organizations.set(organization.id, organization);
+      memberships.set(`${userId}:${organization.id}`, membership);
+      active.set(userId, organization.id);
+      return Object.freeze({ organization, membership });
+    },
+    async getMembership(userId, orgId) {
+      return memberships.get(`${userId}:${orgId}`);
+    },
+    async listForUser(userId) {
+      return Object.freeze(
+        Array.from(memberships.values())
+          .filter(
+            (membership) =>
+              membership.userId === userId && membership.status === "active",
+          )
+          .map((membership) => ({
+            organization: organizations.get(membership.orgId)!,
+            membership,
+          }))
+          .filter((entry) => entry.organization),
+      );
+    },
+    async getActive(userId) {
+      const orgId = active.get(userId);
+      return orgId ? organizations.get(orgId) ?? null : null;
+    },
+    async setActive(userId, orgId) {
+      const membership = memberships.get(`${userId}:${orgId}`);
+      const organization = organizations.get(orgId);
+      if (!membership || membership.status !== "active" || !organization) {
+        throw new Error("The user is not an active member of the organization.");
+      }
+      active.set(userId, orgId);
+      return organization;
     },
   };
 }

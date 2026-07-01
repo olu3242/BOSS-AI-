@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPool, closePool } from "./client.js";
 
@@ -60,7 +60,11 @@ async function main(): Promise<void> {
   await closePool();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const entryPoint = process.argv[1];
+if (
+  entryPoint &&
+  fileURLToPath(import.meta.url).toLowerCase() === resolve(entryPoint).toLowerCase()
+) {
   main().catch((error) => {
     console.error(error);
     process.exit(1);

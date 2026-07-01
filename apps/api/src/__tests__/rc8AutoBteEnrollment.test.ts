@@ -41,6 +41,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "hvac",
       employeeCount: 5,
       annualRevenue: 500000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     // Give the async event handler a tick to resolve
@@ -59,6 +63,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "plumbing",
       employeeCount: 3,
       annualRevenue: 300000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     await new Promise((r) => setImmediate(r));
@@ -77,6 +85,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "hvac",
       employeeCount: 2,
       annualRevenue: 200000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     await new Promise((r) => setImmediate(r));
@@ -95,6 +107,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "hvac",
       employeeCount: 4,
       annualRevenue: 400000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     await new Promise((r) => setImmediate(r));
@@ -112,6 +128,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "hvac",
       employeeCount: 5,
       annualRevenue: 500000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     const { business: biz2 } = await businessProfile.createBusiness({
@@ -120,6 +140,10 @@ describe("RC8 — Auto BTE Enrollment on business.created", () => {
       industry: "plumbing",
       employeeCount: 3,
       annualRevenue: 300000,
+      businessType: "service",
+      yearsOperating: 5,
+      locationCount: 1,
+      businessHours: "08:00-17:00",
     });
 
     await new Promise((r) => setImmediate(r));

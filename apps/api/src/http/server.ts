@@ -500,7 +500,7 @@ export function createHttpServer(api: Api): Express {
   v1.post(
     "/beta/invites/:code/redeem",
     wrap(async (req) => {
-      const orgId = await requireOrgId(req);
+      await requireOrgId(req);
       const code = param(req, "code");
       const { businessId } = req.body as { businessId: string };
       if (!businessId) throw new ApiError(400, "missing_business_id", "businessId is required");

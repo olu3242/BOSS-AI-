@@ -3,7 +3,16 @@
 A change is "done" only when every applicable item below is true. This
 mirrors the Implementation Governance checklist in `CLAUDE.md`.
 
+Delivery is organized as Epic -> Capability -> Batch -> Certification. One
+execution prompt may cover only one batch. A dependent batch starts only after
+the current batch has a recorded certification decision. See
+`docs/execution/DELIVERY_MODEL.md`.
+
 - [ ] Bounded context identified — code lives in the package that owns it.
+- [ ] P0 journey stage identified, or the change is explicitly classified as
+      backlog under `docs/product/MVP_FEATURE_FREEZE.md`.
+- [ ] TTFBV impact stated: reduced time, improved outcome quality, or required
+      safety/reliability for the first-value journey.
 - [ ] Domain events catalogued in `packages/registries` (event registry)
       if the change emits or consumes a new event.
 - [ ] Types extend the canonical ontology (`packages/types/src/ontology.ts`)
@@ -18,6 +27,8 @@ mirrors the Implementation Governance checklist in `CLAUDE.md`.
 - [ ] Empty / loading / error / success / partial UI states designed
       (UI changes only).
 - [ ] Acceptance criteria written and verified.
+- [ ] Customer-visible P0 behavior is exercised through the connected journey,
+      not only through an isolated service or synthetic dashboard.
 - [ ] Feature flag created if the change should be rolled out gradually.
 - [ ] `pnpm lint && pnpm typecheck && pnpm build && pnpm test` pass locally.
 - [ ] `pnpm arch:check` passes (no boundary violations, no circular deps,

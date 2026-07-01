@@ -1,7 +1,7 @@
 import { workflowRegistry } from "@boss/registries";
-import type { WorkflowDefinitionEntry } from "@boss/registries";
+import type { WorkflowRegistration } from "@boss/registries";
 
-const workflows: WorkflowDefinitionEntry[] = [
+const workflows: WorkflowRegistration[] = [
   {
     key: "hs_lead_intake",
     label: "Lead Intake",

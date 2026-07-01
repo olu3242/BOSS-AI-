@@ -39,3 +39,4 @@ export * from "./intelligence/kpiDerivation.js";
 export * from "./intelligence/rootCauseEngine.js";
 export * from "./intelligence/planningEngine.js";
 export * from "./intelligence/verificationEngine.js";
+export * from "./intelligence/diagnosticEngine.js";

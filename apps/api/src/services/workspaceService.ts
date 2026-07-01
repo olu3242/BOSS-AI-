@@ -1,6 +1,6 @@
 import { deriveKpiReadings, type KpiReading } from "@boss/mcp";
 import { workspaceRegistry } from "@boss/registries";
-import type { BusinessConstraint, BusinessDecision, BusinessHealth, BusinessRecommendation } from "@boss/types";
+import type { BusinessConstraint, BusinessDecision, BusinessRecommendation } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 
 export interface WorkspaceHealthSummary {

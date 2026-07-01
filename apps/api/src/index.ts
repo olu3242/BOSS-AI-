@@ -1,4 +1,4 @@
-import { createPostgresContainer, type RepositoryContainer } from "./container.js";
+import { createInMemoryContainer, createPostgresContainer, type RepositoryContainer } from "./container.js";
 import { createBusinessProfileService } from "./services/businessProfileService.js";
 import { createBusinessMriService } from "./services/businessMriService.js";
 import { createBusinessDnaService } from "./services/businessDnaService.js";
@@ -11,6 +11,29 @@ import { createToolFabricService } from "./services/toolFabricService.js";
 import { createLoopRuntimeService } from "./services/loopRuntimeService.js";
 import { createWorkflowGenerationService } from "./services/workflowGenerationService.js";
 import { createMissionControlService } from "./services/missionControlService.js";
+import { createBusinessDiagnosticService } from "./services/businessDiagnosticService.js";
+import {
+  createBusinessContextService,
+  type BusinessContextService,
+} from "./services/businessContextService.js";
+import {
+  createBusinessGraphService,
+  type BusinessGraphService,
+} from "./services/businessGraphService.js";
+import {
+  createGraphRuntime,
+  type GraphRuntime,
+} from "./services/businessGraphRuntime.js";
+import {
+  ContextResolutionService,
+  createBusinessSemanticLayer,
+  DependencyResolutionService,
+  type BusinessSemanticLayer,
+} from "./services/businessSemanticLayer.js";
+import {
+  createBusinessQueryService,
+  type BusinessQueryService,
+} from "./services/businessQueryService.js";
 import { createBusinessController } from "./controllers/businessController.js";
 import { createBusinessMriController } from "./controllers/businessMriController.js";
 import { createBusinessDnaController } from "./controllers/businessDnaController.js";
@@ -21,6 +44,7 @@ import { createBusinessConstraintController } from "./controllers/businessConstr
 import { createBusinessRecommendationController } from "./controllers/businessRecommendationController.js";
 import { createToolFabricController } from "./controllers/toolFabricController.js";
 import { createMissionControlController } from "./controllers/missionControlController.js";
+import { createBusinessDiagnosticController } from "./controllers/businessDiagnosticController.js";
 import { createObservabilityService } from "./services/observabilityService.js";
 import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeService.js";
 import { createBusinessDecisionService } from "./services/businessDecisionService.js";
@@ -43,11 +67,26 @@ import { createAiWorkforceService } from "./services/aiWorkforceService.js";
 import { createOrgHealthService } from "./services/orgHealthService.js";
 import { createInsightService } from "./services/insightService.js";
 
-export function createApi() {
-  return createApiFromContainer(createPostgresContainer());
-}
+import { InMemoryEventBus } from "@boss/events";
+import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
+import { JournaledEventBus, PostgresEventJournal } from "./runtimePersistence.js";
 
-export function createApiFromContainer(repos: RepositoryContainer) {
+export function createApiFromContainer(
+  repos: RepositoryContainer,
+  businessContext: BusinessContextService = createBusinessContextService(repos),
+  businessGraph: BusinessGraphService = createBusinessGraphService(
+    repos,
+    businessContext,
+  ),
+  graphRuntime: GraphRuntime = createGraphRuntime(businessGraph),
+  businessSemantic: BusinessSemanticLayer = createBusinessSemanticLayer(
+    graphRuntime,
+    businessContext,
+  ),
+  businessQueries: BusinessQueryService = createBusinessQueryService(
+    businessSemantic,
+  ),
+) {
   const toolFabric = createToolFabricService(repos);
   const loopRuntime = createLoopRuntimeService(repos, toolFabric);
   const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);
@@ -63,9 +102,9 @@ export function createApiFromContainer(repos: RepositoryContainer) {
       void workflowGeneration.generateAndExecute(
         event.payload.orgId,
         event.payload.businessId,
-        event.payload.recommendationId
+        event.payload.recommendationId,
       );
-    }
+    },
   );
 
   const kpiMeasurement = createKpiMeasurementService(repos);
@@ -87,15 +126,13 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const orgHealth = createOrgHealthService(repos, bte, aiWorkforce);
   const insight = createInsightService(repos);
 
-  // Auto-enroll every new business in the daily BTE cycle (RC8)
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
     "business.created",
     (e) => {
       void bte.scheduleDailyCycle(e.payload.orgId, e.payload.businessId);
-    }
+    },
   );
 
-  // Product analytics: bridge domain events → analytics events
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
     "business.created",
     (e) => {
@@ -105,7 +142,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
         businessId: e.payload.businessId,
         properties: { industry: e.payload.industry ?? null, employeeCount: e.payload.employeeCount ?? null },
       });
-    }
+    },
   );
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; mriId: string }>(
@@ -117,7 +154,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
         businessId: e.payload.businessId,
         properties: { mriId: e.payload.mriId },
       });
-    }
+    },
   );
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; decisionId: string; decisionType?: string; confidenceScore?: number }>(
@@ -129,7 +166,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
         businessId: e.payload.businessId,
         properties: { decisionId: e.payload.decisionId, decisionType: e.payload.decisionType ?? null, confidenceScore: e.payload.confidenceScore ?? null },
       });
-    }
+    },
   );
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; decisionId: string }>(
@@ -141,7 +178,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
         businessId: e.payload.businessId,
         properties: { decisionId: e.payload.decisionId },
       });
-    }
+    },
   );
 
   repos.eventBus.subscribe<{ orgId: string; feedbackId: string }>(
@@ -152,9 +189,12 @@ export function createApiFromContainer(repos: RepositoryContainer) {
         orgId: e.payload.orgId,
         properties: { feedbackId: e.payload.feedbackId },
       });
-    }
+    },
   );
 
+  graphRuntime.start();
+
+  graphRuntime.start();
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
     businessMri: createBusinessMriController(createBusinessMriService(repos)),
@@ -189,7 +229,94 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     aiWorkforce,
     orgHealth,
     insight,
+    businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
+    businessContext,
+    businessGraph,
+    graphRuntime,
+    businessSemantic,
+    contextResolution: new ContextResolutionService(businessSemantic),
+    dependencyResolution: new DependencyResolutionService(businessSemantic),
+    businessQueries,
   };
+}
+
+export type BossApi = ReturnType<typeof createApiFromContainer>;
+
+export function createInMemoryApi(): BossApi {
+  const repos = createInMemoryContainer();
+  const eventBus = new InMemoryEventBus();
+  const auditSink = new InMemoryAuditSink();
+  const businessContext = createBusinessContextService(
+    repos,
+    eventBus,
+    auditSink,
+  );
+  const businessGraph = createBusinessGraphService(
+    repos,
+    businessContext,
+    eventBus,
+    auditSink,
+  );
+  const graphRuntime = createGraphRuntime(businessGraph, eventBus);
+  const businessSemantic = createBusinessSemanticLayer(
+    graphRuntime,
+    businessContext,
+    eventBus,
+    auditSink,
+  );
+  const businessQueries = createBusinessQueryService(
+    businessSemantic,
+    eventBus,
+    auditSink,
+  );
+  return createApiFromContainer(
+    repos,
+    businessContext,
+    businessGraph,
+    graphRuntime,
+    businessSemantic,
+    businessQueries,
+  );
+}
+
+export function createApi(): BossApi {
+  const repos = createPostgresContainer();
+  const eventBus = new JournaledEventBus(
+    new InMemoryEventBus(),
+    new PostgresEventJournal(),
+  );
+  const auditSink = new PostgresAuditSink();
+  const businessContext = createBusinessContextService(
+    repos,
+    eventBus,
+    auditSink,
+  );
+  const businessGraph = createBusinessGraphService(
+    repos,
+    businessContext,
+    eventBus,
+    auditSink,
+  );
+  const graphRuntime = createGraphRuntime(businessGraph, eventBus);
+  const businessSemantic = createBusinessSemanticLayer(
+    graphRuntime,
+    businessContext,
+    eventBus,
+    auditSink,
+  );
+  const businessQueries = createBusinessQueryService(
+    businessSemantic,
+    eventBus,
+    auditSink,
+  );
+  return createApiFromContainer(
+    repos,
+    businessContext,
+    businessGraph,
+    graphRuntime,
+    businessSemantic,
+    businessQueries,
+  );
 }
 
 export * from "./container.js";
@@ -226,3 +353,19 @@ export * from "./services/bteService.js";
 export * from "./services/aiWorkforceService.js";
 export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
+export * from "./services/businessDiagnosticService.js";
+export * from "./controllers/businessDiagnosticController.js";
+export * from "./security.js";
+export * from "./observability.js";
+export * from "./health.js";
+export * from "./identity.js";
+export * from "./supabaseIdentityProvider.js";
+export * from "./runtimePersistence.js";
+export * from "./mvpJourney.js";
+export * from "./organization.js";
+export * from "./services/businessContextService.js";
+export * from "./services/businessGraphService.js";
+export * from "./services/businessGraphRuntime.js";
+export * from "./services/businessSemanticLayer.js";
+export * from "./services/businessQueryService.js";
+export * from "./businessContextRuntime.js";

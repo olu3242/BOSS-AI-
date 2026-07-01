@@ -330,7 +330,8 @@ export type TimelineEventType =
   | "capability_updated"
   | "constraint_analysis_completed"
   | "recommendations_generated"
-  | "workflow_generated";
+  | "workflow_generated"
+  | "diagnostic_completed";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;

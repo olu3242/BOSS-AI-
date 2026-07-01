@@ -1,5 +1,18 @@
 import type { RegistryEntry } from "../types.js";
-import { createRegistry } from "../createRegistry.js";
+import { createReadonlyRegistry } from "../createReadonlyRegistry.js";
+
+export type EventCategory =
+  | "organization"
+  | "business"
+  | "audit"
+  | "constraint"
+  | "recommendation"
+  | "workflow"
+  | "agent"
+  | "notification"
+  | "kpi"
+  | "dashboard"
+  | "capability";
 
 /**
  * Canonical platform event contracts: {context}.{entity}.{verb}.
@@ -7,7 +20,20 @@ import { createRegistry } from "../createRegistry.js";
  * yet — that lands with the bounded context that owns each event.
  */
 export interface EventEntry extends RegistryEntry {
-  description: string;
+  readonly id: string;
+  readonly displayName: string;
+  readonly key: string;
+  readonly label: string;
+  readonly description: string;
+  readonly category: EventCategory;
+  readonly publisherIds: readonly string[];
+  readonly subscriberIds: readonly string[];
+  readonly owner: string;
+  readonly version: string;
+  readonly status: "active" | "deprecated";
+  readonly riskLevel: "low" | "medium" | "high";
+  readonly documentation: string;
+  readonly tags: readonly string[];
 }
 
-export const eventRegistry = createRegistry<EventEntry>();
+export const eventRegistry = createReadonlyRegistry<EventEntry>();

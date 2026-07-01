@@ -24,6 +24,7 @@ import {
 } from "@boss/registries";
 import { analyzeRootCauses } from "@boss/mcp";
 import { nowIso } from "@boss/shared";
+import type { BusinessConstraint, BusinessHealth } from "@boss/types";
 
 const ORG = "org-goal20-dos";
 
@@ -117,7 +118,7 @@ describe("Goal 20 — Business Decision OS", () => {
   // ─── Root Cause Engine ───────────────────────────────────────────────────────
 
   it("root cause engine produces causal chains for known constraint keys", () => {
-    const mockHealth = { overallScore: 55, generatedAt: nowIso(), orgId: ORG, businessId: "biz-1", id: "h1" } as any;
+    const mockHealth = { overallScore: 55, generatedAt: nowIso(), orgId: ORG, businessId: "biz-1", id: "h1" } as unknown as Parameters<typeof analyzeRootCauses>[1];
     const mockConstraints = [
       {
         id: "c1", orgId: ORG, businessId: "biz-1",
@@ -130,7 +131,7 @@ describe("Goal 20 — Business Decision OS", () => {
         customerImpact: "medium", operationalImpact: "medium", automationPotential: "high",
         businessOwner: "Sales", dependencies: [], evidence: [{ source: "business_mri", description: "Follow-up is manual", data: {} }],
         dateDetected: nowIso(), version: 1, createdAt: nowIso(), updatedAt: nowIso(),
-      } as any,
+      } as unknown as Parameters<typeof analyzeRootCauses>[0][number],
     ];
 
     const result = analyzeRootCauses(mockConstraints, mockHealth, [], nowIso());
@@ -288,22 +289,41 @@ describe("Goal 20 — Business Decision OS", () => {
   // ─── Determinism Validation ───────────────────────────────────────────────────
 
   it("root cause analysis is deterministic: same input produces same output", () => {
-    const mockHealth = { overallScore: 60, generatedAt: nowIso(), orgId: ORG, businessId: "biz-det", id: "h-det" } as any;
-    const mockConstraints = [{
+    const timestamp = nowIso();
+    const mockHealth: BusinessHealth = {
+      overallScore: 60,
+      generatedAt: timestamp,
+      orgId: ORG,
+      businessId: "biz-det",
+      id: "h-det",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      deletedAt: null,
+    };
+    const mockConstraints: BusinessConstraint[] = [{
       id: "c-det", orgId: ORG, businessId: "biz-det",
       definitionKey: "high_admin_burden",
       title: "High Admin Burden",
       description: "Too much manual admin",
       category: "operations", severity: "medium", confidence: 0.75,
       businessImpact: "Productivity loss", status: "active",
-      financialImpact: { annualRevenueImpact: 0, oneTimeCost: 0, monthlyRecurring: 0, confidence: 0.6, currency: "USD" },
+      financialImpact: {
+        revenueLossAnnual: 0,
+        timeLostHoursWeekly: 0,
+        customerImpact: "low",
+        operationalFriction: "high",
+        growthLimitation: "low",
+        ownerStress: "medium",
+        confidence: 0.6,
+      },
       customerImpact: "low", operationalImpact: "high", automationPotential: "high",
       businessOwner: "Operations", dependencies: [], evidence: [],
-      dateDetected: nowIso(), version: 1, createdAt: nowIso(), updatedAt: nowIso(),
-    } as any];
+      dateDetected: timestamp, version: 1, createdAt: timestamp, updatedAt: timestamp,
+      deletedAt: null,
+    }];
 
-    const r1 = analyzeRootCauses(mockConstraints, mockHealth, [], nowIso());
-    const r2 = analyzeRootCauses(mockConstraints, mockHealth, [], nowIso());
+    const r1 = analyzeRootCauses(mockConstraints, mockHealth, [], timestamp);
+    const r2 = analyzeRootCauses(mockConstraints, mockHealth, [], timestamp);
 
     expect(r1.primaryRootCause).toBe(r2.primaryRootCause);
     expect(r1.chains.length).toBe(r2.chains.length);

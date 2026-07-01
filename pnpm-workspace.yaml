@@ -2,3 +2,10 @@ packages:
   - "apps/*"
   - "packages/*"
   - "industry-packs/*"
+
+allowBuilds:
+  esbuild: true
+
+overrides:
+  react: "^18.3.0"
+  react-dom: "^18.3.0"

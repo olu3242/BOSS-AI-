@@ -23,7 +23,7 @@ export interface AutomationRuleStep {
   actionConfig: Record<string, string | number | boolean>;
 }
 
-export interface AutomationEntry extends RegistryEntry {
+export interface AutomationCenterEntry extends RegistryEntry {
   description: string;
   category: string;
   ruleSteps: AutomationRuleStep[];
@@ -32,4 +32,4 @@ export interface AutomationEntry extends RegistryEntry {
   relatedProviderKeys: string[];
 }
 
-export const automationCenterRegistry = createRegistry<AutomationEntry>();
+export const automationCenterRegistry = createRegistry<AutomationCenterEntry>();

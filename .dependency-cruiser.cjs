@@ -41,6 +41,37 @@ module.exports = {
         path: "^packages/(?!registries|types)",
       },
     },
+    {
+      name: "capability-platform-only-depends-on-shared-contracts",
+      severity: "error",
+      comment: "The pack platform is capability-agnostic and may only use events, registries, and shared types.",
+      from: { path: "^packages/capabilities" },
+      to: {
+        path: "^packages/(?!capabilities|events|registries|types)",
+      },
+    },
+    {
+      name: "application-consumers-use-semantic-layer",
+      severity: "error",
+      comment: "Application consumers resolve business meaning through the Semantic Layer, not graph infrastructure.",
+      from: {
+        path: "^apps/api/src/(?!index\\.ts$|__tests__/|services/business(GraphService|GraphRuntime|SemanticLayer)\\.ts$)",
+      },
+      to: {
+        path: "^apps/api/src/services/business(GraphService|GraphRuntime)\\.ts$",
+      },
+    },
+    {
+      name: "downstream-consumers-use-business-query-layer",
+      severity: "error",
+      comment: "Downstream application consumers use BQIL rather than Semantic Layer internals.",
+      from: {
+        path: "^apps/api/src/(?!index\\.ts$|__tests__/|services/business(SemanticLayer|QueryService)\\.ts$)",
+      },
+      to: {
+        path: "^apps/api/src/services/businessSemanticLayer\\.ts$",
+      },
+    },
   ],
   options: {
     tsPreCompilationDeps: true,

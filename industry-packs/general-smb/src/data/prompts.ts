@@ -58,6 +58,30 @@ const prompts: PromptEntry[] = [
       "You summarize KPI performance for {{business.name}} into a concise report, highlighting " +
       "any metric that moved more than 10% since the last period.",
   },
+  {
+    key: "bte_orchestrator.system",
+    label: "BTE Orchestrator — System Prompt",
+    role: "system",
+    template:
+      "You coordinate the daily Business Transformation Engine cycle for {{business.name}}. " +
+      "Run each governed analysis step, preserve audit evidence, and escalate failed cycles.",
+  },
+  {
+    key: "marketplace_advisor.system",
+    label: "Marketplace Advisor — System Prompt",
+    role: "system",
+    template:
+      "You recommend capability packs for {{business.name}} from verified profile, industry, " +
+      "and maturity evidence. Explain fit and never install a pack without approval.",
+  },
+  {
+    key: "onboarding_coach.system",
+    label: "Onboarding Coach — System Prompt",
+    role: "system",
+    template:
+      "You guide {{business.name}} through setup and first value. Keep instructions concise, " +
+      "track incomplete milestones, and escalate persistent onboarding blockers.",
+  },
 ];
 
 export function seedPrompts(): void {

@@ -1,16 +1,20 @@
-# BOSS — Business Operating System Suite
+# BOSS - Find the problem. Build the plan. Start fixing it.
 
-> **Enable every small business in the world to operate like an enterprise through AI.**
+> **BOSS finds problems in a business, builds a plan, and starts fixing them automatically.**
 
-BOSS is not software. BOSS is a platform company.
+The current product goal is one complete first-time-user journey from landing
+page to visible business improvement in under twenty minutes.
 
-The same way Salesforce became more than CRM, and Shopify became more than ecommerce — BOSS becomes the **Operating System for Small Business**.
+The platform architecture is frozen under
+[ADR-0006](docs/adr/0006-architecture-freeze-and-product-focus.md). Product
+scope and priorities are defined by the
+[MVP Feature Freeze](docs/product/MVP_FEATURE_FREEZE.md).
 
 ---
 
-## What BOSS Is
+## Product Experience
 
-BOSS is a category-defining AI platform that gives every small business a **digital COO** — a living, learning system that continuously answers four questions:
+BOSS gives a small-business owner a direct path through four questions:
 
 1. **What is hurting the business?**
 2. **Why is it happening?**
@@ -115,6 +119,57 @@ Brain        MCP (knowledge graph + policy engine)
 Infra        Vercel (frontend), Railway/Fly.io (runtime)
 Observability OpenTelemetry, PostHog
 ```
+
+## Current Implementation Status
+
+The imported production foundation is a pnpm/Turborepo TypeScript
+monorepo. The currently implemented vertical slice includes:
+
+- Business creation and profile storage
+- Business MRI responses and completion
+- Deterministic Business DNA, Health, Capability, Constraint, and
+  Recommendation intelligence
+- Postgres and in-memory repository adapters
+- Recommendation approval and transformation roadmap generation
+- A Next.js App Router BOSS Command Center in `apps/web` backed by the real
+  in-memory API workflow
+
+The web package now boots as a Next.js App Router application for the internal
+alpha command center. Authentication/session management, production HTTP
+transport, RBAC middleware, background execution runtime, and production
+observability adapters are tracked as remaining production work in
+`docs/execution/TECH_DEBT.md`.
+The current certification assessment is documented in
+`docs/execution/PRODUCTION_CERTIFICATION.md`.
+
+## Local Setup
+
+```bash
+pnpm install
+pnpm dev
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+pnpm arch:check
+```
+
+For Postgres-backed API usage, set `DATABASE_URL`. Without it, `createApi()`
+uses the local development fallback
+`postgresql://postgres:postgres@localhost:5432/boss_dev`. Tests and demos can
+use `createInMemoryApi()` without environment variables.
+
+To run the command-center demo summary:
+
+```bash
+BOSS_WEB_DEMO=1 pnpm --filter @boss/web dev
+```
+
+Development services:
+
+- Web: `pnpm --filter @boss/web dev` at `http://127.0.0.1:3000`
+- API health server: `pnpm --filter @boss/api dev` at `http://127.0.0.1:4000/health`
+- Combined boot command: `pnpm dev`
 
 ---
 
