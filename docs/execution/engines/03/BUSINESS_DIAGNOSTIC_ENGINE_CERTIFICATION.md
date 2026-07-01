@@ -88,7 +88,7 @@ context. Loop workflow, agent, queue and scheduler APIs are never invoked.
 
 ## Persistence
 
-Migration `0010_business_diagnostic_engine.sql` adds:
+Migration `0020_business_diagnostic_engine.sql` adds:
 
 - `diagnostic_reports`
 - `diagnostic_area_scores`

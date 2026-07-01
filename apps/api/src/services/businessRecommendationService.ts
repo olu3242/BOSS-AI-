@@ -120,6 +120,12 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.recommendations.generated",
+        payload: { orgId, businessId, count: recommendations.length },
+        occurredAt: nowIso(),
+      });
+
       return { recommendations, scores, priorities, roadmap };
     },
     async list(orgId, businessId) {
@@ -151,6 +157,11 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         "approved",
         "Approved via API"
       );
+      await repos.eventBus.publish({
+        type: "business.recommendation.approved",
+        payload: { orgId, businessId: updated.businessId, recommendationId },
+        occurredAt: nowIso(),
+      });
       return updated;
     },
   };

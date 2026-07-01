@@ -8,10 +8,10 @@ export interface CreateBusinessInput {
   industry: string;
   employeeCount: number;
   annualRevenue: number;
-  businessType: string;
-  yearsOperating: number;
-  locationCount: number;
-  businessHours: string;
+  businessType?: string;
+  yearsOperating?: number;
+  locationCount?: number;
+  businessHours?: string;
 }
 
 export interface BusinessProfileService {
@@ -34,11 +34,11 @@ export function createBusinessProfileService(repos: RepositoryContainer): Busine
         orgId: input.orgId,
         businessId: business.id,
         businessName: input.name,
-        businessType: input.businessType,
-        yearsOperating: input.yearsOperating,
+        businessType: input.businessType ?? "service",
+        yearsOperating: input.yearsOperating ?? 0,
         employeeCount: input.employeeCount,
-        locationCount: input.locationCount,
-        businessHours: input.businessHours,
+        locationCount: input.locationCount ?? 1,
+        businessHours: input.businessHours ?? "9am-5pm Mon-Fri",
       });
 
       await repos.businessTimeline.append({
@@ -47,6 +47,12 @@ export function createBusinessProfileService(repos: RepositoryContainer): Busine
         type: "business_created",
         description: `Business created: ${business.name}`,
         metadata: {},
+        occurredAt: nowIso(),
+      });
+
+      await repos.eventBus.publish({
+        type: "business.created",
+        payload: { orgId: input.orgId, businessId: business.id, industry: input.industry },
         occurredAt: nowIso(),
       });
 

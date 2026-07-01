@@ -18,12 +18,12 @@ Production identity uses Supabase:
 | `BOSS_PASSWORD_RESET_URL` | Recommended | Password recovery callback; defaults to `/auth/callback` on the current origin in development |
 
 Browser identity also requires `DATABASE_URL` and migration
-`0011_identity_organizations.sql`. The callback URL must be present in the
+`0021_identity_organizations.sql`. The callback URL must be present in the
 Supabase project's redirect allowlist. Session tokens are stored in HTTP-only,
 `SameSite=Lax` cookies; production cookies are also `Secure`.
 
 Production runtime persistence requires migrations through
-`0011_identity_organizations.sql`. Runtime database work must execute with a
+`0021_identity_organizations.sql`. Runtime database work must execute with a
 verified tenant context:
 
 ```sql

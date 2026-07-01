@@ -38,6 +38,7 @@ const capabilitySources = [
   { id: "documents", displayName: "Documents", description: "Contracts, proposals, and file management.", category: "documents", subcategory: "business_documents", businessDomain: "knowledge_management", executionMode: ["manual", "event"], riskLevel: "high", complexity: "medium", owner: "Administration", tags: ["files", "records"] },
   { id: "notifications", displayName: "Notifications", description: "Alerts to staff and customers.", category: "notifications", subcategory: "alerts", businessDomain: "business_operations", executionMode: ["event", "schedule"], riskLevel: "medium", complexity: "low", owner: "Operations", tags: ["alerts", "messaging"] },
   { id: "team_collaboration", displayName: "Team Collaboration", description: "Coordination across employees.", category: "operations", subcategory: "collaboration", businessDomain: "business_operations", executionMode: ["manual", "event"], riskLevel: "low", complexity: "low", owner: "Operations", tags: ["team", "coordination"] },
+  { id: "automation", displayName: "Automation", description: "Governed orchestration of repeatable business processes.", category: "operations", subcategory: "workflow_automation", businessDomain: "operational_excellence", executionMode: ["event", "schedule"], riskLevel: "medium", complexity: "high", owner: "Operations", tags: ["automation", "orchestration"] },
 ] as const satisfies readonly CapabilitySource[];
 
 function permissionsFor(capabilityId: string): readonly string[] {

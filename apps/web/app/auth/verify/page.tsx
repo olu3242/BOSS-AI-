@@ -1,8 +1,9 @@
 interface VerifyPageProps {
-  readonly searchParams: { readonly email?: string };
+  readonly searchParams: Promise<{ readonly email?: string }>;
 }
 
-export default function VerifyPage({ searchParams }: VerifyPageProps) {
+export default async function VerifyPage({ searchParams }: VerifyPageProps) {
+  const query = await searchParams;
   return (
     <main className="auth-shell">
       <a className="brand-link" href="/">BOSS</a>
@@ -10,7 +11,7 @@ export default function VerifyPage({ searchParams }: VerifyPageProps) {
         <p className="eyebrow">One more step</p>
         <h1 id="verify-title">Check your email</h1>
         <p className="subtle">
-          We sent a verification link{searchParams.email ? ` to ${searchParams.email}` : ""}.
+          We sent a verification link{query.email ? ` to ${query.email}` : ""}.
           Open it on this device to finish signing in.
         </p>
         <a className="button-link" href="/auth/sign-in">Return to sign in</a>

@@ -42,6 +42,12 @@ export function createBusinessMriService(repos: RepositoryContainer): BusinessMr
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.mri.started",
+        payload: { orgId, businessId, businessMriId: mri.id },
+        occurredAt: nowIso(),
+      });
+
       return mri;
     },
     async answer(orgId, businessMriId, input) {
@@ -75,6 +81,12 @@ export function createBusinessMriService(repos: RepositoryContainer): BusinessMr
         type: "business_mri_completed",
         description: "Business MRI completed",
         metadata: {},
+        occurredAt: nowIso(),
+      });
+
+      await repos.eventBus.publish({
+        type: "business.mri.completed",
+        payload: { orgId, businessId: updated.businessId, businessMriId: updated.id },
         occurredAt: nowIso(),
       });
 

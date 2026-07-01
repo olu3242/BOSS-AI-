@@ -27,7 +27,7 @@ describe("migration file conventions", () => {
 
   it("defines tenant-scoped durable runtime state and worker leasing", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0008_runtime_durability.sql"),
+      join(MIGRATIONS_DIR, "0018_runtime_durability.sql"),
       "utf-8",
     );
 
@@ -50,7 +50,7 @@ describe("migration file conventions", () => {
 
   it("defines durable MVP journey metrics", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0009_mvp_journey_metrics.sql"),
+      join(MIGRATIONS_DIR, "0019_mvp_journey_metrics.sql"),
       "utf-8",
     );
 
@@ -64,7 +64,7 @@ describe("migration file conventions", () => {
 
   it("defines normalized tenant-scoped diagnostic outputs", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0010_business_diagnostic_engine.sql"),
+      join(MIGRATIONS_DIR, "0020_business_diagnostic_engine.sql"),
       "utf-8",
     );
     for (const table of [
@@ -84,7 +84,7 @@ describe("migration file conventions", () => {
 
   it("defines durable identity organizations with tenant isolation", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0011_identity_organizations.sql"),
+      join(MIGRATIONS_DIR, "0021_identity_organizations.sql"),
       "utf-8",
     );
 
@@ -101,8 +101,8 @@ describe("migration file conventions", () => {
     expect(sql).toContain("organizations_member_select");
     expect(sql).toContain("memberships_self_select");
     expect(sql).toContain("tenant_preferences_self_policy");
-    expect(sql).toContain(
-      "membership.organization_id =\n          user_tenant_preferences.active_organization_id",
+    expect(sql).toMatch(
+      /membership\.organization_id\s*=\s*user_tenant_preferences\.active_organization_id/,
     );
     expect(sql).toContain("identity_audit_member_select");
     expect(sql).toContain("idx_identity_audit_tenant_time");
@@ -111,7 +111,7 @@ describe("migration file conventions", () => {
 
   it("defines versioned tenant-scoped canonical Business Context", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0012_business_discovery_context.sql"),
+      join(MIGRATIONS_DIR, "0022_business_discovery_context.sql"),
       "utf-8",
     );
     for (const table of [
@@ -132,7 +132,7 @@ describe("migration file conventions", () => {
 
   it("defines normalized, versioned tenant-scoped Business Knowledge Graphs", () => {
     const sql = readFileSync(
-      join(MIGRATIONS_DIR, "0013_business_knowledge_graph.sql"),
+      join(MIGRATIONS_DIR, "0023_business_knowledge_graph.sql"),
       "utf-8",
     );
     for (const table of [

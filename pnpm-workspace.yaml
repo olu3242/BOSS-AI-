@@ -5,6 +5,7 @@ packages:
 
 allowBuilds:
   esbuild: true
+  sharp: true
 
 overrides:
   react: "^18.3.0"

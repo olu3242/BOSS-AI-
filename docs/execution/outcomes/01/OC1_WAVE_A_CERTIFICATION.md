@@ -55,7 +55,7 @@ flowchart LR
 
 ## Database and RLS Evidence
 
-Migration `0011_identity_organizations.sql` defines:
+Migration `0021_identity_organizations.sql` defines:
 
 - `organizations`;
 - `organization_memberships`;

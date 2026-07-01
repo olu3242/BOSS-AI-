@@ -14,6 +14,7 @@ export interface BusinessConstraintService {
   list(orgId: string, businessId: string): Promise<BusinessConstraint[]>;
   getPriorities(orgId: string, businessId: string): Promise<ConstraintPriority[]>;
   dismiss(orgId: string, constraintId: string): Promise<BusinessConstraint>;
+  updateStatus(orgId: string, constraintId: string, status: BusinessConstraint["status"]): Promise<BusinessConstraint>;
 }
 
 export function createBusinessConstraintService(repos: RepositoryContainer): BusinessConstraintService {
@@ -107,6 +108,12 @@ export function createBusinessConstraintService(repos: RepositoryContainer): Bus
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.constraints.analyzed",
+        payload: { orgId, businessId, count: constraints.length },
+        occurredAt: nowIso(),
+      });
+
       return { constraints, scores, priorities };
     },
     async list(orgId, businessId) {
@@ -116,9 +123,17 @@ export function createBusinessConstraintService(repos: RepositoryContainer): Bus
       return repos.constraintPriorities.listByBusinessId(orgId, businessId);
     },
     async dismiss(orgId, constraintId) {
+      return this.updateStatus(orgId, constraintId, "dismissed");
+    },
+    async updateStatus(orgId, constraintId, status) {
       const existing = await repos.businessConstraints.findById(orgId, constraintId);
-      const updated = await repos.businessConstraints.updateStatus(orgId, constraintId, "dismissed");
-      await repos.businessConstraints.recordHistory(constraintId, existing?.status ?? null, "dismissed", "Dismissed via API");
+      const updated = await repos.businessConstraints.updateStatus(orgId, constraintId, status);
+      await repos.businessConstraints.recordHistory(constraintId, existing?.status ?? null, status, `Status updated to ${status} via API`);
+      await repos.eventBus.publish({
+        type: "business.constraint.status_updated",
+        payload: { orgId, businessId: updated.businessId, constraintId, status },
+        occurredAt: nowIso(),
+      });
       return updated;
     },
   };

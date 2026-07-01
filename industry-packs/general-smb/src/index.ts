@@ -22,6 +22,21 @@ import { seedConstraintCategories } from "./data/constraintCategories.js";
 import { seedConstraintLibrary } from "./data/constraintLibrary.js";
 import { seedRecommendationCategories } from "./data/recommendationCategories.js";
 import { seedRecommendationLibrary } from "./data/recommendationLibrary.js";
+import { seedToolFabric } from "./data/toolFabric.js";
+import { seedDecisions } from "./data/decisions.js";
+import { seedForecasts } from "./data/forecasts.js";
+import { seedPlaybooks } from "./data/playbooks.js";
+import { seedBusinessRules } from "./data/businessRules.js";
+import { seedOperatingLoops } from "./data/operatingLoops.js";
+import { seedPlannings } from "./data/plannings.js";
+import { seedVerifications } from "./data/verifications.js";
+import { seedOptimizations } from "./data/optimizations.js";
+import { seedLearnings } from "./data/learnings.js";
+import { seedWorkspaces } from "./data/workspaces.js";
+import { seedTimelines } from "./data/timelines.js";
+import { seedApprovals } from "./data/approvals.js";
+import { seedAutomationCenter } from "./data/automationCenter.js";
+import { seedIntelligenceCenter } from "./data/intelligenceCenter.js";
 import { seedExecutionArchitecture } from "./data/executionArchitecture.js";
 import { seedGovernanceCertification } from "./data/governanceCertification.js";
 import { seedCoreRegistries } from "@boss/registries";
@@ -53,6 +68,21 @@ export function installGeneralSmbPack(): void {
   seedConstraintLibrary();
   seedRecommendationCategories();
   seedRecommendationLibrary();
+  seedToolFabric();
+  seedDecisions();
+  seedForecasts();
+  seedPlaybooks();
+  seedBusinessRules();
+  seedOperatingLoops();
+  seedPlannings();
+  seedVerifications();
+  seedOptimizations();
+  seedLearnings();
+  seedWorkspaces();
+  seedTimelines();
+  seedApprovals();
+  seedAutomationCenter();
+  seedIntelligenceCenter();
   seedExecutionArchitecture();
   seedGovernanceCertification();
 }
@@ -75,6 +105,21 @@ export {
   seedConstraintLibrary,
   seedRecommendationCategories,
   seedRecommendationLibrary,
+  seedToolFabric,
+  seedDecisions,
+  seedForecasts,
+  seedPlaybooks,
+  seedBusinessRules,
+  seedOperatingLoops,
+  seedPlannings,
+  seedVerifications,
+  seedOptimizations,
+  seedLearnings,
+  seedWorkspaces,
+  seedTimelines,
+  seedApprovals,
+  seedAutomationCenter,
+  seedIntelligenceCenter,
   seedExecutionArchitecture,
   seedGovernanceCertification,
 };

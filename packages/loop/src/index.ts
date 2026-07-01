@@ -1,23 +1,12 @@
-import type { ID } from "@boss/types";
-
 /**
  * Loop Runtime — the Engine.
  * Executes everything. Contains zero business knowledge;
  * all decisions are fetched from MCP at execution time.
  */
-export type WorkflowState = "pending" | "running" | "completed" | "failed";
-
-export interface WorkflowInstance {
-  id: ID;
-  definitionId: ID;
-  businessId: ID;
-  state: WorkflowState;
-}
-
-export interface LoopRuntime {
-  start(definitionId: ID, businessId: ID): Promise<WorkflowInstance>;
-}
-
+export * from "./stateMachine.js";
+export * from "./taskHandlerRegistry.js";
+export * from "./ports.js";
+export * from "./runtime.js";
 export * from "./runtimeTypes.js";
 export * from "./telemetry.js";
 export * from "./workflowStore.js";

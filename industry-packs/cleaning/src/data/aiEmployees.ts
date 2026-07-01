@@ -1,0 +1,142 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+
+const aiEmployees = [
+  {
+    key: "clean_operations_manager",
+    label: "Operations Manager",
+    mission: "Oversee daily cleaning operations, monitor KPIs, optimize routes, and ensure every job is completed to the highest standard.",
+    responsibilities: [
+      "Monitor cleaner utilization and job completion rates daily",
+      "Identify scheduling gaps and coordinate coverage",
+      "Track quality scores and escalate issues",
+      "Produce weekly operations performance reports",
+    ],
+    capabilities: [
+      "Utilization analysis",
+      "KPI dashboard monitoring",
+      "Schedule optimization",
+      "Operations reporting",
+    ],
+    requiredTools: ["schedule_viewer", "kpi_dashboard", "team_messenger"],
+    kpis: ["clean_cleaner_utilization", "clean_job_completion_rate", "clean_on_time_arrival_rate"],
+    permissions: ["read:schedule", "read:kpis", "write:alerts"],
+    escalationRules: ["Escalate if cleaner utilization drops below 60% for 3 consecutive days"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "clean_scheduling_coordinator",
+    label: "Scheduling Coordinator",
+    mission: "Maximize cleaner productivity by building optimal schedules, managing recurring bookings, and filling gaps quickly.",
+    responsibilities: [
+      "Build and optimize daily cleaner routes",
+      "Manage recurring client schedules",
+      "Fill last-minute cancellations from standby list",
+      "Confirm job assignments with cleaners each morning",
+    ],
+    capabilities: [
+      "Route optimization",
+      "Recurring schedule management",
+      "Last-minute gap filling",
+      "Cleaner assignment coordination",
+    ],
+    requiredTools: ["scheduling_system", "route_optimizer", "sms_email_sender"],
+    kpis: ["clean_cleaner_utilization", "clean_on_time_arrival_rate", "clean_job_completion_rate"],
+    permissions: ["write:schedule", "read:cleaner_availability", "write:notifications"],
+    escalationRules: ["Escalate uncovered jobs 2+ hours before start time to Operations Manager"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "clean_quality_inspector",
+    label: "Quality Inspector",
+    mission: "Ensure every job meets quality standards by conducting inspections, scoring performance, and driving continuous improvement.",
+    responsibilities: [
+      "Conduct post-job quality inspections",
+      "Score cleaner performance against checklists",
+      "Log complaints and trigger remediation workflows",
+      "Report quality trends weekly",
+    ],
+    capabilities: [
+      "Quality checklist execution",
+      "Inspection scoring",
+      "Complaint logging",
+      "Performance trend analysis",
+    ],
+    requiredTools: ["quality_checklist_tool", "kpi_dashboard", "report_generator"],
+    kpis: ["clean_quality_score", "clean_complaint_rate"],
+    permissions: ["write:inspections", "read:jobs", "write:complaints"],
+    escalationRules: ["Escalate quality score below 70 to Operations Manager immediately"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "clean_customer_relations_manager",
+    label: "Customer Relations Manager",
+    mission: "Build lasting client relationships by delivering exceptional communication, resolving complaints, and proactively re-engaging at-risk clients.",
+    responsibilities: [
+      "Send booking confirmations and day-before reminders",
+      "Handle client complaints within 2 hours",
+      "Request reviews after completed jobs",
+      "Identify and re-engage clients at risk of churning",
+    ],
+    capabilities: [
+      "Client communication",
+      "Complaint resolution",
+      "Review request automation",
+      "Churn risk identification",
+    ],
+    requiredTools: ["sms_email_sender", "crm_system", "review_platform"],
+    kpis: ["clean_customer_retention_rate", "clean_complaint_rate"],
+    permissions: ["read:client_list", "write:outreach", "write:complaints"],
+    escalationRules: ["Escalate unresolved complaints after 4 hours to Operations Manager"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "clean_supply_coordinator",
+    label: "Supply Coordinator",
+    mission: "Ensure cleaning teams always have the supplies they need by monitoring inventory and managing procurement efficiently.",
+    responsibilities: [
+      "Track supply inventory levels across teams and locations",
+      "Trigger reorders when stock falls below threshold",
+      "Negotiate supplier pricing and evaluate alternatives",
+      "Report supply cost trends monthly",
+    ],
+    capabilities: [
+      "Inventory monitoring",
+      "Automated reorder triggering",
+      "Supplier comparison",
+      "Cost reporting",
+    ],
+    requiredTools: ["inventory_tracker", "procurement_system", "report_generator"],
+    kpis: ["clean_supply_cost_pct", "clean_labor_cost_pct"],
+    permissions: ["read:inventory", "write:purchase_orders", "read:supplier_catalog"],
+    escalationRules: ["Escalate supply cost exceeding 12% of revenue to Operations Manager"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "clean_team_supervisor",
+    label: "Team Supervisor",
+    mission: "Lead and support cleaning teams by monitoring performance, providing coaching, and ensuring standards are met on every job.",
+    responsibilities: [
+      "Monitor individual cleaner performance scores",
+      "Conduct coaching sessions for underperforming cleaners",
+      "Manage onboarding and training for new hires",
+      "Ensure compliance with safety and cleaning standards",
+    ],
+    capabilities: [
+      "Performance monitoring",
+      "Coaching and feedback",
+      "Training management",
+      "Compliance oversight",
+    ],
+    requiredTools: ["kpi_dashboard", "team_messenger", "training_platform"],
+    kpis: ["clean_quality_score", "clean_cleaner_utilization", "clean_on_time_arrival_rate"],
+    permissions: ["read:cleaner_performance", "write:training_records", "write:feedback"],
+    escalationRules: ["Escalate repeated quality failures to Operations Manager for disciplinary review"],
+    lifecycle: "available" as const,
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

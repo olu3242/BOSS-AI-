@@ -40,5 +40,60 @@ export interface WorkflowDefinitionEntry extends RegistryEntry {
   readonly tags: readonly string[];
 }
 
-export const workflowRegistry =
-  createReadonlyRegistry<WorkflowDefinitionEntry>();
+export type LegacyWorkflowDefinitionEntry = Pick<
+  WorkflowDefinitionEntry,
+  | "key"
+  | "label"
+  | "description"
+  | "triggerType"
+  | "relatedConstraints"
+  | "relatedKpis"
+>;
+
+export type WorkflowRegistration =
+  | WorkflowDefinitionEntry
+  | LegacyWorkflowDefinitionEntry;
+
+const registry = createReadonlyRegistry<WorkflowDefinitionEntry>();
+
+function normalizeWorkflow(
+  entry: WorkflowRegistration,
+): WorkflowDefinitionEntry {
+  if ("id" in entry) {
+    return entry;
+  }
+
+  return {
+    ...entry,
+    id: entry.key,
+    displayName: entry.label,
+    agentIds: [],
+    capabilityIds: [],
+    promptIds: [],
+    automationIds: [],
+    triggerIds: [],
+    eventIds: [],
+    notificationChannelIds: [],
+    integrationIds: [],
+    businessOutcomeIds: [],
+    owner: "unassigned",
+    version: "0.1.0",
+    status: "draft",
+    timeoutSeconds: null,
+    retryPolicy: {
+      maximumAttempts: 1,
+      strategy: "none",
+    },
+    failureStrategy: "record_failure",
+    documentation: entry.description,
+    tags: [],
+  };
+}
+
+export const workflowRegistry = {
+  list: registry.list,
+  get: registry.get,
+  register(entry: WorkflowRegistration): void {
+    registry.register(normalizeWorkflow(entry));
+  },
+};

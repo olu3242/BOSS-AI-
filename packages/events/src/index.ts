@@ -1,3 +1,7 @@
+export * from "./eventBus.js";
+export * from "./inMemoryEventBus.js";
+export * from "./durableEventBus.js";
+
 import { randomUUID } from "node:crypto";
 
 export interface EventContext {

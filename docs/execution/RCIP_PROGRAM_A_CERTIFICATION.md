@@ -12,7 +12,7 @@ programs, remain gated on Program A evidence.
 
 ## Implemented
 
-- Migration `0008_runtime_durability.sql` defines tenant-scoped workflow,
+- Migration `0018_runtime_durability.sql` defines tenant-scoped workflow,
   queue, schedule, event, agent-execution, and checkpoint state.
 - Runtime tables use UUID identities, `org_id`, timestamps, indexes, and RLS
   policies based on `boss_current_org_id()`.

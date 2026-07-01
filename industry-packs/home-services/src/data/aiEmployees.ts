@@ -1,0 +1,113 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+import type { AiEmployeeEntry } from "@boss/registries";
+
+const aiEmployees: AiEmployeeEntry[] = [
+  {
+    key: "hs_dispatcher",
+    label: "AI Dispatcher",
+    mission: "Assign the right technician to every job at the right time with minimal travel.",
+    responsibilities: [
+      "Match jobs to technicians by skill and proximity",
+      "Optimize daily routes",
+      "Handle emergency re-routing",
+      "Notify customers of arrival windows",
+    ],
+    capabilities: ["scheduling", "routing", "communication"],
+    requiredTools: ["calendar_api", "gps_routing_api", "messaging_api"],
+    kpis: ["hs_technician_utilization", "hs_avg_response_time"],
+    permissions: ["read:jobs", "write:job_assignments", "write:notifications"],
+    escalationRules: ["escalate_on_no_available_technician", "escalate_on_emergency_unassigned"],
+    lifecycle: "available",
+  },
+  {
+    key: "hs_operations_manager",
+    label: "AI Operations Manager",
+    mission: "Keep field operations running at peak efficiency.",
+    responsibilities: [
+      "Monitor daily job completion rates",
+      "Flag quality issues and callback patterns",
+      "Surface utilization insights",
+      "Generate daily ops briefing",
+    ],
+    capabilities: ["reporting", "operations", "quality"],
+    requiredTools: ["business_health_api", "kpi_api"],
+    kpis: ["hs_first_time_fix_rate", "hs_callback_rate", "hs_technician_utilization"],
+    permissions: ["read:jobs", "read:technicians", "read:kpis"],
+    escalationRules: ["escalate_on_callback_rate_above_10_pct"],
+    lifecycle: "available",
+  },
+  {
+    key: "hs_service_manager",
+    label: "AI Service Manager",
+    mission: "Ensure every customer gets a high-quality service experience.",
+    responsibilities: [
+      "Review completed jobs for quality signals",
+      "Trigger follow-up surveys",
+      "Escalate unresolved complaints",
+      "Track first-time fix rate trends",
+    ],
+    capabilities: ["quality", "customer_success", "communication"],
+    requiredTools: ["messaging_api", "kpi_api"],
+    kpis: ["hs_first_time_fix_rate", "hs_customer_satisfaction", "hs_callback_rate"],
+    permissions: ["read:jobs", "write:notifications", "read:reviews"],
+    escalationRules: ["escalate_on_1_star_review", "escalate_on_callback_within_7_days"],
+    lifecycle: "available",
+  },
+  {
+    key: "hs_customer_success_manager",
+    label: "AI Customer Success Manager",
+    mission: "Turn one-time customers into loyal maintenance plan subscribers.",
+    responsibilities: [
+      "Follow up after job completion",
+      "Promote maintenance agreements",
+      "Manage renewal outreach",
+      "Collect and respond to reviews",
+    ],
+    capabilities: ["customer_success", "communication", "retention"],
+    requiredTools: ["messaging_api", "calendar_api"],
+    kpis: ["hs_maintenance_renewal_rate", "hs_customer_satisfaction", "customer_retention"],
+    permissions: ["read:customers", "write:notifications", "read:maintenance_plans"],
+    escalationRules: ["escalate_on_no_renewal_after_30_days"],
+    lifecycle: "available",
+  },
+  {
+    key: "hs_revenue_manager",
+    label: "AI Revenue Manager",
+    mission: "Maximize revenue per technician and ensure healthy margins on every job.",
+    responsibilities: [
+      "Monitor average ticket value",
+      "Flag margin compression",
+      "Recommend pricing adjustments",
+      "Track stale estimate pipeline",
+    ],
+    capabilities: ["finance", "reporting"],
+    requiredTools: ["kpi_api", "business_health_api"],
+    kpis: ["hs_avg_ticket_value", "hs_gross_margin_per_job", "hs_revenue_per_technician"],
+    permissions: ["read:invoices", "read:kpis"],
+    escalationRules: ["escalate_on_margin_below_40_pct"],
+    lifecycle: "available",
+  },
+  {
+    key: "hs_inventory_coordinator",
+    label: "AI Inventory Coordinator",
+    mission: "Keep parts stocked to support first-time fix rates and reduce job delays.",
+    responsibilities: [
+      "Monitor parts usage across jobs",
+      "Alert when stock falls below reorder point",
+      "Recommend reorder quantities",
+      "Track lead times by supplier",
+    ],
+    capabilities: ["inventory", "operations"],
+    requiredTools: ["inventory_api"],
+    kpis: ["hs_first_time_fix_rate", "hs_callback_rate"],
+    permissions: ["read:inventory", "write:purchase_orders"],
+    escalationRules: ["escalate_on_critical_part_stockout"],
+    lifecycle: "draft",
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

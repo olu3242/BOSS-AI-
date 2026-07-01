@@ -1,19 +1,20 @@
 import { safeNextPath } from "../../../src/server/auth";
 
 interface SignInPageProps {
-  readonly searchParams: {
+  readonly searchParams: Promise<{
     readonly error?: string;
     readonly expired?: string;
     readonly next?: string;
     readonly reset?: string;
-  };
+  }>;
 }
 
-export default function SignInPage({ searchParams }: SignInPageProps) {
-  const next = safeNextPath(searchParams.next ?? null, "/dashboard");
-  const error = searchParams.expired
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const query = await searchParams;
+  const next = safeNextPath(query.next ?? null, "/dashboard");
+  const error = query.expired
     ? "Your session expired. Sign in to continue."
-    : searchParams.error;
+    : query.error;
 
   return (
     <main className="auth-shell">
@@ -22,7 +23,7 @@ export default function SignInPage({ searchParams }: SignInPageProps) {
         <p className="eyebrow">Welcome back</p>
         <h1 id="sign-in-title">Sign in</h1>
         <p className="subtle">Continue managing your business in BOSS.</p>
-        {searchParams.reset ? (
+        {query.reset ? (
           <p className="form-success" role="status">
             Your password was updated. Sign in with the new password.
           </p>

@@ -1,0 +1,142 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+
+const aiEmployees = [
+  {
+    key: "cafe_cafe_manager",
+    label: "Café Manager",
+    mission: "Oversee all café operations, monitor daily performance KPIs, and ensure the team delivers an exceptional customer experience at full throughput.",
+    responsibilities: [
+      "Monitor daily transactions, labor cost, and waste metrics",
+      "Identify operational bottlenecks and coordinate resolution",
+      "Review staff scheduling for cost and coverage alignment",
+      "Escalate equipment failures and supply shortages immediately",
+    ],
+    capabilities: [
+      "KPI dashboard monitoring",
+      "Daily operations reporting",
+      "Staff coordination messaging",
+      "Schedule gap analysis",
+    ],
+    requiredTools: ["kpi_dashboard", "pos_reporting", "team_messenger"],
+    kpis: ["cafe_transactions_per_hour", "cafe_labor_cost_pct", "cafe_revenue_per_sqft"],
+    permissions: ["read:pos_data", "read:kpis", "write:alerts"],
+    escalationRules: ["Escalate if labor cost % exceeds 40% for 3 consecutive days"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "cafe_head_barista",
+    label: "Head Barista",
+    mission: "Maintain beverage quality standards, coach barista staff, and optimize preparation workflows to maximize throughput and minimize waste.",
+    responsibilities: [
+      "Set and enforce recipe and quality standards for all beverages",
+      "Monitor beverage cost percentage daily",
+      "Train new baristas on preparation techniques",
+      "Log and categorize waste events after each shift",
+    ],
+    capabilities: [
+      "Recipe quality auditing",
+      "Waste logging and categorization",
+      "Barista training coordination",
+      "Preparation workflow optimization",
+    ],
+    requiredTools: ["waste_tracker", "recipe_manager", "inventory_viewer"],
+    kpis: ["cafe_beverage_cost_pct", "cafe_waste_pct", "cafe_drive_thru_speed_sec"],
+    permissions: ["read:inventory", "write:waste_log", "read:recipes"],
+    escalationRules: ["Escalate beverage waste above 8% to Café Manager same day"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "cafe_inventory_coordinator",
+    label: "Inventory Coordinator",
+    mission: "Ensure the café never runs out of key ingredients by managing par levels, generating purchase orders, and tracking supplier deliveries.",
+    responsibilities: [
+      "Check stock levels against par thresholds each morning",
+      "Generate and submit purchase orders before deadlines",
+      "Receive and verify supplier deliveries",
+      "Alert team of incoming shortages with 48-hour lead time",
+    ],
+    capabilities: [
+      "Par level monitoring",
+      "Purchase order generation",
+      "Supplier delivery tracking",
+      "Shortage forecasting",
+    ],
+    requiredTools: ["inventory_system", "purchase_order_tool", "supplier_portal"],
+    kpis: ["cafe_waste_pct", "cafe_beverage_cost_pct", "cafe_food_cost_pct"],
+    permissions: ["read:inventory", "write:purchase_orders", "read:supplier_data"],
+    escalationRules: ["Escalate supply shortages less than 24 hours of stock to Café Manager immediately"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "cafe_customer_experience_manager",
+    label: "Customer Experience Manager",
+    mission: "Build lasting customer loyalty by monitoring satisfaction signals, responding to reviews, and driving loyalty program adoption.",
+    responsibilities: [
+      "Monitor online review ratings across all platforms daily",
+      "Respond to negative reviews within 2 hours",
+      "Identify customers at risk of churn based on visit frequency",
+      "Report loyalty member growth weekly",
+    ],
+    capabilities: [
+      "Review monitoring and response",
+      "Loyalty program tracking",
+      "Customer satisfaction scoring",
+      "Churn risk identification",
+    ],
+    requiredTools: ["review_platform", "loyalty_system", "customer_analytics"],
+    kpis: ["cafe_online_review_rating", "cafe_loyalty_member_pct", "cafe_avg_ticket_size"],
+    permissions: ["read:reviews", "write:review_responses", "read:loyalty_data"],
+    escalationRules: ["Escalate reviews below 2 stars to Café Manager within 30 minutes"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "cafe_marketing_coordinator",
+    label: "Marketing Coordinator",
+    mission: "Drive customer traffic and increase average ticket size through targeted promotions, seasonal campaigns, and loyalty incentives.",
+    responsibilities: [
+      "Plan and execute monthly promotional campaigns",
+      "Coordinate seasonal menu launches with social media content",
+      "Analyze campaign performance against revenue targets",
+      "Grow loyalty program enrollment via in-store and digital channels",
+    ],
+    capabilities: [
+      "Campaign planning and execution",
+      "Social media content coordination",
+      "Promotional performance analysis",
+      "Loyalty enrollment growth",
+    ],
+    requiredTools: ["email_marketing_tool", "sms_campaign_tool", "campaign_analytics"],
+    kpis: ["cafe_avg_ticket_size", "cafe_loyalty_member_pct", "cafe_online_review_rating"],
+    permissions: ["write:campaigns", "read:customer_segments", "write:loyalty_offers"],
+    escalationRules: ["Escalate campaigns underperforming by 30%+ to Café Manager for review"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "cafe_shift_supervisor",
+    label: "Shift Supervisor",
+    mission: "Ensure each shift runs smoothly by managing staff assignments, maintaining quality during peak periods, and closing the till accurately.",
+    responsibilities: [
+      "Brief staff on daily targets and promotions at shift start",
+      "Monitor drive-thru and in-store wait times during peak hours",
+      "Handle customer escalations and refund requests",
+      "Complete shift closing checklist and submit waste log",
+    ],
+    capabilities: [
+      "Shift briefing and coordination",
+      "Real-time throughput monitoring",
+      "Customer escalation handling",
+      "Shift close reporting",
+    ],
+    requiredTools: ["pos_system", "team_messenger", "waste_tracker"],
+    kpis: ["cafe_transactions_per_hour", "cafe_drive_thru_speed_sec", "cafe_waste_pct"],
+    permissions: ["read:pos_data", "write:waste_log", "write:shift_reports"],
+    escalationRules: ["Escalate drive-thru queue exceeding 10 cars to Café Manager immediately"],
+    lifecycle: "available" as const,
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

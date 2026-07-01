@@ -28,7 +28,7 @@ Graph Runtime
 - Relationship taxonomy:
   `packages/registries/src/registries/businessRelationship.ts`
 - Repository contract: `packages/db/src/repositories/types.ts`
-- PostgreSQL schema: `packages/db/migrations/0013_business_knowledge_graph.sql`
+- PostgreSQL schema: `packages/db/migrations/0023_business_knowledge_graph.sql`
 - Foundation service: `apps/api/src/services/businessGraphService.ts`
 
 The initial 21 canonical node types and 11 relationship types are stable IDs.

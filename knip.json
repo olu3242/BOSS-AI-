@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
+    "apps/api": {
+      "entry": ["src/server.ts"],
+      "project": ["src/**/*.ts"]
+    },
     "apps/*": {
       "project": ["src/**/*.ts"]
     },
@@ -20,7 +24,7 @@
     "@supabase/supabase-js",
     "zod",
     "@boss/types",
-    "@boss/shared"
+    "@boss/shared",
   ],
   "ignoreBinaries": ["powershell"],
   "ignoreExportsUsedInFile": true

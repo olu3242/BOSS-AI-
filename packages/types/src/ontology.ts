@@ -330,6 +330,7 @@ export type TimelineEventType =
   | "capability_updated"
   | "constraint_analysis_completed"
   | "recommendations_generated"
+  | "workflow_generated"
   | "diagnostic_completed";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
@@ -530,11 +531,158 @@ export interface TransformationRoadmap extends TenantScoped, Timestamped {
   version: number;
 }
 
+export type IntegrationAccountStatus = "connected" | "disconnected" | "error";
+
+/** A business's connection to a Provider. Never stores raw secrets. */
+export interface IntegrationAccount extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  providerKey: string;
+  status: IntegrationAccountStatus;
+  connectedAt: string | null;
+  version: number;
+}
+
+/**
+ * A reference to a credential held in an external secret store. The
+ * Tool Fabric's own tables never persist raw secret material — only an
+ * opaque pointer the runtime resolves at execution time.
+ */
+export interface CredentialReference extends TenantScoped, Timestamped {
+  id: ID;
+  integrationAccountId: ID;
+  secretRef: string;
+  rotatedAt: string | null;
+}
+
+export type PermissionApprovalRequirement = "auto" | "approval_required" | "executive_review" | "manual_only";
+
+export interface PermissionPolicy extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolKey: string;
+  roleKey: string;
+  allowed: boolean;
+  approval: PermissionApprovalRequirement;
+  rateLimitPerMinute: number | null;
+  version: number;
+}
+
+export type ToolExecutionStatus = "pending" | "succeeded" | "failed" | "rejected";
+
+export interface ToolExecution extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolKey: string;
+  capabilityKey: string;
+  providerKey: string;
+  requestedBy: string;
+  status: ToolExecutionStatus;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+  attemptCount: number;
+  latencyMs: number | null;
+}
+
+export type ProviderHealthStatus = "healthy" | "degraded" | "down" | "unknown";
+
+export interface ProviderHealth extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  providerKey: string;
+  status: ProviderHealthStatus;
+  latencyMs: number | null;
+  failureCount: number;
+  quotaRemaining: number | null;
+  authenticated: boolean;
+  checkedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ToolAuditRecord extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  toolExecutionId: ID;
+  action: string;
+  actor: string;
+  details: Record<string, unknown>;
+  occurredAt: string;
+  createdAt: string;
+}
+
 export interface BossEventRecord extends TenantScoped {
   id: ID;
   type: string;
   payload: Record<string, unknown>;
   occurredAt: string;
+}
+
+export type ExecutionState =
+  | "pending"
+  | "queued"
+  | "running"
+  | "waiting"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "failed"
+  | "cancelled"
+  | "rolled_back"
+  | "timed_out";
+
+export type TaskType = "ai" | "manual" | "scheduled" | "tool";
+
+export interface WorkflowExecution extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  workflowKey: string;
+  state: ExecutionState;
+  currentStepIndex: number;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface TaskExecution extends TenantScoped, Timestamped {
+  id: ID;
+  workflowExecutionId: ID;
+  businessId: ID;
+  stepKey: string;
+  taskType: TaskType;
+  state: ExecutionState;
+  attempt: number;
+  maxRetries: number;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  errorMessage: string | null;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface ExecutionEventRecord extends TenantScoped {
+  id: ID;
+  workflowExecutionId: ID;
+  businessId: ID;
+  type: string;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface DeadLetterEntry extends TenantScoped, Timestamped {
+  id: ID;
+  workflowExecutionId: ID;
+  taskExecutionId: ID;
+  businessId: ID;
+  stepKey: string;
+  reason: string;
+  payload: Record<string, unknown>;
 }
 
 export interface Notification extends TenantScoped, Timestamped {
@@ -561,9 +709,177 @@ export interface Policy {
 
 export interface MemoryRecord extends TenantScoped {
   id: ID;
+  businessId: ID;
   ownerType: "agent" | "business";
   ownerId: ID;
   key: string;
   value: unknown;
   expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SchedulerTriggerType = "immediate" | "delayed" | "cron" | "recurring";
+export type SchedulerJobState = "pending" | "running" | "completed" | "failed" | "cancelled";
+
+export interface SchedulerJob extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  workflowKey: string;
+  triggerType: SchedulerTriggerType;
+  cronExpression: string | null;
+  timezone: string;
+  runAt: string;
+  state: SchedulerJobState;
+  lastRunAt: string | null;
+  nextRunAt: string | null;
+  runCount: number;
+  maxRuns: number | null;
+  payload: Record<string, unknown>;
+  errorMessage: string | null;
+}
+
+// ─── Decision Intelligence (Goal 21) ─────────────────────────────────────────
+
+export type DecisionStatus =
+  | "draft"
+  | "generated"
+  | "reviewed"
+  | "approved"
+  | "rejected"
+  | "scheduled"
+  | "executing"
+  | "completed"
+  | "measured"
+  | "archived";
+
+export type DecisionType =
+  | "operational"
+  | "strategic"
+  | "financial"
+  | "marketing"
+  | "hiring"
+  | "technology"
+  | "expansion"
+  | "risk_mitigation"
+  | "customer_success"
+  | "pricing";
+
+export type DecisionImpactLevel = "low" | "medium" | "high" | "critical";
+
+export interface DecisionOption {
+  key: string;
+  label: string;
+  description: string;
+  expectedRoi: number;
+  expectedCost: number;
+  expectedRisk: DecisionImpactLevel;
+  confidence: number;
+  tradeoffs: string[];
+  estimatedTimelineDays: number;
+}
+
+export interface DecisionImpact {
+  revenueImpact: number;
+  costImpact: number;
+  profitImpact: number;
+  operationalImpact: DecisionImpactLevel;
+  customerImpact: DecisionImpactLevel;
+  riskLevel: DecisionImpactLevel;
+  affectedDomains: string[];
+  estimatedTimelineDays: number;
+}
+
+export interface BusinessDecision extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  decisionType: DecisionType;
+  objective: string;
+  context: string;
+  supportingRecommendationIds: string[];
+  supportingConstraintIds: string[];
+  appliedPolicyKeys: string[];
+  options: DecisionOption[];
+  selectedOptionKey: string | null;
+  expectedImpact: DecisionImpact;
+  expectedRoi: number;
+  expectedCost: number;
+  confidenceScore: number;
+  status: DecisionStatus;
+  approvedAt: string | null;
+  rejectedAt: string | null;
+  completedAt: string | null;
+  measuredAt: string | null;
+  actualRoi: number | null;
+  lessonsLearned: string | null;
+  executiveSummary: string | null;
+  generatedWorkflowId: string | null;
+}
+
+// ─── Scenario Simulation (Goal 22) ───────────────────────────────────────────
+
+export type ScenarioType =
+  | "revenue"
+  | "marketing"
+  | "sales"
+  | "finance"
+  | "operations"
+  | "hiring"
+  | "pricing"
+  | "expansion"
+  | "customer_success"
+  | "automation"
+  | "technology"
+  | "risk";
+
+export type ForecastPeriod = "30d" | "90d" | "180d" | "365d";
+
+export type ScenarioStatus = "draft" | "calculated" | "approved" | "rejected" | "archived";
+
+export interface ScenarioAssumption {
+  key: string;
+  label: string;
+  value: number;
+  unit: string;
+}
+
+export interface BusinessScenario extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  scenarioType: ScenarioType;
+  objective: string;
+  assumptions: ScenarioAssumption[];
+  affectedDomains: string[];
+  projectedRevenue: number;
+  projectedCost: number;
+  projectedProfit: number;
+  operationalImpact: DecisionImpactLevel;
+  customerImpact: DecisionImpactLevel;
+  riskLevel: DecisionImpactLevel;
+  confidenceScore: number;
+  forecastPeriod: ForecastPeriod;
+  version: number;
+  status: ScenarioStatus;
+}
+
+export interface ScenarioComparison extends TenantScoped {
+  id: ID;
+  businessId: ID;
+  scenarioIds: string[];
+  recommendedScenarioId: string;
+  rationale: string;
+  createdAt: string;
+}
+
+export interface ProviderEvidence extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  toolExecutionId: ID;
+  providerKey: string;
+  toolKey: string;
+  status: "succeeded" | "failed";
+  latencyMs: number;
+  attemptCount: number;
+  errorCode: string | null;
+  responseSnapshot: Record<string, unknown> | null;
 }

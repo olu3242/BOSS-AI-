@@ -1,8 +1,9 @@
 interface SignUpPageProps {
-  readonly searchParams: { readonly error?: string };
+  readonly searchParams: Promise<{ readonly error?: string }>;
 }
 
-export default function SignUpPage({ searchParams }: SignUpPageProps) {
+export default async function SignUpPage({ searchParams }: SignUpPageProps) {
+  const query = await searchParams;
   return (
     <main className="auth-shell">
       <a className="brand-link" href="/">BOSS</a>
@@ -10,7 +11,7 @@ export default function SignUpPage({ searchParams }: SignUpPageProps) {
         <p className="eyebrow">Create your workspace</p>
         <h1 id="sign-up-title">Get started</h1>
         <p className="subtle">Your business data stays isolated to your organization.</p>
-        {searchParams.error ? <p className="form-error" role="alert">{searchParams.error}</p> : null}
+        {query.error ? <p className="form-error" role="alert">{query.error}</p> : null}
         <form action="/api/auth/sign-up" method="post">
           <label>
             Work email

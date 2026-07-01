@@ -17,6 +17,24 @@ import type {
   RecommendationScore,
   RecommendationPriority,
   TransformationRoadmap,
+  IntegrationAccount,
+  CredentialReference,
+  PermissionPolicy,
+  ToolExecution,
+  ToolAuditRecord,
+  ProviderHealth,
+  WorkflowExecution,
+  TaskExecution,
+  ExecutionEventRecord,
+  DeadLetterEntry,
+  MemoryRecord,
+  ProviderEvidence,
+  SchedulerJob,
+  SchedulerJobState,
+  BusinessDecision,
+  DecisionStatus,
+  BusinessScenario,
+  ScenarioComparison,
   BusinessDiagnosticReport,
   Organization,
   OrganizationWithMembership,
@@ -49,6 +67,21 @@ import {
   type OrganizationRepository,
   type RecommendationPriorityRepository,
   type TransformationRoadmapRepository,
+  type IntegrationAccountRepository,
+  type PermissionPolicyRepository,
+  type ToolExecutionRepository,
+  type ProviderHealthRepository,
+  type WorkflowExecutionRepository,
+  type TaskExecutionRepository,
+  type ExecutionEventRepository,
+  type DeadLetterRepository,
+  type MemoryRecordRepository,
+  type ProviderEvidenceRepository,
+  type SchedulerJobRepository,
+  type EventLogRepository,
+  type EventLogEntry,
+  type BusinessDecisionRepository,
+  type BusinessScenarioRepository,
   type BusinessDiscoveryRepository,
   type BusinessGraphRepository,
 } from "../types.js";
@@ -449,6 +482,463 @@ export function createInMemoryTransformationRoadmapRepository(): TransformationR
       return (
         Array.from(items.values()).find((item) => item.orgId === orgId && item.businessId === businessId) ?? null
       );
+    },
+  };
+}
+
+export function createInMemoryIntegrationAccountRepository(): IntegrationAccountRepository {
+  const accounts = new Map<string, IntegrationAccount>();
+  const credentials = new Map<string, CredentialReference>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(accounts.values()).find(
+        (a) => a.businessId === input.businessId && a.providerKey === input.providerKey
+      );
+      const account: IntegrationAccount = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      accounts.set(account.id, account);
+      return account;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(accounts.values()).filter(
+        (a) => a.orgId === orgId && a.businessId === businessId && !a.deletedAt
+      );
+    },
+    async findByProvider(orgId, businessId, providerKey) {
+      return (
+        Array.from(accounts.values()).find(
+          (a) => a.orgId === orgId && a.businessId === businessId && a.providerKey === providerKey && !a.deletedAt
+        ) ?? null
+      );
+    },
+    async addCredentialReference(integrationAccountId, input) {
+      const account = accounts.get(integrationAccountId);
+      const credential: CredentialReference = {
+        id: randomUUID(),
+        orgId: account?.orgId ?? "",
+        integrationAccountId,
+        ...input,
+        ...stamp(),
+      };
+      credentials.set(credential.id, credential);
+      return credential;
+    },
+    async findCredentialByAccount(integrationAccountId) {
+      return (
+        Array.from(credentials.values()).find(
+          (c) => c.integrationAccountId === integrationAccountId && !c.deletedAt
+        ) ?? null
+      );
+    },
+  };
+}
+
+export function createInMemoryPermissionPolicyRepository(): PermissionPolicyRepository {
+  const items = new Map<string, PermissionPolicy>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (p) => p.businessId === input.businessId && p.toolKey === input.toolKey && p.roleKey === input.roleKey
+      );
+      const policy: PermissionPolicy = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(policy.id, policy);
+      return policy;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter((p) => p.orgId === orgId && p.businessId === businessId && !p.deletedAt);
+    },
+  };
+}
+
+export function createInMemoryToolExecutionRepository(): ToolExecutionRepository {
+  const executions = new Map<string, ToolExecution>();
+  const audits = new Map<string, ToolAuditRecord>();
+  return {
+    async create(input) {
+      const execution: ToolExecution = {
+        id: randomUUID(),
+        ...input,
+        attemptCount: 1,
+        latencyMs: null,
+        ...stamp(),
+      };
+      executions.set(execution.id, execution);
+      return execution;
+    },
+    async updateStatus(orgId, id, status, output, errorMessage, meta) {
+      const existing = executions.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`ToolExecution ${id} not found`);
+      }
+      const updated: ToolExecution = {
+        ...existing,
+        status,
+        output,
+        errorMessage,
+        attemptCount: meta?.attemptCount ?? existing.attemptCount,
+        latencyMs: meta?.latencyMs !== undefined ? meta.latencyMs : existing.latencyMs,
+        completedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      executions.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(executions.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+    },
+    async addAuditRecord(input) {
+      const record: ToolAuditRecord = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
+      audits.set(record.id, record);
+      return record;
+    },
+    async listAuditRecords(orgId, businessId) {
+      return Array.from(audits.values())
+        .filter((a) => a.orgId === orgId && a.businessId === businessId)
+        .sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryProviderHealthRepository(): ProviderHealthRepository {
+  const items = new Map<string, ProviderHealth>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (h) => h.businessId === input.businessId && h.providerKey === input.providerKey
+      );
+      const health: ProviderHealth = existing
+        ? { ...existing, ...input, updatedAt: new Date().toISOString() }
+        : { id: randomUUID(), ...input, ...stamp() };
+      items.set(health.id, health);
+      return health;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter((h) => h.orgId === orgId && h.businessId === businessId);
+    },
+  };
+}
+
+export function createInMemoryWorkflowExecutionRepository(): WorkflowExecutionRepository {
+  const executions = new Map<string, WorkflowExecution>();
+  return {
+    async create(input) {
+      const execution: WorkflowExecution = { id: randomUUID(), ...input, ...stamp() };
+      executions.set(execution.id, execution);
+      return execution;
+    },
+    async updateState(orgId, id, state, currentStepIndex, output, errorMessage, completedAt) {
+      const existing = executions.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`WorkflowExecution ${id} not found`);
+      }
+      const updated: WorkflowExecution = {
+        ...existing,
+        state,
+        currentStepIndex,
+        output,
+        errorMessage,
+        completedAt,
+        updatedAt: new Date().toISOString(),
+      };
+      executions.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(executions.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryTaskExecutionRepository(): TaskExecutionRepository {
+  const tasks = new Map<string, TaskExecution>();
+  return {
+    async create(input) {
+      const task: TaskExecution = { id: randomUUID(), ...input, ...stamp() };
+      tasks.set(task.id, task);
+      return task;
+    },
+    async updateState(orgId, id, state, attempt, output, errorMessage, completedAt) {
+      const existing = tasks.get(id);
+      if (!existing || existing.orgId !== orgId) {
+        throw new Error(`TaskExecution ${id} not found`);
+      }
+      const updated: TaskExecution = {
+        ...existing,
+        state,
+        attempt,
+        output,
+        errorMessage,
+        completedAt,
+        updatedAt: new Date().toISOString(),
+      };
+      tasks.set(id, updated);
+      return updated;
+    },
+    async listByWorkflowExecutionId(orgId, workflowExecutionId) {
+      return Array.from(tasks.values())
+        .filter((t) => t.orgId === orgId && t.workflowExecutionId === workflowExecutionId)
+        .sort((a, b) => (a.startedAt < b.startedAt ? -1 : 1));
+    },
+  };
+}
+
+export function createInMemoryExecutionEventRepository(): ExecutionEventRepository {
+  const events = new Map<string, ExecutionEventRecord>();
+  return {
+    async append(input) {
+      const event: ExecutionEventRecord = { id: randomUUID(), ...input, createdAt: new Date().toISOString() };
+      events.set(event.id, event);
+      return event;
+    },
+    async listByWorkflowExecutionId(orgId, workflowExecutionId) {
+      return Array.from(events.values())
+        .filter((e) => e.orgId === orgId && e.workflowExecutionId === workflowExecutionId)
+        .sort((a, b) => (a.occurredAt < b.occurredAt ? -1 : 1));
+    },
+  };
+}
+
+export function createInMemoryDeadLetterRepository(): DeadLetterRepository {
+  const entries = new Map<string, DeadLetterEntry>();
+  return {
+    async add(input) {
+      const entry: DeadLetterEntry = { id: randomUUID(), ...input, ...stamp() };
+      entries.set(entry.id, entry);
+      return entry;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(entries.values())
+        .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+    },
+  };
+}
+
+export function createInMemoryMemoryRecordRepository(): MemoryRecordRepository {
+  const items = new Map<string, MemoryRecord>();
+  return {
+    async upsert(input) {
+      const existing = Array.from(items.values()).find(
+        (item) =>
+          item.orgId === input.orgId &&
+          item.businessId === input.businessId &&
+          item.ownerType === input.ownerType &&
+          item.ownerId === input.ownerId &&
+          item.key === input.key
+      );
+      const now = new Date().toISOString();
+      const record: MemoryRecord = existing
+        ? { ...existing, ...input, updatedAt: now }
+        : { id: randomUUID(), ...input, createdAt: now, updatedAt: now };
+      items.set(record.id, record);
+      return record;
+    },
+    async get(orgId, businessId, ownerType, ownerId, key) {
+      return (
+        Array.from(items.values()).find(
+          (item) =>
+            item.orgId === orgId &&
+            item.businessId === businessId &&
+            item.ownerType === ownerType &&
+            item.ownerId === ownerId &&
+            item.key === key
+        ) ?? null
+      );
+    },
+    async listByOwner(orgId, businessId, ownerType, ownerId) {
+      return Array.from(items.values()).filter(
+        (item) =>
+          item.orgId === orgId &&
+          item.businessId === businessId &&
+          item.ownerType === ownerType &&
+          item.ownerId === ownerId
+      );
+    },
+  };
+}
+
+export function createInMemoryProviderEvidenceRepository(): ProviderEvidenceRepository {
+  const records = new Map<string, ProviderEvidence>();
+  return {
+    async create(input) {
+      const record: ProviderEvidence = { id: randomUUID(), ...input, ...stamp() };
+      records.set(record.id, record);
+      return record;
+    },
+    async listByToolExecutionId(orgId, toolExecutionId) {
+      return Array.from(records.values()).filter(
+        (r) => r.orgId === orgId && r.toolExecutionId === toolExecutionId && !r.deletedAt
+      );
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(records.values()).filter(
+        (r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt
+      );
+    },
+  };
+}
+
+export function createInMemorySchedulerJobRepository(): SchedulerJobRepository {
+  const jobs = new Map<string, SchedulerJob>();
+  return {
+    async create(input) {
+      const job: SchedulerJob = { id: randomUUID(), ...input, ...stamp() };
+      jobs.set(job.id, job);
+      return job;
+    },
+    async findById(orgId, id) {
+      const job = jobs.get(id);
+      return job && job.orgId === orgId && !job.deletedAt ? job : null;
+    },
+    async updateState(orgId, id, state, fields = {}) {
+      const job = jobs.get(id);
+      if (!job || job.orgId !== orgId) throw new Error(`SchedulerJob ${id} not found`);
+      const updated: SchedulerJob = {
+        ...job,
+        state,
+        lastRunAt: fields.lastRunAt ?? job.lastRunAt,
+        nextRunAt: fields.nextRunAt ?? job.nextRunAt,
+        runCount: fields.runCount ?? job.runCount,
+        errorMessage: fields.errorMessage ?? job.errorMessage,
+        updatedAt: new Date().toISOString(),
+      };
+      jobs.set(id, updated);
+      return updated;
+    },
+    async listDuePending(now) {
+      return Array.from(jobs.values()).filter((j) => {
+        if (j.state !== "pending" || j.deletedAt) return false;
+        // For cron jobs that have already run once, use nextRunAt as the due-time check
+        if (j.lastRunAt && j.nextRunAt) return j.nextRunAt <= now;
+        return j.runAt <= now;
+      });
+    },
+    async listByBusiness(orgId, businessId) {
+      return Array.from(jobs.values()).filter(
+        (j) => j.orgId === orgId && j.businessId === businessId && !j.deletedAt
+      );
+    },
+    async cancel(orgId, id) {
+      const job = jobs.get(id);
+      if (job && job.orgId === orgId) {
+        jobs.set(id, { ...job, state: "cancelled" as SchedulerJobState, updatedAt: new Date().toISOString() });
+      }
+    },
+  };
+}
+
+export function createInMemoryBusinessDecisionRepository(): BusinessDecisionRepository {
+  const items = new Map<string, BusinessDecision>();
+  const now = () => new Date().toISOString();
+  return {
+    async create(input) {
+      const decision: BusinessDecision = {
+        id: randomUUID(), ...input,
+        createdAt: now(), updatedAt: now(), deletedAt: null,
+      };
+      items.set(decision.id, decision);
+      return decision;
+    },
+    async findById(orgId, id) {
+      const found = items.get(id);
+      return found && found.orgId === orgId && !found.deletedAt ? found : null;
+    },
+    async update(orgId, id, patch) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Decision ${id} not found`);
+      const updated: BusinessDecision = { ...existing, ...patch, updatedAt: now() };
+      items.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values()).filter(
+        (d) => d.orgId === orgId && d.businessId === businessId && !d.deletedAt
+      );
+    },
+    async listByStatus(orgId, businessId, status: DecisionStatus) {
+      return Array.from(items.values()).filter(
+        (d) => d.orgId === orgId && d.businessId === businessId && d.status === status && !d.deletedAt
+      );
+    },
+  };
+}
+
+export function createInMemoryBusinessScenarioRepository(): BusinessScenarioRepository {
+  const scenarios = new Map<string, BusinessScenario>();
+  const comparisons = new Map<string, ScenarioComparison>();
+  const now = () => new Date().toISOString();
+  return {
+    async create(input) {
+      const scenario: BusinessScenario = {
+        id: randomUUID(), ...input,
+        createdAt: now(), updatedAt: now(), deletedAt: null,
+      };
+      scenarios.set(scenario.id, scenario);
+      return scenario;
+    },
+    async findById(orgId, id) {
+      const found = scenarios.get(id);
+      return found && found.orgId === orgId && !found.deletedAt ? found : null;
+    },
+    async update(orgId, id, patch) {
+      const existing = scenarios.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Scenario ${id} not found`);
+      const updated: BusinessScenario = { ...existing, ...patch, updatedAt: now() };
+      scenarios.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(scenarios.values()).filter(
+        (s) => s.orgId === orgId && s.businessId === businessId && !s.deletedAt
+      );
+    },
+    async createComparison(input) {
+      const comparison: ScenarioComparison = { id: randomUUID(), createdAt: now(), ...input };
+      comparisons.set(comparison.id, comparison);
+      return comparison;
+    },
+    async listComparisons(orgId, businessId) {
+      return Array.from(comparisons.values()).filter(
+        (c) => c.orgId === orgId && c.businessId === businessId
+      );
+    },
+  };
+}
+
+export function createInMemoryEventLogRepository(): EventLogRepository {
+  const entries: EventLogEntry[] = [];
+  const now = () => new Date().toISOString();
+  return {
+    async append(input) {
+      const entry: EventLogEntry = {
+        id: randomUUID(),
+        ...input,
+        orgId: input.orgId ?? null,
+        correlationId: input.correlationId ?? null,
+        causationId: input.causationId ?? null,
+        createdAt: now(),
+      };
+      entries.push(entry);
+      return entry;
+    },
+    async listByType(type, limit = 100) {
+      return entries.filter((e) => e.type === type).slice(-limit).reverse();
+    },
+    async listByOrgId(orgId, limit = 200) {
+      return entries.filter((e) => e.orgId === orgId).slice(-limit).reverse();
+    },
+    async listByCorrelationId(correlationId) {
+      return entries.filter((e) => e.correlationId === correlationId);
+    },
+    async listSince(since, limit = 500) {
+      return entries.filter((e) => e.occurredAt >= since).slice(0, limit);
     },
   };
 }

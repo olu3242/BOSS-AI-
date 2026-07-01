@@ -1,17 +1,18 @@
 interface ResetPasswordPageProps {
-  readonly searchParams: { readonly error?: string };
+  readonly searchParams: Promise<{ readonly error?: string }>;
 }
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
+  const query = await searchParams;
   return (
     <main className="auth-shell">
       <a className="brand-link" href="/">BOSS</a>
       <section className="auth-panel" aria-labelledby="reset-password-title">
         <p className="eyebrow">Secure recovery</p>
         <h1 id="reset-password-title">Choose a new password</h1>
-        {searchParams.error ? (
+        {query.error ? (
           <p className="form-error" role="alert">
             The passwords did not match, the link expired, or the update failed.
           </p>

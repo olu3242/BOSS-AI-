@@ -14,7 +14,7 @@
     "url": "https://github.com/olu3242/boss-ai-"
   },
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.13.0",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@11.3.0",

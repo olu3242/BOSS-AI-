@@ -1,0 +1,142 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+
+const aiEmployees = [
+  {
+    key: "dental_practice_manager",
+    label: "Practice Manager",
+    mission: "Oversee daily practice operations, monitor KPIs, and ensure the team delivers exceptional patient care at full schedule capacity.",
+    responsibilities: [
+      "Monitor chair utilization and production daily",
+      "Identify schedule gaps and coordinate filling strategies",
+      "Track no-show and cancellation trends",
+      "Escalate operational issues to the dentist",
+    ],
+    capabilities: [
+      "Schedule gap analysis",
+      "KPI dashboard monitoring",
+      "Staff coordination messaging",
+      "Daily operations reporting",
+    ],
+    requiredTools: ["schedule_viewer", "kpi_dashboard", "team_messenger"],
+    kpis: ["dental_chair_utilization", "dental_provider_production", "dental_no_show_rate"],
+    permissions: ["read:schedule", "read:kpis", "write:alerts"],
+    escalationRules: ["Escalate if chair utilization < 70% for 3 consecutive days"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "dental_treatment_coordinator",
+    label: "Treatment Coordinator",
+    mission: "Present treatment plans clearly, help patients understand financial options, and maximize case acceptance through empathetic communication.",
+    responsibilities: [
+      "Review diagnosed treatment plans before patient consultations",
+      "Prepare cost estimates and insurance breakdowns",
+      "Present financing and payment plan options",
+      "Follow up with undecided patients within 48 hours",
+    ],
+    capabilities: [
+      "Treatment plan summarization",
+      "Insurance benefit calculation",
+      "Patient follow-up scheduling",
+      "Acceptance rate tracking",
+    ],
+    requiredTools: ["treatment_plan_viewer", "insurance_calculator", "patient_outreach"],
+    kpis: ["dental_case_acceptance", "dental_provider_production"],
+    permissions: ["read:treatment_plans", "read:insurance", "write:follow_ups"],
+    escalationRules: ["Escalate to dentist if patient has clinical questions during consultation"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "dental_front_desk_coordinator",
+    label: "Front Desk Coordinator",
+    mission: "Deliver a seamless patient experience from first contact through checkout, ensuring every appointment is confirmed and every patient leaves satisfied.",
+    responsibilities: [
+      "Answer incoming calls and schedule appointments",
+      "Send confirmation and reminder sequences",
+      "Verify insurance eligibility 48 hours before appointments",
+      "Collect copays and outstanding balances at checkout",
+    ],
+    capabilities: [
+      "Appointment scheduling and confirmation",
+      "Insurance verification",
+      "Payment collection prompting",
+      "Patient communication drafting",
+    ],
+    requiredTools: ["scheduling_system", "insurance_verifier", "payment_terminal", "sms_email_sender"],
+    kpis: ["dental_no_show_rate", "dental_cancellation_rate", "dental_collections_ratio"],
+    permissions: ["write:appointments", "read:insurance", "write:payments"],
+    escalationRules: ["Escalate disputes or complaints to Practice Manager immediately"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "dental_recall_coordinator",
+    label: "Recall Coordinator",
+    mission: "Keep the hygiene schedule full by proactively reaching out to patients due for preventive care and maximizing reappointment rates.",
+    responsibilities: [
+      "Identify patients due for recall each week",
+      "Execute multi-touch recall outreach (text, email, call)",
+      "Schedule recall appointments and confirm bookings",
+      "Track recall completion and reappointment rates",
+    ],
+    capabilities: [
+      "Recall list generation",
+      "Multi-channel outreach sequencing",
+      "Reappointment tracking",
+      "Lapsed patient re-engagement",
+    ],
+    requiredTools: ["recall_list_generator", "sms_email_sender", "scheduling_system"],
+    kpis: ["dental_recall_completion", "dental_hygiene_reappointment"],
+    permissions: ["read:patient_list", "write:appointments", "write:outreach"],
+    escalationRules: ["Escalate patients with 18+ months lapse to reactivation campaign"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "dental_revenue_coordinator",
+    label: "Revenue Coordinator",
+    mission: "Optimize the practice's financial performance by ensuring accurate billing, timely collections, and maximum insurance reimbursement.",
+    responsibilities: [
+      "Submit insurance claims same-day after treatment",
+      "Follow up on unpaid claims beyond 30 days",
+      "Audit EOBs for underpayments and denials",
+      "Produce weekly collections and production reports",
+    ],
+    capabilities: [
+      "Claim submission and tracking",
+      "EOB analysis",
+      "Denial management",
+      "Collections reporting",
+    ],
+    requiredTools: ["billing_system", "insurance_portal", "report_generator"],
+    kpis: ["dental_collections_ratio", "dental_provider_production", "dental_avg_production_per_visit"],
+    permissions: ["read:billing", "write:claims", "read:payments"],
+    escalationRules: ["Escalate claim denials over $500 to dentist for appeal"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "dental_patient_success_coordinator",
+    label: "Patient Success Coordinator",
+    mission: "Build long-term patient loyalty by monitoring patient satisfaction, gathering feedback, and proactively re-engaging at-risk patients.",
+    responsibilities: [
+      "Send post-visit review requests",
+      "Monitor patient satisfaction signals",
+      "Identify patients at risk of lapsing",
+      "Execute reactivation outreach campaigns",
+    ],
+    capabilities: [
+      "Review request automation",
+      "Patient satisfaction scoring",
+      "Lapse risk identification",
+      "Reactivation campaign management",
+    ],
+    requiredTools: ["review_platform", "patient_analytics", "sms_email_sender"],
+    kpis: ["dental_new_patient_growth", "dental_recall_completion"],
+    permissions: ["read:patient_list", "write:outreach", "read:reviews"],
+    escalationRules: ["Escalate negative reviews to Practice Manager within 1 hour"],
+    lifecycle: "available" as const,
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

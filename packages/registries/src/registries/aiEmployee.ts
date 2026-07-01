@@ -12,4 +12,32 @@ export interface AiEmployeeEntry extends RegistryEntry {
   lifecycle: "draft" | "available" | "deprecated";
 }
 
-export const aiEmployeeRegistry = createRegistry<AiEmployeeEntry>();
+export interface AiEmployeeEscalationRule {
+  condition: string;
+  escalateTo: string;
+  method: string;
+}
+
+export type AiEmployeeRegistration = Omit<
+  AiEmployeeEntry,
+  "escalationRules"
+> & {
+  escalationRules: Array<string | AiEmployeeEscalationRule>;
+};
+
+const registry = createRegistry<AiEmployeeEntry>();
+
+export const aiEmployeeRegistry = {
+  list: registry.list,
+  get: registry.get,
+  register(entry: AiEmployeeRegistration): void {
+    registry.register({
+      ...entry,
+      escalationRules: entry.escalationRules.map((rule) =>
+        typeof rule === "string"
+          ? rule
+          : `${rule.condition} -> ${rule.escalateTo} via ${rule.method}`,
+      ),
+    });
+  },
+};
