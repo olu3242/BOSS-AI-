@@ -87,9 +87,9 @@ export const apiClient = {
     }>(orgId, `/businesses/${businessId}/workspace`),
 
   getTimeline: (orgId: string, businessId: string) =>
-    request<{
-      entries: Array<{ id: string; type: string; description: string; occurredAt: string }>;
-    }>(orgId, `/businesses/${businessId}/timeline`),
+    request<Array<{ id: string; type: string; description: string; occurredAt: string }>>(
+      orgId, `/businesses/${businessId}/timeline`
+    ),
 
   getPendingApprovals: (orgId: string, businessId: string) =>
     request<{

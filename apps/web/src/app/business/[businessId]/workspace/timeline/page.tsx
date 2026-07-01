@@ -39,8 +39,7 @@ export default async function TimelinePage({ params }: Props) {
     );
   }
 
-  const entries = "entries" in data ? data.entries : (data as { id: string; type: string; description: string; occurredAt: string }[]);
-  const timeline = Array.isArray(entries) ? entries : [];
+  const timeline = Array.isArray(data) ? data : [];
 
   return (
     <div className="flex flex-col gap-6">
