@@ -20,7 +20,7 @@ export default function NewBusinessPage() {
       const { business } = await apiClient.createBusiness(DEMO_ORG_ID, {
         name: form.get("name"),
         industry: form.get("industry"),
-        businessType: form.get("industry"),
+        businessType: form.get("businessType"),
         employeeCount: Number(form.get("employeeCount")),
         annualRevenue: Number(form.get("annualRevenue")),
         yearsOperating: Number(form.get("yearsOperating")),
@@ -41,6 +41,7 @@ export default function NewBusinessPage() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field label="Business name" name="name" required />
         <Field label="Industry" name="industry" required defaultValue="general_smb" />
+        <Field label="Business type (e.g. LLC, Sole Proprietor, Corporation)" name="businessType" required defaultValue="LLC" />
         <Field label="Employee count" name="employeeCount" type="number" required defaultValue="1" />
         <Field label="Annual revenue" name="annualRevenue" type="number" required defaultValue="0" />
         <Field label="Years operating" name="yearsOperating" type="number" required defaultValue="0" />

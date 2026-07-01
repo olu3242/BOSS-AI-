@@ -1,21 +1,14 @@
-interface BusinessProfileData {
-  business: { id: string; businessName: string; businessType: string; employeeCount: number; yearsOperating: number };
-}
+import { apiClient } from "../../../../../lib/apiClient";
+import { DEMO_ORG_ID } from "../../../../../lib/demoOrg";
 
 interface Props {
   params: { businessId: string };
 }
 
 export default async function SettingsPage({ params }: Props) {
-  let business: BusinessProfileData | null = null;
+  let business: Awaited<ReturnType<typeof apiClient.getBusiness>> | null = null;
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000"}/api/v1/businesses/${params.businessId}`,
-      { cache: "no-store" }
-    );
-    if (res.ok) {
-      business = (await res.json()) as BusinessProfileData;
-    }
+    business = await apiClient.getBusiness(DEMO_ORG_ID, params.businessId);
   } catch {
     business = null;
   }
@@ -32,23 +25,23 @@ export default async function SettingsPage({ params }: Props) {
               <dt className="text-xs text-neutral-500">Business ID</dt>
               <dd className="mt-1 font-mono text-sm text-neutral-300">{params.businessId}</dd>
             </div>
-            {business?.business && (
+            {business && (
               <>
                 <div>
                   <dt className="text-xs text-neutral-500">Name</dt>
-                  <dd className="mt-1 text-sm text-neutral-300">{business.business.businessName}</dd>
+                  <dd className="mt-1 text-sm text-neutral-300">{business.businessName}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-neutral-500">Type</dt>
-                  <dd className="mt-1 text-sm text-neutral-300">{business.business.businessType}</dd>
+                  <dd className="mt-1 text-sm text-neutral-300">{business.businessType}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-neutral-500">Employees</dt>
-                  <dd className="mt-1 text-sm text-neutral-300">{business.business.employeeCount}</dd>
+                  <dd className="mt-1 text-sm text-neutral-300">{business.employeeCount}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-neutral-500">Years Operating</dt>
-                  <dd className="mt-1 text-sm text-neutral-300">{business.business.yearsOperating}</dd>
+                  <dd className="mt-1 text-sm text-neutral-300">{business.yearsOperating}</dd>
                 </div>
               </>
             )}

@@ -6,9 +6,16 @@ interface Props {
 }
 
 export default async function IntelligencePage({ params }: Props) {
-  let snapshot;
+  let kpis;
+  let rootCause;
+  let decisions;
+
   try {
-    snapshot = await apiClient.getWorkspace(DEMO_ORG_ID, params.businessId);
+    [kpis, rootCause, decisions] = await Promise.all([
+      apiClient.getKpis(DEMO_ORG_ID, params.businessId),
+      apiClient.getRootCause(DEMO_ORG_ID, params.businessId).catch(() => null),
+      apiClient.getDecisions(DEMO_ORG_ID, params.businessId),
+    ]);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load intelligence data.";
     return (
@@ -22,8 +29,8 @@ export default async function IntelligencePage({ params }: Props) {
     );
   }
 
-  const { decisions, kpis, loopStatus } = snapshot;
-  const allDecisions = [...decisions.pending, ...decisions.approved, ...decisions.recentlyCompleted];
+  const chains = rootCause?.chains ?? [];
+  const activeConstraintCount = chains.filter((c) => c.severity === "high" || c.severity === "critical").length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -54,42 +61,56 @@ export default async function IntelligencePage({ params }: Props) {
         )}
       </section>
 
-      {/* Active Intelligence Signals */}
+      {/* Root Cause Analysis */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">Active Signals</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <h2 className="mb-3 font-display text-lg text-neutral-300">Active Intelligence Signals</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded border border-red-900/50 bg-red-950/20 p-4">
-            <p className="text-xs text-red-400 uppercase tracking-wide">Constraints</p>
-            <p className="mt-1 text-3xl font-bold text-red-300">{loopStatus.activeConstraints}</p>
-            <p className="mt-1 text-xs text-neutral-400">Blocking business performance</p>
-          </div>
-          <div className="rounded border border-yellow-900/50 bg-yellow-950/20 p-4">
-            <p className="text-xs text-yellow-400 uppercase tracking-wide">Recommendations</p>
-            <p className="mt-1 text-3xl font-bold text-yellow-300">{loopStatus.activeRecommendations}</p>
-            <p className="mt-1 text-xs text-neutral-400">Actions available to take</p>
+            <p className="text-xs text-red-400 uppercase tracking-wide">High-Severity Causes</p>
+            <p className="mt-1 text-3xl font-bold text-red-300">{activeConstraintCount}</p>
+            <p className="mt-1 text-xs text-neutral-400">Root causes blocking business performance</p>
           </div>
           <div className="rounded border border-blue-900/50 bg-blue-950/20 p-4">
-            <p className="text-xs text-blue-400 uppercase tracking-wide">Decisions</p>
-            <p className="mt-1 text-3xl font-bold text-blue-300">{allDecisions.length}</p>
-            <p className="mt-1 text-xs text-neutral-400">In the decision pipeline</p>
+            <p className="text-xs text-blue-400 uppercase tracking-wide">Decisions in Pipeline</p>
+            <p className="mt-1 text-3xl font-bold text-blue-300">{decisions.length}</p>
+            <p className="mt-1 text-xs text-neutral-400">Generated, pending review, or executing</p>
           </div>
         </div>
+        {chains.length > 0 && (
+          <div className="mt-4 flex flex-col gap-2">
+            {chains.map((chain, i) => (
+              <div key={i} className="rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{chain.rootCauseLabel}</span>
+                  <span className={`rounded px-2 py-0.5 text-xs ${
+                    chain.severity === "critical" ? "bg-red-900/50 text-red-400"
+                    : chain.severity === "high" ? "bg-orange-900/50 text-orange-400"
+                    : "bg-yellow-900/50 text-yellow-400"
+                  }`}>
+                    {chain.severity}
+                  </span>
+                </div>
+                {chain.affectedKpiKeys.length > 0 && (
+                  <p className="mt-1 text-xs text-neutral-500">Affects: {chain.affectedKpiKeys.join(", ")}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Decision Pipeline */}
-      {allDecisions.length > 0 && (
+      {decisions.length > 0 && (
         <section>
           <h2 className="mb-3 font-display text-lg text-neutral-300">Decision Pipeline</h2>
           <div className="flex flex-col gap-2">
-            {allDecisions.map((d) => (
+            {decisions.map((d) => (
               <div key={d.id} className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
-                <span className="text-sm">{d.title}</span>
+                <span className="text-sm">{d.objective}</span>
                 <div className="flex items-center gap-3">
-                  {"confidenceScore" in d && (
-                    <span className="text-xs text-neutral-400">
-                      {Math.round((d as typeof decisions.pending[0]).confidenceScore * 100)}%
-                    </span>
-                  )}
+                  <span className="text-xs text-neutral-400">
+                    {Math.round(d.confidenceScore * 100)}%
+                  </span>
                   <span className={`rounded px-2 py-0.5 text-xs ${
                     d.status === "approved" || d.status === "completed"
                       ? "bg-green-900/50 text-green-400"

@@ -27,9 +27,9 @@ export default async function AutomationPage({ params }: Props) {
     );
   }
 
-  const allIntegrations = integrations.integrations ?? [];
+  const allIntegrations = Array.isArray(integrations) ? integrations : [];
   const connected = allIntegrations.filter((i) => i.status === "connected");
-  const allExecutions = executions.executions ?? [];
+  const allExecutions = Array.isArray(executions) ? executions : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -90,7 +90,7 @@ export default async function AutomationPage({ params }: Props) {
                     {execution.providerKey} — {execution.toolKey}
                   </span>
                   <p className="text-xs text-neutral-500">
-                    {new Date(execution.executedAt).toLocaleString()}
+                    {new Date(execution.startedAt).toLocaleString()}
                   </p>
                 </div>
                 <span

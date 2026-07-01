@@ -49,6 +49,11 @@ async function request<T>(orgId: string, path: string, init?: RequestInit): Prom
 }
 
 export const apiClient = {
+  getBusiness: (orgId: string, businessId: string) =>
+    request<{ id: string; businessName: string; businessType: string; employeeCount: number; locationCount: number; businessHours: string; yearsOperating: number }>(
+      orgId, `/businesses/${businessId}`
+    ),
+
   createBusiness: (orgId: string, input: Record<string, unknown>) =>
     request<{ business: { id: string; name: string } }>(orgId, "/businesses", {
       method: "POST",
@@ -105,13 +110,36 @@ export const apiClient = {
       body: JSON.stringify({ reason }),
     }),
 
-  getIntegrations: (orgId: string, businessId: string) =>
+  getKpis: (orgId: string, businessId: string) =>
+    request<{ readings: Array<{ kpiKey: string; label: string; value: number | null; unit: string; trend: string | null }>; measuredAt: string }>(
+      orgId, `/businesses/${businessId}/kpis`
+    ),
+
+  getRootCause: (orgId: string, businessId: string) =>
     request<{
-      integrations: Array<{ providerKey: string; status: string; connectedAt: string | null }>;
-    }>(orgId, `/businesses/${businessId}/integrations`),
+      chains: Array<{ rootCauseKey: string; rootCauseLabel: string; severity: string; affectedKpiKeys: string[]; recommendedActions: string[]; confidence: number }>;
+      primaryRootCause: string | null;
+      summary: string;
+      detectedAt: string;
+    }>(orgId, `/businesses/${businessId}/rootcause`),
+
+  getConstraints: (orgId: string, businessId: string) =>
+    request<Array<{ id: string; constraintKey: string; status: string; severity: string; description: string }>>(
+      orgId, `/businesses/${businessId}/constraints`
+    ),
+
+  getDecisions: (orgId: string, businessId: string) =>
+    request<Array<{ id: string; objective: string; status: string; confidenceScore: number; decisionType: string }>>(
+      orgId, `/businesses/${businessId}/decisions`
+    ),
+
+  getIntegrations: (orgId: string, businessId: string) =>
+    request<Array<{ providerKey: string; status: string; connectedAt: string | null }>>(
+      orgId, `/businesses/${businessId}/integrations`
+    ),
 
   getToolExecutions: (orgId: string, businessId: string) =>
-    request<{
-      executions: Array<{ id: string; providerKey: string; toolKey: string; status: string; executedAt: string }>;
-    }>(orgId, `/businesses/${businessId}/tools/executions`),
+    request<Array<{ id: string; providerKey: string; toolKey: string; status: string; startedAt: string; completedAt: string | null }>>(
+      orgId, `/businesses/${businessId}/tools/executions`
+    ),
 };
