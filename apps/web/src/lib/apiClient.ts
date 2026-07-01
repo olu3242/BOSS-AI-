@@ -165,6 +165,15 @@ export const apiClient = {
       orgId, `/businesses/${businessId}/decisions`
     ),
 
+  submitFeedback: (orgId: string, input: { message: string; businessId?: string; pageUrl?: string; category?: string }) =>
+    request<{ feedbackId: string; status: string }>(orgId, "/support/feedback", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  getFlags: () =>
+    fetch(`${API_BASE_URL}/api/v1/flags`).then((r) => r.json() as Promise<Record<string, boolean>>),
+
   getIntegrations: (orgId: string, businessId: string) =>
     request<Array<{ providerKey: string; status: string; connectedAt: string | null }>>(
       orgId, `/businesses/${businessId}/integrations`

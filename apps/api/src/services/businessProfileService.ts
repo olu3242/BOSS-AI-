@@ -50,6 +50,12 @@ export function createBusinessProfileService(repos: RepositoryContainer): Busine
         occurredAt: nowIso(),
       });
 
+      await repos.eventBus.publish({
+        type: "business.created",
+        payload: { orgId: input.orgId, businessId: business.id, industry: input.industry },
+        occurredAt: nowIso(),
+      });
+
       return { business, profile };
     },
     async getProfile(orgId, businessId) {

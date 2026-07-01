@@ -31,6 +31,8 @@ import { createExecutionPlanService } from "./services/executionPlanService.js";
 import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
 import { createBusinessOperatingLoopService } from "./services/businessOperatingLoopService.js";
 import { createWorkspaceService } from "./services/workspaceService.js";
+import { createFeatureFlagService } from "./services/featureFlagService.js";
+import { createSupportService } from "./services/supportService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -63,6 +65,8 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const outcomeVerification = createOutcomeVerificationService(repos);
   const businessOperatingLoop = createBusinessOperatingLoopService(repos);
   const workspace = createWorkspaceService(repos);
+  const featureFlags = createFeatureFlagService();
+  const support = createSupportService(repos);
 
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
@@ -87,6 +91,8 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     outcomeVerification,
     businessOperatingLoop,
     workspace,
+    featureFlags,
+    support,
   };
 }
 
@@ -113,3 +119,5 @@ export * from "./services/executionPlanService.js";
 export * from "./services/outcomeVerificationService.js";
 export * from "./services/businessOperatingLoopService.js";
 export * from "./services/workspaceService.js";
+export * from "./services/featureFlagService.js";
+export * from "./services/supportService.js";

@@ -55,7 +55,21 @@ export function createHttpServer(api: Api): Express {
   // Unauthenticated health endpoint — standard ops probe
   app.get("/health", (_req, res) => {
     const snap = api.observability.getSnapshot();
-    res.json({ status: "ok", ...snap });
+    const errorRate = snap.counters.httpRequests > 0
+      ? snap.counters.httpErrors / snap.counters.httpRequests
+      : 0;
+    const healthy = errorRate < 0.05 && snap.memoryMb.heapUsed < 900;
+    res.status(healthy ? 200 : 503).json({
+      status: healthy ? "ok" : "degraded",
+      version: process.env.npm_package_version ?? "0.9.0-rc1",
+      checks: {
+        api: "ok",
+        errorRate: `${(errorRate * 100).toFixed(1)}%`,
+        heapMb: snap.memoryMb.heapUsed,
+        uptimeMs: snap.uptimeMs,
+      },
+      ...snap,
+    });
   });
 
   const v1 = express.Router();
@@ -414,6 +428,29 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())
+  );
+
+  // Feature flags — public read (values safe to expose, no secrets)
+  v1.get("/flags", (_req, res) => {
+    res.json(api.featureFlags.getAll());
+  });
+
+  // Support feedback — authenticated, associates report with org
+  v1.post(
+    "/support/feedback",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { message, businessId, pageUrl, category } = req.body as {
+        message: string;
+        businessId?: string;
+        pageUrl?: string;
+        category?: string;
+      };
+      if (!message || typeof message !== "string" || message.trim().length === 0) {
+        throw new ApiError(400, "missing_message", "message is required");
+      }
+      return api.support.submitFeedback({ orgId, message, businessId, pageUrl, category });
+    })
   );
 
   app.use("/api/v1", v1);

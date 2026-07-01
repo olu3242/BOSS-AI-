@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { FeedbackButton } from "../../../../components/FeedbackButton";
 
 interface WorkspaceLayoutProps {
   children: ReactNode;
@@ -22,7 +23,9 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-neutral-800 bg-neutral-950 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <span className="font-display text-xl tracking-tight">BOSS</span>
+          <Link href="/" className="font-display text-xl tracking-tight hover:text-accent transition-colors">
+            BOSS
+          </Link>
           <nav className="flex gap-1">
             {NAV_ITEMS.map((item) => (
               <Link
@@ -37,6 +40,20 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
+      <footer className="border-t border-neutral-800 bg-neutral-950 px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between text-xs text-neutral-600">
+          <span>BOSS v0.9.0-rc1</span>
+          <div className="flex items-center gap-4">
+            <FeedbackButton businessId={params.businessId} />
+            <a
+              href="mailto:support@boss.ai"
+              className="hover:text-neutral-400 transition-colors"
+            >
+              support@boss.ai
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
