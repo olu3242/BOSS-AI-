@@ -107,13 +107,3 @@ export const CompareScenarioSchema = z.object({
   scenarioIds: z.array(z.string()).default([]),
 });
 
-// ─── Scheduler ────────────────────────────────────────────────────────────────
-
-export const ScheduleJobSchema = z.object({
-  workflowKey: z.string().min(1),
-  triggerType: z.enum(["immediate", "delayed", "cron"]),
-  delayMs: z.number().int().positive().optional(),
-  cronExpression: z.string().optional(),
-  timezone: z.string().default("UTC"),
-  payload: z.record(z.unknown()).default({}),
-});

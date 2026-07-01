@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
+    "apps/api": {
+      "entry": ["src/server.ts"],
+      "project": ["src/**/*.ts"]
+    },
     "apps/*": {
       "project": ["src/**/*.ts"]
     },
@@ -21,7 +25,6 @@
     "zod",
     "@boss/types",
     "@boss/shared",
-    "@boss/ui"
   ],
   "ignoreBinaries": ["powershell"],
   "ignoreExportsUsedInFile": true
