@@ -38,7 +38,7 @@ export const SubmitMriResponseSchema = z.object({
 // ─── Constraints ─────────────────────────────────────────────────────────────
 
 export const UpdateConstraintStatusSchema = z.object({
-  status: z.enum(["identified", "analyzing", "active", "resolving", "resolved", "dismissed"]),
+  status: z.enum(["active", "monitoring", "resolved", "dismissed"]),
 });
 
 // ─── Recommendations ─────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { randomUUID } from "node:crypto";
 import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
-import { mintDevToken, requireOrgId } from "./auth.js";
+import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
 import {
   validate,
@@ -174,9 +174,7 @@ export function createHttpServer(api: Api): Express {
       const body = validate(UpdateConstraintStatusSchema, req);
       const orgId = await requireOrgId(req);
       const constraintId = param(req, "constraintId");
-      return body.status === "dismissed"
-        ? api.businessConstraint.dismiss(orgId, constraintId)
-        : api.businessConstraint.dismiss(orgId, constraintId);
+      return api.businessConstraint.updateStatus(orgId, constraintId, body.status);
     })
   );
   v1.post(
@@ -508,17 +506,19 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
-  // Customer analytics (internal CS use)
+  // Customer analytics (internal CS / admin use — requires admin role)
   v1.get(
     "/analytics/activation",
-    wrap(async () => {
+    wrap(async (req) => {
+      await requireRole(req, "admin");
       return api.productAnalytics.getActivationRate();
     })
   );
 
   v1.get(
     "/analytics/wab",
-    wrap(async () => {
+    wrap(async (req) => {
+      await requireRole(req, "admin");
       const count = await api.productAnalytics.getWab();
       return { wab: count };
     })
@@ -526,7 +526,8 @@ export function createHttpServer(api: Api): Express {
 
   v1.get(
     "/analytics/mab",
-    wrap(async () => {
+    wrap(async (req) => {
+      await requireRole(req, "admin");
       const count = await api.productAnalytics.getMab();
       return { mab: count };
     })
@@ -535,6 +536,7 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/analytics/funnel/:orgId/:businessId",
     wrap(async (req) => {
+      await requireRole(req, "admin");
       const orgId = param(req, "orgId");
       const businessId = param(req, "businessId");
       return api.productAnalytics.queryFunnel(orgId, businessId);
@@ -543,7 +545,8 @@ export function createHttpServer(api: Api): Express {
 
   v1.get(
     "/cs/health",
-    wrap(async () => {
+    wrap(async (req) => {
+      await requireRole(req, "admin");
       return api.customerHealth.listScores([]);
     })
   );
@@ -551,6 +554,7 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/cs/health/:orgId/:businessId",
     wrap(async (req) => {
+      await requireRole(req, "admin");
       const orgId = param(req, "orgId");
       const businessId = param(req, "businessId");
       return api.customerHealth.computeScore(orgId, businessId);
@@ -646,6 +650,12 @@ export function createHttpServer(api: Api): Express {
     wrap(async (_req) => api.aiWorkforce.listAll())
   );
 
+  // /active must be registered before /:employeeKey or Express captures it as a key lookup
+  v1.get(
+    "/ai-workforce/active",
+    wrap(async (req) => api.aiWorkforce.listActiveForOrg(await requireOrgId(req)))
+  );
+
   v1.get(
     "/ai-workforce/:employeeKey",
     wrap(async (req) => {
@@ -666,11 +676,6 @@ export function createHttpServer(api: Api): Express {
       await api.aiWorkforce.deactivateEmployee(await requireOrgId(req), param(req, "employeeKey"));
       return { status: "deactivated" };
     })
-  );
-
-  v1.get(
-    "/ai-workforce/active",
-    wrap(async (req) => api.aiWorkforce.listActiveForOrg(await requireOrgId(req)))
   );
 
   // ── Org Health routes ─────────────────────────────────────────────────────

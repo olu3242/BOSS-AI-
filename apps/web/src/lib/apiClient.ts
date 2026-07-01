@@ -14,11 +14,23 @@ export class ApiClientError extends Error {
 }
 
 /**
- * No real login UI exists yet (TD-030), so the web app exchanges its
- * DEMO_ORG_ID for a signed dev token via the API's non-production
- * /auth/dev-token route rather than sending org_id as a spoofable header.
+ * Returns a bearer token for API calls.
+ *
+ * In development/demo environments the API exposes a /auth/dev-token route
+ * that mints a signed JWT from an org_id (TD-030: no real auth UI yet).
+ * In production that route is disabled; set NEXT_PUBLIC_STATIC_TOKEN to a
+ * pre-minted service token issued by the real Supabase project instead.
  */
-async function getDevToken(orgId: string): Promise<string> {
+async function getBearerToken(orgId: string): Promise<string> {
+  const staticToken = process.env.NEXT_PUBLIC_STATIC_TOKEN;
+  if (staticToken) return staticToken;
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "No auth token available in production. Set NEXT_PUBLIC_STATIC_TOKEN or implement Supabase session auth (TD-030)."
+    );
+  }
+
   const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -32,7 +44,7 @@ async function getDevToken(orgId: string): Promise<string> {
 }
 
 async function request<T>(orgId: string, path: string, init?: RequestInit): Promise<T> {
-  const token = await getDevToken(orgId);
+  const token = await getBearerToken(orgId);
   const res = await fetch(`${API_BASE_URL}/api/v1${path}`, {
     ...init,
     headers: {

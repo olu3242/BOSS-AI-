@@ -34,10 +34,25 @@ export function computeNextCronRun(expression: string, after: Date = new Date())
   candidate.setUTCSeconds(0, 0);
 
   const deadline = new Date(after.getTime() + 365 * 24 * 3600_000);
+  const domStar = domExpr === "*";
+  const dowStar = dowExpr === "*";
+
   while (candidate < deadline) {
+    // Cron day-matching: when both are *, any day qualifies. When one is specific,
+    // only that field is checked. When both are specific, either matching is sufficient
+    // (POSIX cron union semantics).
+    const dayMatch =
+      domStar && dowStar
+        ? true
+        : domStar
+          ? dows.includes(candidate.getUTCDay())
+          : dowStar
+            ? doms.includes(candidate.getUTCDate())
+            : doms.includes(candidate.getUTCDate()) || dows.includes(candidate.getUTCDay());
+
     if (
       months.includes(candidate.getUTCMonth() + 1) &&
-      (domExpr === "*" || dowExpr === "*" ? true : doms.includes(candidate.getUTCDate()) || dows.includes(candidate.getUTCDay())) &&
+      dayMatch &&
       hours.includes(candidate.getUTCHours()) &&
       minutes.includes(candidate.getUTCMinutes())
     ) {
