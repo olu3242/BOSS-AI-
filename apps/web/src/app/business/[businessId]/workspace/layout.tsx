@@ -36,6 +36,12 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
                 {item.label}
               </Link>
             ))}
+            <Link
+              href="/marketplace"
+              className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+            >
+              Marketplace
+            </Link>
           </nav>
         </div>
       </header>

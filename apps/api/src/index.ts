@@ -36,6 +36,7 @@ import { createSupportService } from "./services/supportService.js";
 import { createProductAnalyticsService } from "./services/productAnalyticsService.js";
 import { createCustomerHealthService } from "./services/customerHealthService.js";
 import { createBetaInviteService } from "./services/betaInviteService.js";
+import { createMarketplaceService } from "./services/marketplaceService.js";
 
 export function createApi() {
   return createApiFromContainer(createPostgresContainer());
@@ -73,6 +74,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
   const productAnalytics = createProductAnalyticsService(repos);
   const customerHealth = createCustomerHealthService(repos);
   const betaInvite = createBetaInviteService(repos);
+  const marketplace = createMarketplaceService(repos);
 
   // Product analytics: bridge domain events → analytics events
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
@@ -162,6 +164,7 @@ export function createApiFromContainer(repos: RepositoryContainer) {
     productAnalytics,
     customerHealth,
     betaInvite,
+    marketplace,
   };
 }
 
@@ -177,6 +180,7 @@ export * from "./services/businessRecommendationService.js";
 export * from "./services/toolFabricService.js";
 export * from "./services/loopRuntimeService.js";
 export * from "./services/workflowGenerationService.js";
+export * from "./services/marketplaceService.js";
 export * from "./services/missionControlService.js";
 export * from "./services/observabilityService.js";
 export * from "./services/multiAgentRuntimeService.js";

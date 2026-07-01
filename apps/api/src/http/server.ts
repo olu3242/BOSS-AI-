@@ -557,6 +557,57 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // Marketplace
+  v1.get(
+    "/marketplace/packs",
+    wrap(async (req) => {
+      const { q, category } = req.query;
+      if (q || category) {
+        return api.marketplace.searchCatalog(String(q ?? ""), category ? String(category) : undefined);
+      }
+      return api.marketplace.listCatalog();
+    })
+  );
+
+  v1.get(
+    "/marketplace/packs/:packKey",
+    wrap(async (req) => {
+      const packKey = param(req, "packKey");
+      const pack = api.marketplace.getPackDetail(packKey);
+      if (!pack) {
+        throw new ApiError(404, "not_found", `Pack '${packKey}' not found`);
+      }
+      return pack;
+    })
+  );
+
+  v1.get(
+    "/marketplace/installed",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.marketplace.listInstalled(orgId);
+    })
+  );
+
+  v1.post(
+    "/marketplace/packs/:packKey/install",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const packKey = param(req, "packKey");
+      return api.marketplace.installPack(orgId, packKey);
+    })
+  );
+
+  v1.delete(
+    "/marketplace/packs/:packKey/install",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const packKey = param(req, "packKey");
+      await api.marketplace.uninstallPack(orgId, packKey);
+      return { status: "uninstalled" };
+    })
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {

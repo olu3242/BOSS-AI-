@@ -196,4 +196,33 @@ export const apiClient = {
     request<Array<{ id: string; providerKey: string; toolKey: string; status: string; startedAt: string; completedAt: string | null }>>(
       orgId, `/businesses/${businessId}/tools/executions`
     ),
+
+  // Marketplace
+  getMarketplacePacks: (orgId: string, query?: string, category?: string) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (category) params.set("category", category);
+    const qs = params.toString();
+    return request<Array<{
+      key: string; name: string; description: string; version: string;
+      category: string; industries: string[]; kpiCount: number;
+      workflowCount: number; aiEmployeeCount: number; decisionCount: number;
+      constraintCount: number; playbookCount: number; featured: boolean; comingSoon: boolean;
+    }>>(orgId, `/marketplace/packs${qs ? `?${qs}` : ""}`);
+  },
+
+  getInstalledPacks: (orgId: string) =>
+    request<Array<{ packKey: string; orgId: string; installedAt: string; version: string }>>(
+      orgId, "/marketplace/installed"
+    ),
+
+  installPack: (orgId: string, packKey: string) =>
+    request<{ packKey: string; orgId: string; installedAt: string; version: string }>(
+      orgId, `/marketplace/packs/${encodeURIComponent(packKey)}/install`, { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  uninstallPack: (orgId: string, packKey: string) =>
+    request<{ status: string }>(
+      orgId, `/marketplace/packs/${encodeURIComponent(packKey)}/install`, { method: "DELETE" }
+    ),
 };
