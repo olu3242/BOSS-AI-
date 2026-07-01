@@ -8,9 +8,11 @@ Validated HEAD: `be8dafafa647bdac38fd38db42b2949aa5f85bb4`
 
 ## Pull request state
 
-PR #2 is open, non-draft, targets `main`, and GitHub reports it mergeable.
-The source branch contains 54 commits and has no unmerged paths or conflict
-markers.
+PR #2 was merged into `main` as
+`57d4ad4e654effcd3db23d269fd4e2ca0144648e`. GitHub Actions succeeded on
+the exact source head before merge. Follow-up PR #3 corrected the duplicate
+Next.js App Router root discovered by live route smoke testing and was merged
+as `72c35fa52692b7eb81688852f9f5a48460ec5521`.
 
 ## Convergence checks
 
@@ -39,9 +41,8 @@ than competing implementations:
 - Industry packs contribute data registrations through the canonical
   interfaces and do not introduce parallel engines.
 
-The active Next.js application is rooted at `apps/web/app`. Legacy-compatible
-modules under `apps/web/src` provide tested domain/view logic; they are not a
-second routable application.
+The active Next.js application is rooted at `apps/web/app`. The inactive
+`apps/web/src/app` root was removed by PR #3, leaving one routable application.
 
 ## Drift review
 
@@ -52,5 +53,5 @@ architecture change.
 
 ## Verdict
 
-**PASS — merge permitted only after GitHub Actions succeeds for the validated
-HEAD.**
+**PASS.** Both PR #2 and the follow-up harmonization PR #3 were merged only
+after successful exact-head GitHub Actions runs.

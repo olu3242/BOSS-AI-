@@ -13,7 +13,7 @@ Target: `main`
 | Check | Result |
 | --- | --- |
 | Validated code HEAD (parent of this record) | `be8dafafa647bdac38fd38db42b2949aa5f85bb4` |
-| Target merge commit (GitHub test merge) | `9c7f28bfa06af28679b1c670b552fb4e46e84abc` |
+| Final PR #2 merge commit | `57d4ad4e654effcd3db23d269fd4e2ca0144648e` |
 | Merge base | `3a331a99ada1847e04bb7e9a7e2a59d2c9299407` |
 | Commits included | 54 |
 | Change set | 474 files; 44,039 insertions; 230 deletions |
@@ -22,9 +22,6 @@ Target: `main`
 | Conflict markers | 0 |
 | Working tree | Clean at publication |
 | Remote synchronization | Source HEAD pushed to `origin` |
-
-The target merge SHA is GitHub's pre-merge test commit and may be replaced by
-the final merge commit when PR #2 is merged.
 
 ## Release-blocker validation
 
@@ -54,5 +51,5 @@ conditional on a successful GitHub Actions run for this HEAD.
 
 ## Verdict
 
-**PASS — pending green CI on the exact PR head.** No local repository,
-conflict, dependency, or validation blocker remains.
+**PASS.** GitHub Actions run `28541705710` succeeded on the exact PR head
+before merge.
