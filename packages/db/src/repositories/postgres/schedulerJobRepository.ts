@@ -96,10 +96,17 @@ export function createPostgresSchedulerJobRepository(): SchedulerJobRepository {
     },
 
     async listDuePending(now) {
+      // For cron jobs that have run before, next_run_at is authoritative; fall back to run_at for first-run
       const rows = await query<JobRow>(
         `SELECT * FROM scheduler_jobs
-         WHERE state='pending' AND run_at<=$1 AND deleted_at IS NULL
-         ORDER BY run_at ASC`,
+         WHERE state='pending'
+           AND deleted_at IS NULL
+           AND (
+             (last_run_at IS NOT NULL AND next_run_at IS NOT NULL AND next_run_at <= $1)
+             OR
+             (last_run_at IS NULL AND run_at <= $1)
+           )
+         ORDER BY COALESCE(next_run_at, run_at) ASC`,
         [now]
       );
       return rows.map(toJob);

@@ -797,9 +797,12 @@ export function createInMemorySchedulerJobRepository(): SchedulerJobRepository {
       return updated;
     },
     async listDuePending(now) {
-      return Array.from(jobs.values()).filter(
-        (j) => j.state === "pending" && j.runAt <= now && !j.deletedAt
-      );
+      return Array.from(jobs.values()).filter((j) => {
+        if (j.state !== "pending" || j.deletedAt) return false;
+        // For cron jobs that have already run once, use nextRunAt as the due-time check
+        if (j.lastRunAt && j.nextRunAt) return j.nextRunAt <= now;
+        return j.runAt <= now;
+      });
     },
     async listByBusiness(orgId, businessId) {
       return Array.from(jobs.values()).filter(

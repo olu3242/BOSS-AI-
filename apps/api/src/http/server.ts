@@ -632,6 +632,14 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.bte.listScheduled(await requireOrgId(req)))
   );
 
+  // Platform-internal tick — runs all due BTE jobs across all orgs.
+  // Called by the external cron/scheduler (e.g. pg_cron, Inngest, Railway).
+  // Auth: service-to-service bearer token validated upstream.
+  v1.post(
+    "/bte/tick",
+    wrap(async () => api.bte.runDue())
+  );
+
   // ── AI Workforce routes ───────────────────────────────────────────────────
   v1.get(
     "/ai-workforce",
