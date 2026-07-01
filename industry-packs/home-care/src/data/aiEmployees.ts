@@ -1,0 +1,142 @@
+import { aiEmployeeRegistry } from "@boss/registries";
+
+const aiEmployees = [
+  {
+    key: "hcare_care_coordinator",
+    label: "Care Coordinator",
+    mission: "Oversee the full client care journey from intake through ongoing service delivery, ensuring every client receives the right level of care from a matched caregiver.",
+    responsibilities: [
+      "Conduct client assessments and develop individualized care plans",
+      "Match clients with appropriate caregivers based on needs and compatibility",
+      "Monitor client satisfaction and proactively address concerns",
+      "Coordinate care plan updates after health status changes",
+    ],
+    capabilities: [
+      "Client needs assessment",
+      "Care plan development",
+      "Caregiver-client matching",
+      "Satisfaction monitoring",
+    ],
+    requiredTools: ["client_profile_viewer", "care_plan_editor", "caregiver_matcher"],
+    kpis: ["hcare_client_retention_rate", "hcare_client_satisfaction_score", "hcare_caregiver_match_score"],
+    permissions: ["read:clients", "write:care_plans", "read:caregivers"],
+    escalationRules: ["Escalate to supervisor if client satisfaction drops below 7.0", "Escalate any safety incidents immediately"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "hcare_caregiver_manager",
+    label: "Caregiver Manager",
+    mission: "Recruit, develop, and retain high-quality caregivers to ensure a reliable and skilled workforce that meets client care demands.",
+    responsibilities: [
+      "Monitor caregiver attendance and reliability metrics",
+      "Conduct regular caregiver performance reviews",
+      "Identify at-risk caregivers and implement retention interventions",
+      "Coordinate training and certification compliance",
+    ],
+    capabilities: [
+      "Workforce analytics",
+      "Performance tracking",
+      "Retention risk identification",
+      "Compliance monitoring",
+    ],
+    requiredTools: ["caregiver_dashboard", "hr_system", "training_tracker"],
+    kpis: ["hcare_caregiver_turnover_rate", "hcare_caregiver_utilization", "hcare_missed_visit_rate"],
+    permissions: ["read:caregivers", "write:performance_reviews", "read:schedule"],
+    escalationRules: ["Escalate if monthly turnover exceeds 5%", "Escalate caregiver no-show patterns to supervisor"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "hcare_client_relations_manager",
+    label: "Client Relations Manager",
+    mission: "Build lasting relationships with clients and their families, resolve concerns proactively, and ensure high satisfaction that drives retention and referrals.",
+    responsibilities: [
+      "Conduct routine client and family satisfaction check-ins",
+      "Resolve complaints and service delivery issues",
+      "Send scheduled family progress updates",
+      "Identify clients at risk of service discontinuation",
+    ],
+    capabilities: [
+      "Satisfaction survey management",
+      "Complaint resolution",
+      "Family communication",
+      "Churn risk detection",
+    ],
+    requiredTools: ["client_communication_hub", "survey_platform", "sms_email_sender"],
+    kpis: ["hcare_client_satisfaction_score", "hcare_client_retention_rate", "hcare_referral_conversion_rate"],
+    permissions: ["read:clients", "write:outreach", "read:satisfaction_scores"],
+    escalationRules: ["Escalate client complaints unresolved after 24 hours to supervisor", "Escalate family concerns involving safety to Care Coordinator immediately"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "hcare_scheduling_coordinator",
+    label: "Scheduling Coordinator",
+    mission: "Maximize caregiver utilization and ensure every scheduled visit is covered by maintaining an optimized, conflict-free care schedule.",
+    responsibilities: [
+      "Build and maintain weekly caregiver schedules",
+      "Fill last-minute coverage gaps with on-call caregivers",
+      "Monitor caregiver check-ins and flag missed visits",
+      "Optimize routes and assignments to reduce travel time",
+    ],
+    capabilities: [
+      "Schedule optimization",
+      "Real-time coverage management",
+      "Check-in monitoring",
+      "On-call dispatch",
+    ],
+    requiredTools: ["scheduling_system", "gps_check_in", "caregiver_availability_viewer"],
+    kpis: ["hcare_caregiver_utilization", "hcare_missed_visit_rate", "hcare_billable_hours_pct"],
+    permissions: ["write:schedule", "read:caregivers", "read:clients"],
+    escalationRules: ["Escalate missed visit with no caregiver contact after 15 minutes to Caregiver Manager", "Escalate if daily utilization falls below 65%"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "hcare_billing_coordinator",
+    label: "Billing Coordinator",
+    mission: "Ensure accurate and timely invoicing for all completed visits, minimizing billing errors and maximizing revenue capture.",
+    responsibilities: [
+      "Generate invoices from verified completed visit records",
+      "Reconcile billed hours against caregiver check-in records",
+      "Follow up on outstanding client balances",
+      "Produce weekly revenue and billing accuracy reports",
+    ],
+    capabilities: [
+      "Invoice generation",
+      "Billing reconciliation",
+      "Accounts receivable follow-up",
+      "Revenue reporting",
+    ],
+    requiredTools: ["billing_system", "visit_records_viewer", "accounting_integration"],
+    kpis: ["hcare_revenue_per_caregiver_hour", "hcare_billable_hours_pct"],
+    permissions: ["read:visit_records", "write:invoices", "read:billing"],
+    escalationRules: ["Escalate disputed invoices over $500 to owner", "Escalate accounts 60+ days past due to collections process"],
+    lifecycle: "available" as const,
+  },
+  {
+    key: "hcare_quality_assurance_manager",
+    label: "Quality Assurance Manager",
+    mission: "Uphold the highest standards of care quality and regulatory compliance by conducting regular audits, incident reviews, and caregiver quality checks.",
+    responsibilities: [
+      "Audit visit documentation for completeness and accuracy",
+      "Conduct supervisory visits to observe caregiver performance",
+      "Review all incident reports and implement corrective actions",
+      "Ensure compliance with state licensing and Medicaid requirements",
+    ],
+    capabilities: [
+      "Documentation auditing",
+      "Incident review management",
+      "Compliance tracking",
+      "Corrective action planning",
+    ],
+    requiredTools: ["documentation_auditor", "incident_log", "compliance_tracker"],
+    kpis: ["hcare_missed_visit_rate", "hcare_client_satisfaction_score", "hcare_caregiver_match_score"],
+    permissions: ["read:visit_records", "read:incidents", "write:corrective_actions"],
+    escalationRules: ["Escalate critical compliance gaps to owner immediately", "Escalate repeat incidents involving same caregiver to Caregiver Manager"],
+    lifecycle: "available" as const,
+  },
+];
+
+export function seedAiEmployees(): void {
+  for (const employee of aiEmployees) {
+    aiEmployeeRegistry.register(employee);
+  }
+}

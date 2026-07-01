@@ -139,6 +139,54 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  industry-packs/accounting:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/cleaning:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/coffee-shop:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
   industry-packs/dental:
     dependencies:
       '@boss/registries':
@@ -168,7 +216,87 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.43)
 
+  industry-packs/home-care:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
   industry-packs/home-services:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/landscaping:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/legal:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/restaurant:
+    dependencies:
+      '@boss/registries':
+        specifier: workspace:*
+        version: link:../../packages/registries
+    devDependencies:
+      '@boss/industry-pack-general-smb':
+        specifier: workspace:*
+        version: link:../general-smb
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@20.19.43)
+
+  industry-packs/retail:
     dependencies:
       '@boss/registries':
         specifier: workspace:*
