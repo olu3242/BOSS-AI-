@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../src/lib/apiClient";
@@ -89,7 +88,6 @@ const STEP_LABELS = ["Business", "Profile", "Hours", "Services", "Tools", "AI Se
 // ── Component ──────────────────────────────────────────
 
 export default function GuidedOnboardingPage() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<WizardData>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
@@ -469,8 +467,6 @@ function Step6({
 // ── Step 7: Ready! ────────────────────────────────────
 
 function Step7({ businessId, data }: { businessId: string | null; data: WizardData }) {
-  const router = useRouter();
-
   const agentCount = data.aiAgents.length;
   const toolCount = data.existingTools.length;
   const industry = INDUSTRIES.find((i) => i.key === data.industry);
