@@ -54,6 +54,30 @@ export default async function CommandCenterPage() {
 
       {snapshot && (
         <>
+          <section aria-labelledby="health-title" className={`health-banner tone-${snapshot.summary.healthTone}`}>
+            <div>
+              <p className="eyebrow">Business Health Score</p>
+              <h2 id="health-title" className="health-score">{snapshot.summary.healthScore}<span className="health-denom">/100</span></h2>
+            </div>
+          </section>
+
+          {snapshot.todayPriorities.length > 0 && (
+            <section aria-labelledby="priorities-title">
+              <h2 id="priorities-title">Today&apos;s Priorities</h2>
+              <div className="grid priorities">
+                {snapshot.todayPriorities.map((p) => (
+                  <article className={`card tone-${p.category === "risk" ? "critical" : p.category === "opportunity" ? "positive" : "neutral"}`} key={p.rank}>
+                    <div className="row">
+                      <strong>{p.title}</strong>
+                      <span className="pill">{p.category}</span>
+                    </div>
+                    <p className="detail">{p.reason}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section aria-labelledby="metrics-title">
             <h2 id="metrics-title">Executive KPIs</h2>
             <div className="grid metrics">
@@ -66,6 +90,24 @@ export default async function CommandCenterPage() {
               ))}
             </div>
           </section>
+
+          {snapshot.kpiTrends.length > 0 && (
+            <section aria-labelledby="kpi-trends-title">
+              <h2 id="kpi-trends-title">KPI Trends</h2>
+              <div className="grid metrics">
+                {snapshot.kpiTrends.map((kpi) => (
+                  <article className="card" key={kpi.label}>
+                    <span className="label">{kpi.label}</span>
+                    <strong className="metric-value">{kpi.value}</strong>
+                    <p className="detail trend-indicator">
+                      {kpi.trend === "up" ? "↑ Improving" : kpi.trend === "down" ? "↓ Declining" : "→ Stable"}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section className="grid two" aria-label="Operations">
             <DashboardPanel title="Alerts">
               {snapshot.alerts.map((alert) => (

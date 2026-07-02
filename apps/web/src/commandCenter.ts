@@ -18,6 +18,7 @@ import type {
   BusinessRecommendation,
   BusinessTimelineEntry,
   ConstraintPriority,
+  KpiReadingRecord,
   RecommendationPriority,
   TransformationRoadmap,
 } from "@boss/types";
@@ -35,6 +36,7 @@ export interface CommandCenterInput {
   recommendationPriorities: RecommendationPriority[];
   roadmap: TransformationRoadmap;
   timeline: BusinessTimelineEntry[];
+  kpiReadings?: KpiReadingRecord[];
 }
 
 export interface DashboardMetric {
@@ -67,14 +69,31 @@ export interface DrillDownView {
   items: string[];
 }
 
+export interface TodayPriority {
+  rank: number;
+  title: string;
+  reason: string;
+  category: "risk" | "opportunity" | "action";
+}
+
+export interface KpiTrendItem {
+  label: string;
+  value: string;
+  trend: "up" | "down" | "stable" | "unknown";
+}
+
 export interface CommandCenterSnapshot {
   summary: {
     businessName: string;
     industry: string;
     archetype: string;
     generatedAt: string;
+    healthScore: number;
+    healthTone: MetricTone;
   };
   metrics: DashboardMetric[];
+  todayPriorities: TodayPriority[];
+  kpiTrends: KpiTrendItem[];
   alerts: CommandCenterAlert[];
   agents: AgentStatus[];
   automation: AutomationHealth[];
@@ -141,19 +160,87 @@ export function buildCommandCenterSnapshot(input: CommandCenterInput): CommandCe
     },
   ];
 
+  const healthScore = input.health.overallScore;
+
   return {
     summary: {
       businessName: input.profile.businessName,
       industry: humanizeKey(input.business.industry),
       archetype: humanizeKey(input.dna.archetype),
       generatedAt: new Date().toISOString(),
+      healthScore,
+      healthTone: toneForScore(healthScore),
     },
     metrics,
+    todayPriorities: buildTodayPriorities(input, activeConstraints, highValueRecommendations),
+    kpiTrends: buildKpiTrends(input.kpiReadings ?? []),
     alerts: buildAlerts(input, activeConstraints),
     agents: buildAgentStatuses(input),
     automation: buildAutomationHealth(input, activeConstraints),
     drillDowns: buildDrillDowns(input),
   };
+}
+
+function buildTodayPriorities(
+  input: CommandCenterInput,
+  activeConstraints: BusinessConstraint[],
+  highValueRecommendations: RecommendationPriority[],
+): TodayPriority[] {
+  const priorities: TodayPriority[] = [];
+
+  // Critical constraints → risks
+  activeConstraints.slice(0, 2).forEach((c, i) => {
+    priorities.push({
+      rank: i + 1,
+      title: c.title,
+      reason: c.businessImpact,
+      category: "risk",
+    });
+  });
+
+  // High-value recommendations → opportunities
+  highValueRecommendations.slice(0, 2).forEach((p, i) => {
+    const rec = input.recommendations.find((r) => r.id === p.recommendationId);
+    if (!rec) return;
+    priorities.push({
+      rank: priorities.length + 1,
+      title: rec.title,
+      reason: rec.businessGoal,
+      category: "opportunity",
+    });
+  });
+
+  // Approved work → actions
+  const approved = input.recommendations.filter((r) => r.status === "approved").slice(0, 1);
+  for (const rec of approved) {
+    priorities.push({
+      rank: priorities.length + 1,
+      title: `Execute: ${rec.title}`,
+      reason: `Approved — ${rec.estimatedTimeToValueDays} days to value`,
+      category: "action",
+    });
+  }
+
+  return priorities.slice(0, 5);
+}
+
+function buildKpiTrends(readings: KpiReadingRecord[]): KpiTrendItem[] {
+  // Deduplicate by kpiKey — keep most recent reading per key.
+  const seen = new Set<string>();
+  const deduped = readings
+    .slice()
+    .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))
+    .filter((r) => {
+      if (seen.has(r.kpiKey)) return false;
+      seen.add(r.kpiKey);
+      return r.value !== null;
+    });
+
+  return deduped.slice(0, 6).map((r) => ({
+    label: r.label,
+    value: r.value !== null ? `${r.value.toFixed(1)} ${r.unit}` : "—",
+    trend: (r.trend ?? "unknown") as KpiTrendItem["trend"],
+  }));
 }
 
 export function renderCommandCenterHtml(snapshot: CommandCenterSnapshot): string {

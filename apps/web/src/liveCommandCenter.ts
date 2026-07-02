@@ -40,6 +40,7 @@ export async function createLiveCommandCenter(
     recommendationPrioritiesResult,
     roadmapResult,
     timelineResult,
+    kpiReadingsResult,
   ] = await Promise.allSettled([
     api.business.getProfile(orgId, businessId),
     api.businessDna.getDna(orgId, businessId),
@@ -51,6 +52,7 @@ export async function createLiveCommandCenter(
     api.businessRecommendation.getPriorities(orgId, businessId),
     api.businessRecommendation.getRoadmap(orgId, businessId),
     api.businessTimeline.list(orgId, businessId),
+    api.kpiMeasurement.history(orgId, businessId, undefined, 50),
   ]);
 
   const profile = settled(profileResult);
@@ -67,6 +69,7 @@ export async function createLiveCommandCenter(
   const constraintPriorities = settled(constraintPrioritiesResult) ?? [];
   const recommendations = settled(recommendationsResult) ?? [];
   const recommendationPriorities = settled(recommendationPrioritiesResult) ?? [];
+  const kpiReadings = settled(kpiReadingsResult) ?? [];
   const roadmap = settled(roadmapResult) ?? {
     id: "",
     orgId,
@@ -93,6 +96,7 @@ export async function createLiveCommandCenter(
     recommendationPriorities,
     roadmap,
     timeline,
+    kpiReadings,
   });
 
   return { snapshot, isEmpty: false };

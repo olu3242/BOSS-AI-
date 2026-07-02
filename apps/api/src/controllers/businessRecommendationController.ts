@@ -6,6 +6,7 @@ export function createBusinessRecommendationController(service: BusinessRecommen
     list: (orgId: string, businessId: string) => service.list(orgId, businessId),
     getPriorities: (orgId: string, businessId: string) => service.getPriorities(orgId, businessId),
     getRoadmap: (orgId: string, businessId: string) => service.getRoadmap(orgId, businessId),
+    get: (orgId: string, recommendationId: string) => service.get(orgId, recommendationId),
     dismiss: (orgId: string, recommendationId: string) => service.dismiss(orgId, recommendationId),
     approve: (orgId: string, recommendationId: string) => service.approve(orgId, recommendationId),
   };

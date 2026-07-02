@@ -201,6 +201,10 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/recommendations/roadmap",
     wrap(async (req) => api.businessRecommendation.getRoadmap(await requireOrgId(req), param(req, "businessId")))
   );
+  v1.get(
+    "/recommendations/:recommendationId",
+    wrap(async (req) => api.businessRecommendation.get(await requireOrgId(req), param(req, "recommendationId")))
+  );
   v1.post(
     "/recommendations/:recommendationId/status",
     wrap(async (req) => {

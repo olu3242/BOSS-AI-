@@ -13,6 +13,7 @@ export interface RecommendationAnalysisResult {
 export interface BusinessRecommendationService {
   analyze(orgId: string, businessId: string): Promise<RecommendationAnalysisResult>;
   list(orgId: string, businessId: string): Promise<BusinessRecommendation[]>;
+  get(orgId: string, recommendationId: string): Promise<BusinessRecommendation | null>;
   getPriorities(orgId: string, businessId: string): Promise<RecommendationPriority[]>;
   getRoadmap(orgId: string, businessId: string): Promise<TransformationRoadmap | null>;
   dismiss(orgId: string, recommendationId: string): Promise<BusinessRecommendation>;
@@ -130,6 +131,9 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
     },
     async list(orgId, businessId) {
       return repos.businessRecommendations.listByBusinessId(orgId, businessId);
+    },
+    async get(orgId, recommendationId) {
+      return repos.businessRecommendations.findById(orgId, recommendationId);
     },
     async getPriorities(orgId, businessId) {
       return repos.recommendationPriorities.listByBusinessId(orgId, businessId);
