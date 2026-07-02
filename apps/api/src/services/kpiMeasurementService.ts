@@ -1,14 +1,11 @@
 import { nowIso } from "@boss/shared";
 import { deriveKpiReadings, type KpiReading } from "@boss/mcp";
+import type { KpiReadingRecord } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 
 export interface KpiMeasurementService {
-  /**
-   * Derives KPI readings for a business by composing evidence from existing
-   * repositories: health score, event log counts, workflow completions.
-   * Emits a `business.kpi.measured` domain event so the event pipeline stays intact.
-   */
-  measure(orgId: string, businessId: string): Promise<{ readings: KpiReading[]; measuredAt: string }>;
+  measure(orgId: string, businessId: string): Promise<{ readings: KpiReading[]; persisted: KpiReadingRecord[]; measuredAt: string }>;
+  history(orgId: string, businessId: string, kpiKey?: string, limit?: number): Promise<KpiReadingRecord[]>;
 }
 
 export function createKpiMeasurementService(repos: RepositoryContainer): KpiMeasurementService {
@@ -32,13 +29,36 @@ export function createKpiMeasurementService(repos: RepositoryContainer): KpiMeas
         measuredAt,
       });
 
+      const persisted = await Promise.all(
+        readings.map((r) =>
+          repos.kpiReadings.append({
+            orgId,
+            businessId,
+            kpiKey: r.kpiKey,
+            label: r.label,
+            value: r.value,
+            unit: r.unit,
+            trend: r.trend,
+            source: r.source,
+            measuredAt: r.measuredAt,
+          })
+        )
+      );
+
       await repos.eventBus.publish({
         type: "business.kpi.measured",
         payload: { orgId, businessId, readingCount: readings.length, measuredAt },
         occurredAt: measuredAt,
       });
 
-      return { readings, measuredAt };
+      return { readings, persisted, measuredAt };
+    },
+
+    async history(orgId, businessId, kpiKey, limit) {
+      if (kpiKey) {
+        return repos.kpiReadings.listByKpiKey(orgId, businessId, kpiKey, limit);
+      }
+      return repos.kpiReadings.listByBusinessId(orgId, businessId, limit);
     },
   };
 }

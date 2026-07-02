@@ -17,6 +17,9 @@ import {
   MeasureDecisionSchema,
   CreateScenarioSchema,
   CompareScenarioSchema,
+  CreateGoalSchema,
+  UpdateGoalSchema,
+  UpdateGoalStatusSchema,
 } from "./validation.js";
 
 type Api = ReturnType<typeof createApi>;
@@ -362,10 +365,76 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.scenario.getForecast(await requireOrgId(req), param(req, "businessId")))
   );
 
-  // KPI Measurement — Goal 19 Business Intelligence
+  // KPI Measurement & History — Goal 19 Business Intelligence
   v1.get(
     "/businesses/:businessId/kpis",
     wrap(async (req) => api.kpiMeasurement.measure(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/kpis/history",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { kpiKey, limit } = req.query as { kpiKey?: string; limit?: string };
+      return api.kpiMeasurement.history(orgId, param(req, "businessId"), kpiKey, limit ? parseInt(limit, 10) : undefined);
+    })
+  );
+
+  // Business Goals / OKRs — Goal 19 WS8
+  v1.post(
+    "/businesses/:businessId/goals",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(CreateGoalSchema, req);
+      return api.businessGoal.create(orgId, param(req, "businessId"), body);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/goals",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const status = req.query.status as string | undefined;
+      return api.businessGoal.list(orgId, param(req, "businessId"), status as Parameters<typeof api.businessGoal.list>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/goals/:goalId",
+    wrap(async (req) => api.businessGoal.get(await requireOrgId(req), param(req, "goalId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/goals/:goalId",
+    wrap(async (req) => {
+      const body = validate(UpdateGoalSchema, req);
+      return api.businessGoal.update(await requireOrgId(req), param(req, "goalId"), body);
+    })
+  );
+  v1.post(
+    "/goals/:goalId/status",
+    wrap(async (req) => {
+      const body = validate(UpdateGoalStatusSchema, req);
+      return api.businessGoal.updateStatus(await requireOrgId(req), param(req, "goalId"), body.status);
+    })
+  );
+
+  // Executive Briefings — Goal 19 WS7
+  v1.post(
+    "/businesses/:businessId/briefings/generate",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { period } = req.body as { period?: string };
+      return api.executiveBriefing.generate(orgId, param(req, "businessId"), period as Parameters<typeof api.executiveBriefing.generate>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/briefings/latest",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const period = req.query.period as string | undefined;
+      return api.executiveBriefing.getLatest(orgId, param(req, "businessId"), period as Parameters<typeof api.executiveBriefing.getLatest>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/briefings",
+    wrap(async (req) => api.executiveBriefing.list(await requireOrgId(req), param(req, "businessId")))
   );
 
   // Root Cause Analysis — Goal 20 Business Decision OS

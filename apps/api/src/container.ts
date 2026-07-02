@@ -14,6 +14,15 @@ import {
   createPostgresEventLogRepository,
   createInMemoryEventLogRepository,
   type EventLogRepository,
+  createPostgresKpiReadingRepository,
+  createInMemoryKpiReadingRepository,
+  type KpiReadingRepository,
+  createPostgresBusinessGoalRepository,
+  createInMemoryBusinessGoalRepository,
+  type BusinessGoalRepository,
+  createPostgresExecutiveBriefingRepository,
+  createInMemoryExecutiveBriefingRepository,
+  type ExecutiveBriefingRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -131,6 +140,9 @@ export interface RepositoryContainer {
   businessDiagnostics: BusinessDiagnosticRepository;
   businessDiscovery: BusinessDiscoveryRepository;
   businessGraph: BusinessGraphRepository;
+  kpiReadings: KpiReadingRepository;
+  businessGoals: BusinessGoalRepository;
+  executiveBriefings: ExecutiveBriefingRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -170,6 +182,9 @@ export function createPostgresContainer(): RepositoryContainer {
     businessDiagnostics: createPostgresBusinessDiagnosticRepository(),
     businessDiscovery: createPostgresBusinessDiscoveryRepository(),
     businessGraph: createPostgresBusinessGraphRepository(),
+    kpiReadings: createPostgresKpiReadingRepository(),
+    businessGoals: createPostgresBusinessGoalRepository(),
+    executiveBriefings: createPostgresExecutiveBriefingRepository(),
   };
 }
 
@@ -212,5 +227,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     businessDiagnostics: createInMemoryBusinessDiagnosticRepository(),
     businessDiscovery: createInMemoryBusinessDiscoveryRepository(),
     businessGraph: createInMemoryBusinessGraphRepository(),
+    kpiReadings: createInMemoryKpiReadingRepository(),
+    businessGoals: createInMemoryBusinessGoalRepository(),
+    executiveBriefings: createInMemoryExecutiveBriefingRepository(),
   };
 }

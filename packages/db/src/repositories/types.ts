@@ -3,6 +3,11 @@ import type {
   BusinessProfile,
   BusinessMRI,
   BusinessMriSection,
+  KpiReadingRecord,
+  BusinessGoal,
+  GoalStatus,
+  ExecutiveBriefingRecord,
+  BriefingPeriod,
   BusinessMriResponse,
   BusinessDNA,
   BusinessHealth,
@@ -312,6 +317,29 @@ export interface BusinessGraphRepository {
 }
 
 export type { TransformationRoadmapStageEntry };
+
+export interface KpiReadingRepository {
+  append(input: Omit<KpiReadingRecord, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<KpiReadingRecord>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<KpiReadingRecord[]>;
+  listByKpiKey(orgId: string, businessId: string, kpiKey: string, limit?: number): Promise<KpiReadingRecord[]>;
+  latestByKpiKey(orgId: string, businessId: string, kpiKey: string): Promise<KpiReadingRecord | null>;
+}
+
+export interface BusinessGoalRepository {
+  create(input: Omit<BusinessGoal, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<BusinessGoal>;
+  findById(orgId: string, id: string): Promise<BusinessGoal | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<BusinessGoal, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<BusinessGoal>;
+  updateStatus(orgId: string, id: string, status: GoalStatus): Promise<BusinessGoal>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessGoal[]>;
+  listByStatus(orgId: string, businessId: string, status: GoalStatus): Promise<BusinessGoal[]>;
+}
+
+export interface ExecutiveBriefingRepository {
+  create(input: Omit<ExecutiveBriefingRecord, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<ExecutiveBriefingRecord>;
+  findById(orgId: string, id: string): Promise<ExecutiveBriefingRecord | null>;
+  findLatest(orgId: string, businessId: string, period?: BriefingPeriod): Promise<ExecutiveBriefingRecord | null>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<ExecutiveBriefingRecord[]>;
+}
 
 export interface IntegrationAccountRepository {
   upsert(input: Omit<IntegrationAccount, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<IntegrationAccount>;

@@ -883,3 +883,67 @@ export interface ProviderEvidence extends TenantScoped, Timestamped {
   errorCode: string | null;
   responseSnapshot: Record<string, unknown> | null;
 }
+
+// ─── KPI Time-Series ──────────────────────────────────────────────────────────
+
+export interface KpiReadingRecord extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  kpiKey: string;
+  label: string;
+  value: number | null;
+  unit: string;
+  trend: "up" | "down" | "stable" | "unknown";
+  source: "event_log" | "health_score" | "registry_default";
+  measuredAt: string;
+}
+
+// ─── Business Goals / OKRs ────────────────────────────────────────────────────
+
+export type GoalStatus = "active" | "paused" | "completed" | "cancelled";
+export type GoalCategory = "growth" | "profitability" | "customer_experience" | "operations" | "automation" | "staff_productivity";
+
+export interface GoalMilestone {
+  key: string;
+  label: string;
+  targetValue: number;
+  unit: string;
+  dueDate: string;
+  completedAt: string | null;
+}
+
+export interface BusinessGoal extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  category: GoalCategory;
+  title: string;
+  description: string;
+  kpiKey: string | null;
+  targetValue: number | null;
+  currentValue: number | null;
+  unit: string | null;
+  dueDate: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  milestones: GoalMilestone[];
+  status: GoalStatus;
+}
+
+// ─── Executive Briefings ──────────────────────────────────────────────────────
+
+export type BriefingPeriod = "daily" | "weekly" | "monthly" | "quarterly";
+
+export interface ExecutiveBriefingRecord extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  period: BriefingPeriod;
+  headline: string;
+  summary: string;
+  topPriorities: string[];
+  keyMetrics: Array<{ label: string; value: string; trend: string }>;
+  alerts: Array<{ severity: "low" | "medium" | "high"; message: string }>;
+  recommendations: string[];
+  periodStart: string;
+  periodEnd: string;
+  generatedAt: string;
+}
