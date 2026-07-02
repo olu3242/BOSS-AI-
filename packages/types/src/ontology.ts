@@ -41,12 +41,89 @@ export interface Employee extends TenantScoped, Timestamped {
   email: string;
 }
 
+// ─── Business Operating Runtime (RC2.2) ──────────────────────────────────────
+
+export type LoopStage =
+  | "observe"
+  | "understand"
+  | "prioritize"
+  | "recommend"
+  | "approve"
+  | "execute"
+  | "measure"
+  | "learn"
+  | "improve";
+
+export type BusinessDomain = "customer" | "work" | "money" | "operations" | "intelligence";
+
+export type CanonicalEventType =
+  | "customer.created"
+  | "customer.updated"
+  | "customer.status_changed"
+  | "lead.captured"
+  | "lead.qualified"
+  | "lead.converted"
+  | "appointment.booked"
+  | "appointment.completed"
+  | "appointment.cancelled"
+  | "appointment.no_show"
+  | "estimate.sent"
+  | "quote.sent"
+  | "quote.accepted"
+  | "invoice.created"
+  | "invoice.sent"
+  | "invoice.paid"
+  | "invoice.overdue"
+  | "payment.received"
+  | "review.received"
+  | "review.responded"
+  | "task.created"
+  | "task.completed"
+  | "task.overdue"
+  | "automation.executed"
+  | "automation.failed"
+  | "job.created"
+  | "job.assigned"
+  | "job.completed"
+  | "team.member_clocked_in"
+  | "team.member_clocked_out"
+  | "business.health_updated"
+  | "business.loop_cycle_started"
+  | "business.loop_cycle_completed"
+  | "recommendation.generated"
+  | "recommendation.approved"
+  | "recommendation.dismissed";
+
+export type CustomerStatus = "prospect" | "active" | "inactive" | "vip" | "churned";
+export type CustomerSource = "walk_in" | "referral" | "online" | "phone" | "social_media" | "repeat" | "other";
+
 export interface Customer extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
+  status: CustomerStatus;
+  source: CustomerSource | null;
+  tags: string[];
+  notes: string | null;
+  totalRevenue: number;
+  healthScore: number | null;
+  lastContactAt: string | null;
+}
+
+export type CustomerInteractionType = "call" | "email" | "sms" | "appointment" | "invoice" | "quote" | "note" | "review" | "in_person";
+
+export interface CustomerInteraction extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID;
+  type: CustomerInteractionType;
+  summary: string;
+  metadata: Record<string, unknown>;
+  occurredAt: string;
 }
 
 export type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "lost";
@@ -330,8 +407,11 @@ export type TimelineEventType =
   | "capability_updated"
   | "constraint_analysis_completed"
   | "recommendations_generated"
+  | "recommendation_approved"
+  | "recommendation_dismissed"
   | "workflow_generated"
-  | "diagnostic_completed";
+  | "diagnostic_completed"
+  | "kpi_measured";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;
@@ -456,7 +536,7 @@ export type RecommendationStatus = "proposed" | "approved" | "rejected" | "in_pr
 export type RecommendationPriorityLevel = "critical" | "high" | "medium" | "low" | "informational";
 
 export interface RecommendationEvidenceItem {
-  source: "constraint_analysis" | "business_health" | "capability_assessment" | "business_mri" | "configuration";
+  source: "constraint_analysis" | "business_health" | "capability_assessment" | "business_mri" | "configuration" | "kpi_reading";
   description: string;
   data: Record<string, unknown>;
 }
@@ -882,4 +962,68 @@ export interface ProviderEvidence extends TenantScoped, Timestamped {
   attemptCount: number;
   errorCode: string | null;
   responseSnapshot: Record<string, unknown> | null;
+}
+
+// ─── KPI Time-Series ──────────────────────────────────────────────────────────
+
+export interface KpiReadingRecord extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  kpiKey: string;
+  label: string;
+  value: number | null;
+  unit: string;
+  trend: "up" | "down" | "stable" | "unknown";
+  source: "event_log" | "health_score" | "registry_default";
+  measuredAt: string;
+}
+
+// ─── Business Goals / OKRs ────────────────────────────────────────────────────
+
+export type GoalStatus = "active" | "paused" | "completed" | "cancelled";
+export type GoalCategory = "growth" | "profitability" | "customer_experience" | "operations" | "automation" | "staff_productivity";
+
+export interface GoalMilestone {
+  key: string;
+  label: string;
+  targetValue: number;
+  unit: string;
+  dueDate: string;
+  completedAt: string | null;
+}
+
+export interface BusinessGoal extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  category: GoalCategory;
+  title: string;
+  description: string;
+  kpiKey: string | null;
+  targetValue: number | null;
+  currentValue: number | null;
+  unit: string | null;
+  dueDate: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  milestones: GoalMilestone[];
+  status: GoalStatus;
+}
+
+// ─── Executive Briefings ──────────────────────────────────────────────────────
+
+export type BriefingPeriod = "daily" | "weekly" | "monthly" | "quarterly";
+
+export interface ExecutiveBriefingRecord extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  period: BriefingPeriod;
+  headline: string;
+  summary: string;
+  topPriorities: string[];
+  keyMetrics: Array<{ label: string; value: string; trend: string }>;
+  alerts: Array<{ severity: "low" | "medium" | "high"; message: string }>;
+  recommendations: string[];
+  periodStart: string;
+  periodEnd: string;
+  generatedAt: string;
 }

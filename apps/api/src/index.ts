@@ -50,6 +50,8 @@ import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeServ
 import { createBusinessDecisionService } from "./services/businessDecisionService.js";
 import { createScenarioService } from "./services/scenarioService.js";
 import { createKpiMeasurementService } from "./services/kpiMeasurementService.js";
+import { createBusinessGoalService } from "./services/businessGoalService.js";
+import { createExecutiveBriefingService } from "./services/executiveBriefingService.js";
 import { createRootCauseService } from "./services/rootCauseService.js";
 import { createExecutionPlanService } from "./services/executionPlanService.js";
 import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
@@ -66,6 +68,8 @@ import { createBteService } from "./services/bteService.js";
 import { createAiWorkforceService } from "./services/aiWorkforceService.js";
 import { createOrgHealthService } from "./services/orgHealthService.js";
 import { createInsightService } from "./services/insightService.js";
+import { createCustomerService } from "./services/customerService.js";
+import { createCustomerController } from "./controllers/customerController.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
@@ -108,6 +112,8 @@ export function createApiFromContainer(
   );
 
   const kpiMeasurement = createKpiMeasurementService(repos);
+  const businessGoal = createBusinessGoalService(repos);
+  const executiveBriefing = createExecutiveBriefingService(repos);
   const rootCause = createRootCauseService(repos);
   const executionPlan = createExecutionPlanService(repos);
   const outcomeVerification = createOutcomeVerificationService(repos);
@@ -213,6 +219,8 @@ export function createApiFromContainer(
     businessDecision,
     scenario,
     kpiMeasurement,
+    businessGoal,
+    executiveBriefing,
     rootCause,
     executionPlan,
     outcomeVerification,
@@ -229,6 +237,7 @@ export function createApiFromContainer(
     aiWorkforce,
     orgHealth,
     insight,
+    customer: createCustomerController(createCustomerService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
     businessGraph,
@@ -338,6 +347,8 @@ export * from "./services/multiAgentRuntimeService.js";
 export * from "./services/businessDecisionService.js";
 export * from "./services/scenarioService.js";
 export * from "./services/kpiMeasurementService.js";
+export * from "./services/businessGoalService.js";
+export * from "./services/executiveBriefingService.js";
 export * from "./services/rootCauseService.js";
 export * from "./services/executionPlanService.js";
 export * from "./services/outcomeVerificationService.js";
@@ -353,6 +364,7 @@ export * from "./services/bteService.js";
 export * from "./services/aiWorkforceService.js";
 export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
+export * from "./services/customerService.js";
 export * from "./services/businessDiagnosticService.js";
 export * from "./controllers/businessDiagnosticController.js";
 export * from "./security.js";

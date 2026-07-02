@@ -21,7 +21,7 @@ export default async function IntelligencePage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load intelligence data.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">Intelligence Center</h1>
+        <h1 className="font-display text-3xl">Intelligence</h1>
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load intelligence data</p>
           <p className="mt-1 text-sm">{message}</p>
@@ -35,7 +35,11 @@ export default async function IntelligencePage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-display text-3xl">Intelligence Center</h1>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Domain</p>
+        <h1 className="mt-1 font-display text-3xl">Intelligence</h1>
+        <p className="mt-2 text-sm text-neutral-400">AI signals, KPIs, root causes, and the decision pipeline.</p>
+      </div>
 
       {/* KPI Readings */}
       <section>

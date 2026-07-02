@@ -128,6 +128,36 @@ export const apiClient = {
       body: JSON.stringify({}),
     }),
 
+  dismissRecommendation: (orgId: string, recommendationId: string) =>
+    request<{ id: string; status: string }>(orgId, `/recommendations/${recommendationId}/dismiss`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+
+  listRecommendations: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      title: string;
+      description: string;
+      category: string;
+      status: string;
+      difficulty: string;
+      estimatedEffortHours: number;
+      estimatedCost: number;
+      estimatedRoi: { profitImpactAnnual: number };
+      estimatedTimeToValueDays: number;
+      confidence: number;
+      relatedKpiKeys: string[];
+    }>>(orgId, `/businesses/${businessId}/recommendations`),
+
+  getRecommendationPriorities: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      recommendationId: string;
+      priority: string;
+      rank: number;
+    }>>(orgId, `/businesses/${businessId}/recommendations/priorities`),
+
   startMri: (orgId: string, businessId: string) =>
     request<{ id: string; businessId: string; status: string; version: string; startedAt: string; completedAt: string | null }>(
       orgId, `/businesses/${businessId}/mri`, { method: "POST", body: JSON.stringify({}) }
@@ -207,6 +237,58 @@ export const apiClient = {
   getToolExecutions: (orgId: string, businessId: string) =>
     request<Array<{ id: string; providerKey: string; toolKey: string; status: string; startedAt: string; completedAt: string | null }>>(
       orgId, `/businesses/${businessId}/tools/executions`
+    ),
+
+  // Customer OS
+  listCustomers: (orgId: string, businessId: string, query?: string) => {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : "";
+    return request<Array<{
+      id: string; firstName: string; lastName: string;
+      email: string | null; phone: string | null; address: string | null;
+      status: string; source: string | null; tags: string[];
+      totalRevenue: number; healthScore: number | null;
+      lastContactAt: string | null; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/customers${qs}`);
+  },
+
+  createCustomer: (orgId: string, businessId: string, input: {
+    firstName: string; lastName?: string; email?: string | null;
+    phone?: string | null; address?: string | null;
+    source?: string | null; tags?: string[]; notes?: string | null;
+  }) =>
+    request<{ id: string; firstName: string; lastName: string }>(orgId, `/businesses/${businessId}/customers`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  getCustomer: (orgId: string, businessId: string, customerId: string) =>
+    request<{
+      id: string; firstName: string; lastName: string;
+      email: string | null; phone: string | null; address: string | null;
+      status: string; source: string | null; tags: string[]; notes: string | null;
+      totalRevenue: number; healthScore: number | null;
+      lastContactAt: string | null; createdAt: string;
+    }>(orgId, `/businesses/${businessId}/customers/${customerId}`),
+
+  updateCustomer: (orgId: string, businessId: string, customerId: string, patch: Record<string, unknown>) =>
+    request<{ id: string }>(orgId, `/businesses/${businessId}/customers/${customerId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+
+  listCustomerInteractions: (orgId: string, businessId: string, customerId: string) =>
+    request<Array<{
+      id: string; type: string; summary: string;
+      metadata: Record<string, unknown>; occurredAt: string;
+    }>>(orgId, `/businesses/${businessId}/customers/${customerId}/interactions`),
+
+  addCustomerInteraction: (orgId: string, businessId: string, customerId: string, input: {
+    type: string; summary: string; metadata?: Record<string, unknown>;
+  }) =>
+    request<{ id: string; type: string; summary: string; occurredAt: string }>(
+      orgId,
+      `/businesses/${businessId}/customers/${customerId}/interactions`,
+      { method: "POST", body: JSON.stringify(input) }
     ),
 
   // Marketplace

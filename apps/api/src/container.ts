@@ -14,6 +14,21 @@ import {
   createPostgresEventLogRepository,
   createInMemoryEventLogRepository,
   type EventLogRepository,
+  createPostgresKpiReadingRepository,
+  createInMemoryKpiReadingRepository,
+  type KpiReadingRepository,
+  createPostgresBusinessGoalRepository,
+  createInMemoryBusinessGoalRepository,
+  type BusinessGoalRepository,
+  createPostgresExecutiveBriefingRepository,
+  createInMemoryExecutiveBriefingRepository,
+  type ExecutiveBriefingRepository,
+  createPostgresCustomerRepository,
+  createPostgresCustomerInteractionRepository,
+  createInMemoryCustomerRepository,
+  createInMemoryCustomerInteractionRepository,
+  type CustomerRepository,
+  type CustomerInteractionRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -131,6 +146,11 @@ export interface RepositoryContainer {
   businessDiagnostics: BusinessDiagnosticRepository;
   businessDiscovery: BusinessDiscoveryRepository;
   businessGraph: BusinessGraphRepository;
+  kpiReadings: KpiReadingRepository;
+  businessGoals: BusinessGoalRepository;
+  executiveBriefings: ExecutiveBriefingRepository;
+  customers: CustomerRepository;
+  customerInteractions: CustomerInteractionRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -170,6 +190,11 @@ export function createPostgresContainer(): RepositoryContainer {
     businessDiagnostics: createPostgresBusinessDiagnosticRepository(),
     businessDiscovery: createPostgresBusinessDiscoveryRepository(),
     businessGraph: createPostgresBusinessGraphRepository(),
+    kpiReadings: createPostgresKpiReadingRepository(),
+    businessGoals: createPostgresBusinessGoalRepository(),
+    executiveBriefings: createPostgresExecutiveBriefingRepository(),
+    customers: createPostgresCustomerRepository(),
+    customerInteractions: createPostgresCustomerInteractionRepository(),
   };
 }
 
@@ -212,5 +237,10 @@ export function createInMemoryContainer(): RepositoryContainer {
     businessDiagnostics: createInMemoryBusinessDiagnosticRepository(),
     businessDiscovery: createInMemoryBusinessDiscoveryRepository(),
     businessGraph: createInMemoryBusinessGraphRepository(),
+    kpiReadings: createInMemoryKpiReadingRepository(),
+    businessGoals: createInMemoryBusinessGoalRepository(),
+    executiveBriefings: createInMemoryExecutiveBriefingRepository(),
+    customers: createInMemoryCustomerRepository(),
+    customerInteractions: createInMemoryCustomerInteractionRepository(),
   };
 }
