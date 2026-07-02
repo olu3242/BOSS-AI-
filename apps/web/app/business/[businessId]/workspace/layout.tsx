@@ -9,6 +9,7 @@ interface WorkspaceLayoutProps {
 
 const NAV_ITEMS = [
   { href: "", label: "Command Center" },
+  { href: "/customers", label: "Customers" },
   { href: "/recommendations", label: "Recommendations" },
   { href: "/approvals", label: "Approvals" },
   { href: "/timeline", label: "Timeline" },

@@ -37,3 +37,5 @@ export * from "./repositories/postgres/eventLogRepository.js";
 export * from "./repositories/postgres/kpiReadingRepository.js";
 export * from "./repositories/postgres/businessGoalRepository.js";
 export * from "./repositories/postgres/executiveBriefingRepository.js";
+export * from "./repositories/postgres/customerRepository.js";
+export * from "./repositories/inMemory/customerRepository.js";

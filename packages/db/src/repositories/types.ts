@@ -4,6 +4,10 @@ import type {
   BusinessMRI,
   BusinessMriSection,
   KpiReadingRecord,
+  Customer,
+  CustomerInteraction,
+  CustomerStatus,
+  CustomerInteractionType,
   BusinessGoal,
   GoalStatus,
   ExecutiveBriefingRecord,
@@ -467,6 +471,26 @@ export interface BusinessScenarioRepository {
   createComparison(input: Omit<ScenarioComparison, "id" | "createdAt">): Promise<ScenarioComparison>;
   listComparisons(orgId: string, businessId: string): Promise<ScenarioComparison[]>;
 }
+
+export interface CustomerRepository {
+  create(input: Omit<Customer, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Customer>;
+  findById(orgId: string, id: string): Promise<Customer | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Customer, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Customer>;
+  updateStatus(orgId: string, id: string, status: CustomerStatus): Promise<Customer>;
+  updateRevenue(orgId: string, id: string, totalRevenue: number): Promise<Customer>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Customer[]>;
+  search(orgId: string, businessId: string, query: string): Promise<Customer[]>;
+}
+
+export interface CustomerInteractionRepository {
+  create(input: Omit<CustomerInteraction, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<CustomerInteraction>;
+  listByCustomerId(orgId: string, customerId: string): Promise<CustomerInteraction[]>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<CustomerInteraction[]>;
+  countByType(orgId: string, customerId: string, type: CustomerInteractionType): Promise<number>;
+}
+
+export type { CustomerStatus, CustomerInteractionType };
 
 export interface EventLogEntry {
   id: string;

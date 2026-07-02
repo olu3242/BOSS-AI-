@@ -23,6 +23,12 @@ import {
   createPostgresExecutiveBriefingRepository,
   createInMemoryExecutiveBriefingRepository,
   type ExecutiveBriefingRepository,
+  createPostgresCustomerRepository,
+  createPostgresCustomerInteractionRepository,
+  createInMemoryCustomerRepository,
+  createInMemoryCustomerInteractionRepository,
+  type CustomerRepository,
+  type CustomerInteractionRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -143,6 +149,8 @@ export interface RepositoryContainer {
   kpiReadings: KpiReadingRepository;
   businessGoals: BusinessGoalRepository;
   executiveBriefings: ExecutiveBriefingRepository;
+  customers: CustomerRepository;
+  customerInteractions: CustomerInteractionRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -185,6 +193,8 @@ export function createPostgresContainer(): RepositoryContainer {
     kpiReadings: createPostgresKpiReadingRepository(),
     businessGoals: createPostgresBusinessGoalRepository(),
     executiveBriefings: createPostgresExecutiveBriefingRepository(),
+    customers: createPostgresCustomerRepository(),
+    customerInteractions: createPostgresCustomerInteractionRepository(),
   };
 }
 
@@ -230,5 +240,7 @@ export function createInMemoryContainer(): RepositoryContainer {
     kpiReadings: createInMemoryKpiReadingRepository(),
     businessGoals: createInMemoryBusinessGoalRepository(),
     executiveBriefings: createInMemoryExecutiveBriefingRepository(),
+    customers: createInMemoryCustomerRepository(),
+    customerInteractions: createInMemoryCustomerInteractionRepository(),
   };
 }

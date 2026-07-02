@@ -68,6 +68,8 @@ import { createBteService } from "./services/bteService.js";
 import { createAiWorkforceService } from "./services/aiWorkforceService.js";
 import { createOrgHealthService } from "./services/orgHealthService.js";
 import { createInsightService } from "./services/insightService.js";
+import { createCustomerService } from "./services/customerService.js";
+import { createCustomerController } from "./controllers/customerController.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
@@ -235,6 +237,7 @@ export function createApiFromContainer(
     aiWorkforce,
     orgHealth,
     insight,
+    customer: createCustomerController(createCustomerService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
     businessGraph,
@@ -361,6 +364,7 @@ export * from "./services/bteService.js";
 export * from "./services/aiWorkforceService.js";
 export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
+export * from "./services/customerService.js";
 export * from "./services/businessDiagnosticService.js";
 export * from "./controllers/businessDiagnosticController.js";
 export * from "./security.js";

@@ -41,12 +41,36 @@ export interface Employee extends TenantScoped, Timestamped {
   email: string;
 }
 
+export type CustomerStatus = "prospect" | "active" | "inactive" | "vip" | "churned";
+export type CustomerSource = "walk_in" | "referral" | "online" | "phone" | "social_media" | "repeat" | "other";
+
 export interface Customer extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string | null;
   phone: string | null;
+  address: string | null;
+  status: CustomerStatus;
+  source: CustomerSource | null;
+  tags: string[];
+  notes: string | null;
+  totalRevenue: number;
+  healthScore: number | null;
+  lastContactAt: string | null;
+}
+
+export type CustomerInteractionType = "call" | "email" | "sms" | "appointment" | "invoice" | "quote" | "note" | "review" | "in_person";
+
+export interface CustomerInteraction extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID;
+  type: CustomerInteractionType;
+  summary: string;
+  metadata: Record<string, unknown>;
+  occurredAt: string;
 }
 
 export type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "lost";

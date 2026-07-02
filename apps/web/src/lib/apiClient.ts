@@ -239,6 +239,58 @@ export const apiClient = {
       orgId, `/businesses/${businessId}/tools/executions`
     ),
 
+  // Customer OS
+  listCustomers: (orgId: string, businessId: string, query?: string) => {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : "";
+    return request<Array<{
+      id: string; firstName: string; lastName: string;
+      email: string | null; phone: string | null; address: string | null;
+      status: string; source: string | null; tags: string[];
+      totalRevenue: number; healthScore: number | null;
+      lastContactAt: string | null; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/customers${qs}`);
+  },
+
+  createCustomer: (orgId: string, businessId: string, input: {
+    firstName: string; lastName?: string; email?: string | null;
+    phone?: string | null; address?: string | null;
+    source?: string | null; tags?: string[]; notes?: string | null;
+  }) =>
+    request<{ id: string; firstName: string; lastName: string }>(orgId, `/businesses/${businessId}/customers`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+
+  getCustomer: (orgId: string, businessId: string, customerId: string) =>
+    request<{
+      id: string; firstName: string; lastName: string;
+      email: string | null; phone: string | null; address: string | null;
+      status: string; source: string | null; tags: string[]; notes: string | null;
+      totalRevenue: number; healthScore: number | null;
+      lastContactAt: string | null; createdAt: string;
+    }>(orgId, `/businesses/${businessId}/customers/${customerId}`),
+
+  updateCustomer: (orgId: string, businessId: string, customerId: string, patch: Record<string, unknown>) =>
+    request<{ id: string }>(orgId, `/businesses/${businessId}/customers/${customerId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+
+  listCustomerInteractions: (orgId: string, businessId: string, customerId: string) =>
+    request<Array<{
+      id: string; type: string; summary: string;
+      metadata: Record<string, unknown>; occurredAt: string;
+    }>>(orgId, `/businesses/${businessId}/customers/${customerId}/interactions`),
+
+  addCustomerInteraction: (orgId: string, businessId: string, customerId: string, input: {
+    type: string; summary: string; metadata?: Record<string, unknown>;
+  }) =>
+    request<{ id: string; type: string; summary: string; occurredAt: string }>(
+      orgId,
+      `/businesses/${businessId}/customers/${customerId}/interactions`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
   // Marketplace
   getMarketplacePacks: (orgId: string, query?: string, category?: string) => {
     const params = new URLSearchParams();

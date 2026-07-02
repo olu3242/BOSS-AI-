@@ -778,6 +778,61 @@ export function createHttpServer(api: Api): Express {
     wrap(async (_req) => api.insight.getRecommendationTemplates())
   );
 
+  // ── Customer OS routes ────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/customers",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const q = typeof req.query["q"] === "string" ? req.query["q"] : undefined;
+      if (q?.trim()) return api.customer.search(orgId, param(req, "businessId"), q);
+      return api.customer.list(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/customers",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.customer.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.customer.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/customers/:customerId",
+    wrap(async (req) => api.customer.get(await requireOrgId(req), param(req, "customerId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/customers/:customerId",
+    wrap(async (req) => api.customer.update(await requireOrgId(req), param(req, "customerId"), req.body as Parameters<typeof api.customer.update>[2]))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/customers/:customerId",
+    wrap(async (req) => {
+      await api.customer.delete(await requireOrgId(req), param(req, "customerId"));
+      return { deleted: true };
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/customers/:customerId/interactions",
+    wrap(async (req) => api.customer.listInteractions(await requireOrgId(req), param(req, "customerId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/customers/:customerId/interactions",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.customer.addInteraction(
+        orgId,
+        param(req, "businessId"),
+        param(req, "customerId"),
+        req.body as Parameters<typeof api.customer.addInteraction>[3]
+      );
+    })
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {
