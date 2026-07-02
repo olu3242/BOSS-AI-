@@ -150,11 +150,7 @@ export default async function CustomerProfilePage({ params }: Props) {
           <span className="text-xs text-neutral-600">{interactions.length} interactions</span>
         </div>
 
-        <AddInteractionForm
-          businessId={businessId}
-          customerId={customerId}
-          redirectTo={`${base}/customers/${customerId}`}
-        />
+        <AddInteractionForm businessId={businessId} customerId={customerId} />
 
         {interactions.length === 0 ? (
           <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-sm text-neutral-500">

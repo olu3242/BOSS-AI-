@@ -18,11 +18,9 @@ const TYPES = [
 export function AddInteractionForm({
   businessId,
   customerId,
-  redirectTo,
 }: {
   businessId: string;
   customerId: string;
-  redirectTo: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
