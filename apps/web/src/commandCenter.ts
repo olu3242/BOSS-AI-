@@ -199,7 +199,7 @@ function buildTodayPriorities(
   });
 
   // High-value recommendations → opportunities
-  highValueRecommendations.slice(0, 2).forEach((p, i) => {
+  highValueRecommendations.slice(0, 2).forEach((p) => {
     const rec = input.recommendations.find((r) => r.id === p.recommendationId);
     if (!rec) return;
     priorities.push({
