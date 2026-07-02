@@ -128,6 +128,36 @@ export const apiClient = {
       body: JSON.stringify({}),
     }),
 
+  dismissRecommendation: (orgId: string, recommendationId: string) =>
+    request<{ id: string; status: string }>(orgId, `/recommendations/${recommendationId}/dismiss`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+
+  listRecommendations: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      title: string;
+      description: string;
+      category: string;
+      status: string;
+      difficulty: string;
+      estimatedEffortHours: number;
+      estimatedCost: number;
+      estimatedRoi: { profitImpactAnnual: number };
+      estimatedTimeToValueDays: number;
+      confidence: number;
+      relatedKpiKeys: string[];
+    }>>(orgId, `/businesses/${businessId}/recommendations`),
+
+  getRecommendationPriorities: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      recommendationId: string;
+      priority: string;
+      rank: number;
+    }>>(orgId, `/businesses/${businessId}/recommendations/priorities`),
+
   startMri: (orgId: string, businessId: string) =>
     request<{ id: string; businessId: string; status: string; version: string; startedAt: string; completedAt: string | null }>(
       orgId, `/businesses/${businessId}/mri`, { method: "POST", body: JSON.stringify({}) }

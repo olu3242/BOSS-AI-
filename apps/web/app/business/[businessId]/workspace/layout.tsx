@@ -8,9 +8,10 @@ interface WorkspaceLayoutProps {
 }
 
 const NAV_ITEMS = [
-  { href: "", label: "Overview" },
-  { href: "/timeline", label: "Timeline" },
+  { href: "", label: "Command Center" },
+  { href: "/recommendations", label: "Recommendations" },
   { href: "/approvals", label: "Approvals" },
+  { href: "/timeline", label: "Timeline" },
   { href: "/automation", label: "Automation" },
   { href: "/intelligence", label: "Intelligence" },
   { href: "/settings", label: "Settings" },
@@ -49,7 +50,7 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
       <footer className="border-t border-neutral-800 bg-neutral-950 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between text-xs text-neutral-600">
-          <span>BOSS v0.9.0-rc1</span>
+          <span>BOSS v2.0.0-rc2</span>
           <div className="flex items-center gap-4">
             <FeedbackButton businessId={businessId} />
             <a
