@@ -6,16 +6,42 @@ interface Props {
   params: Promise<{ businessId: string }>;
 }
 
+const LOOP_STAGES = [
+  { key: "observe",     label: "Observe" },
+  { key: "understand",  label: "Understand" },
+  { key: "prioritize",  label: "Prioritize" },
+  { key: "recommend",   label: "Recommend" },
+  { key: "approve",     label: "Approve" },
+  { key: "execute",     label: "Execute" },
+  { key: "measure",     label: "Measure" },
+  { key: "learn",       label: "Learn" },
+  { key: "improve",     label: "Improve" },
+] as const;
+
+const DOMAIN_TILES = [
+  { key: "customers",     label: "Customers",    icon: "👥", desc: "Relationships & history" },
+  { key: "work",          label: "Work",          icon: "🔧", desc: "Jobs & appointments" },
+  { key: "money",         label: "Money",         icon: "💰", desc: "Revenue & cash flow" },
+  { key: "operations",    label: "Operations",    icon: "⚙️",  desc: "Team & workflows" },
+  { key: "intelligence",  label: "Intelligence",  icon: "🧠", desc: "Insights & automation" },
+] as const;
+
 function healthTone(score: number) {
-  if (score >= 70) return { label: "Healthy", color: "text-green-400", bar: "bg-green-500", bg: "bg-green-950/30 border-green-900/50" };
-  if (score >= 40) return { label: "Needs Attention", color: "text-yellow-400", bar: "bg-yellow-500", bg: "bg-yellow-950/30 border-yellow-900/50" };
-  return { label: "At Risk", color: "text-red-400", bar: "bg-red-500", bg: "bg-red-950/30 border-red-900/50" };
+  if (score >= 70) return { label: "Healthy",          color: "text-green-400",  bar: "bg-green-500",  bg: "bg-green-950/30 border-green-900/50" };
+  if (score >= 40) return { label: "Needs Attention",  color: "text-yellow-400", bar: "bg-yellow-500", bg: "bg-yellow-950/30 border-yellow-900/50" };
+  return               { label: "At Risk",             color: "text-red-400",    bar: "bg-red-500",    bg: "bg-red-950/30 border-red-900/50" };
 }
 
-function TrendBadge({ trend }: { trend: string | null }) {
-  if (trend === "up") return <span className="text-green-400 text-xs">↑ Up</span>;
-  if (trend === "down") return <span className="text-red-400 text-xs">↓ Down</span>;
-  return <span className="text-neutral-500 text-xs">→ Stable</span>;
+function categoryColor(category: string) {
+  const map: Record<string, string> = {
+    revenue_growth:         "text-green-400 bg-green-950/40 border-green-900/50",
+    cost_reduction:         "text-blue-400 bg-blue-950/40 border-blue-900/50",
+    customer_retention:     "text-purple-400 bg-purple-950/40 border-purple-900/50",
+    operational_efficiency: "text-yellow-400 bg-yellow-950/40 border-yellow-900/50",
+    lead_generation:        "text-orange-400 bg-orange-950/40 border-orange-900/50",
+    reputation:             "text-pink-400 bg-pink-950/40 border-pink-900/50",
+  };
+  return map[category] ?? "text-neutral-400 bg-neutral-800 border-neutral-700";
 }
 
 function formatKpiValue(value: number | null, unit: string): string {
@@ -28,26 +54,27 @@ function formatKpiValue(value: number | null, unit: string): string {
   return String(value);
 }
 
-function categoryColor(category: string) {
-  const map: Record<string, string> = {
-    revenue_growth: "text-green-400 bg-green-950/40 border-green-900/50",
-    cost_reduction: "text-blue-400 bg-blue-950/40 border-blue-900/50",
-    customer_retention: "text-purple-400 bg-purple-950/40 border-purple-900/50",
-    operational_efficiency: "text-yellow-400 bg-yellow-950/40 border-yellow-900/50",
-    lead_generation: "text-orange-400 bg-orange-950/40 border-orange-900/50",
-    reputation: "text-pink-400 bg-pink-950/40 border-pink-900/50",
-  };
-  return map[category] ?? "text-neutral-400 bg-neutral-800 border-neutral-700";
+function TrendBadge({ trend }: { trend: string | null }) {
+  if (trend === "up")   return <span className="text-green-400 text-xs">↑ Up</span>;
+  if (trend === "down") return <span className="text-red-400 text-xs">↓ Down</span>;
+  return <span className="text-neutral-500 text-xs">→ Stable</span>;
+}
+
+function dailyFocus(pendingRecs: number, pendingApprovals: number): string {
+  if (pendingApprovals > 0) return `You have ${pendingApprovals} decision${pendingApprovals > 1 ? "s" : ""} awaiting approval.`;
+  if (pendingRecs > 0) return `${pendingRecs} AI recommendation${pendingRecs > 1 ? "s" : ""} ready for review.`;
+  return "Your business is running smoothly. Review your metrics below.";
 }
 
 export default async function CommandCenterPage({ params }: Props) {
   const { businessId } = await params;
   const base = `/business/${businessId}/workspace`;
 
-  const [snapshotResult, recommendationsResult, timelineResult] = await Promise.allSettled([
+  const [snapshotResult, recommendationsResult, timelineResult, customersResult] = await Promise.allSettled([
     apiClient.getWorkspace(DEMO_ORG_ID, businessId),
     apiClient.listRecommendations(DEMO_ORG_ID, businessId),
     apiClient.getTimeline(DEMO_ORG_ID, businessId),
+    apiClient.listCustomers(DEMO_ORG_ID, businessId),
   ]);
 
   if (snapshotResult.status === "rejected") {
@@ -55,18 +82,15 @@ export default async function CommandCenterPage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load dashboard.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">Command Center</h1>
+        <DailyBriefHeader date={new Date()} stage="observe" focus="Complete Business MRI to activate your operating system." />
         <div className="rounded border border-red-800 bg-red-950/30 p-5 text-red-400">
           <p className="font-medium">Dashboard unavailable</p>
           <p className="mt-1 text-sm">{message}</p>
-          <p className="mt-2 text-sm text-neutral-400">Complete the Business MRI first to generate live data.</p>
-          <Link
-            href={`/business/${businessId}/mri`}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
-          >
+          <Link href={`/business/${businessId}/mri`} className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600">
             Start Business MRI
           </Link>
         </div>
+        <DomainTiles base={base} customerCount={0} />
       </div>
     );
   }
@@ -74,120 +98,143 @@ export default async function CommandCenterPage({ params }: Props) {
   const snapshot = snapshotResult.value;
   const recommendations = recommendationsResult.status === "fulfilled" ? recommendationsResult.value : [];
   const timeline = timelineResult.status === "fulfilled" ? timelineResult.value : [];
+  const customers = customersResult.status === "fulfilled" ? customersResult.value : [];
 
   const { health, kpis, decisions, approvalQueue, loopStatus } = snapshot;
 
-  const proposedRecs = recommendations
-    .filter((r) => r.status === "proposed")
-    .slice(0, 3);
-
-  const recentActivity = timeline.slice(0, 6);
-
+  const proposedRecs = recommendations.filter((r) => r.status === "proposed").slice(0, 3);
+  const recentActivity = timeline.slice(0, 5);
   const tone = health ? healthTone(health.overallScore) : null;
+
+  const currentStage = loopStatus.currentStage ?? "observe";
+  const focusMessage = dailyFocus(proposedRecs.length, approvalQueue.totalPending);
 
   return (
     <div className="flex flex-col gap-8">
 
-      {/* ── PAGE HEADER ──────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl">Command Center</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Updated {new Date(snapshot.assembledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </p>
-        </div>
-        <Link
-          href={`${base}/approvals`}
-          className="flex items-center gap-2 rounded border border-neutral-700 bg-neutral-900 px-4 py-2 text-sm hover:border-neutral-600 transition-colors"
-        >
-          {approvalQueue.totalPending > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-bold text-white">
-              {approvalQueue.totalPending}
+      {/* ── DAILY BRIEF ─────────────────────────────────────── */}
+      <DailyBriefHeader date={new Date(snapshot.assembledAt)} stage={currentStage} focus={focusMessage} />
+
+      {/* ── OPERATING LOOP ──────────────────────────────────── */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Operating Loop</h2>
+          {loopStatus.lastRunAt && (
+            <span className="text-xs text-neutral-600">
+              Last run {new Date(loopStatus.lastRunAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
-          Approval Center
-        </Link>
+        </div>
+        <div className="flex gap-1 overflow-x-auto pb-1">
+          {LOOP_STAGES.map((stage, i) => {
+            const stageKeys = LOOP_STAGES.map(s => s.key);
+            const currentIdx = stageKeys.indexOf(currentStage as typeof stageKeys[number]);
+            const isActive  = stage.key === currentStage;
+            const isPast    = i < currentIdx;
+            return (
+              <div
+                key={stage.key}
+                className={`flex min-w-[80px] flex-1 flex-col items-center gap-1 rounded border py-2 px-1 text-center transition-colors ${
+                  isActive  ? "border-red-800 bg-red-950/40" :
+                  isPast    ? "border-neutral-700 bg-neutral-900/60" :
+                              "border-neutral-800 bg-neutral-900/20"
+                }`}
+              >
+                <span className={`text-[10px] font-medium leading-tight ${
+                  isActive ? "text-red-300" : isPast ? "text-neutral-400" : "text-neutral-600"
+                }`}>
+                  {stage.label}
+                </span>
+                <span className={`h-1 w-1 rounded-full ${
+                  isActive ? "bg-red-500" : isPast ? "bg-neutral-500" : "bg-neutral-700"
+                }`} />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── DOMAIN TILES ────────────────────────────────────── */}
+      <DomainTiles base={base} customerCount={customers.length} />
+
+      {/* ── HEALTH + PRIORITY ACTIONS ───────────────────────── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+        {/* Health Score */}
+        {health ? (
+          <section className={`rounded border p-6 ${tone?.bg ?? "border-neutral-800 bg-neutral-900"}`}>
+            <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Health</p>
+            <div className="mt-2 flex items-baseline gap-3">
+              <span className={`font-display text-5xl font-black ${tone?.color ?? "text-white"}`}>{health.overallScore}</span>
+              <span className="text-lg text-neutral-500">/ 100</span>
+              <span className={`text-sm font-medium ${tone?.color}`}>{tone?.label}</span>
+            </div>
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+              <div className={`h-full rounded-full ${tone?.bar} transition-all`} style={{ width: `${health.overallScore}%` }} />
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <StatBubble value={loopStatus.activeConstraints} label="Constraints" color={loopStatus.activeConstraints > 0 ? "text-red-400" : "text-neutral-400"} />
+              <StatBubble value={proposedRecs.length} label="Recommendations" color={proposedRecs.length > 0 ? "text-yellow-400" : "text-neutral-400"} />
+              <StatBubble value={approvalQueue.totalPending} label="Approvals" color={approvalQueue.totalPending > 0 ? "text-blue-400" : "text-neutral-400"} />
+            </div>
+          </section>
+        ) : (
+          <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
+            <p className="font-medium text-neutral-300">No health score yet</p>
+            <p className="mt-1 text-sm text-neutral-500">Complete the Business MRI to generate your health score.</p>
+            <Link href={`/business/${businessId}/mri`} className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors">
+              Start Business MRI →
+            </Link>
+          </section>
+        )}
+
+        {/* Priority Actions */}
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-base text-neutral-300">Priority Actions</h2>
+            <Link href={`${base}/approvals`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+              {approvalQueue.totalPending > 0 && (
+                <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
+                  {approvalQueue.totalPending}
+                </span>
+              )}
+              Approvals →
+            </Link>
+          </div>
+          {decisions.pending.length === 0 && proposedRecs.length === 0 ? (
+            <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-sm text-neutral-400">
+              No actions required. Your operating loop is clean.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {decisions.pending.slice(0, 3).map((d) => (
+                <div key={d.id} className="flex items-center gap-3 rounded border border-yellow-900/40 bg-yellow-950/20 px-4 py-3">
+                  <span className="text-yellow-400 text-xs font-bold uppercase">Decision</span>
+                  <span className="flex-1 min-w-0 truncate text-sm">{d.objective}</span>
+                  <span className="shrink-0 text-xs text-neutral-500">{Math.round(d.confidenceScore * 100)}%</span>
+                </div>
+              ))}
+              {proposedRecs.slice(0, 3 - Math.min(decisions.pending.length, 3)).map((r) => (
+                <div key={r.id} className="flex items-center gap-3 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+                  <span className="text-blue-400 text-xs font-bold uppercase">Rec</span>
+                  <span className="flex-1 min-w-0 truncate text-sm">{r.title}</span>
+                  <span className="shrink-0 text-xs text-green-400">${r.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
 
-      {/* ── HEALTH BANNER ────────────────────────────────────── */}
-      {health ? (
-        <section
-          className={`rounded border p-6 ${tone?.bg ?? "border-neutral-800 bg-neutral-900"}`}
-          aria-label="Business Health Score"
-        >
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Health Score</p>
-              <div className="mt-2 flex items-baseline gap-3">
-                <span className={`font-display text-6xl font-black ${tone?.color ?? "text-white"}`}>
-                  {health.overallScore}
-                </span>
-                <span className="text-xl text-neutral-500">/ 100</span>
-                <span className={`text-sm font-medium ${tone?.color ?? "text-neutral-400"}`}>{tone?.label}</span>
-              </div>
-              <div className="mt-3 h-2 w-48 overflow-hidden rounded-full bg-neutral-800">
-                <div
-                  className={`h-full rounded-full ${tone?.bar ?? "bg-neutral-500"} transition-all`}
-                  style={{ width: `${health.overallScore}%` }}
-                />
-              </div>
-            </div>
-            <div className="hidden sm:grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className={`text-2xl font-bold ${loopStatus.activeConstraints > 0 ? "text-red-400" : "text-neutral-400"}`}>
-                  {loopStatus.activeConstraints}
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">Constraints</p>
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${recommendations.filter(r => r.status === "proposed").length > 0 ? "text-yellow-400" : "text-neutral-400"}`}>
-                  {recommendations.filter((r) => r.status === "proposed").length}
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">Recommendations</p>
-              </div>
-              <div>
-                <p className={`text-2xl font-bold ${approvalQueue.totalPending > 0 ? "text-blue-400" : "text-neutral-400"}`}>
-                  {approvalQueue.totalPending}
-                </p>
-                <p className="text-xs text-neutral-500 mt-1">Awaiting Approval</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
-          <p className="font-medium text-neutral-300">No health score yet</p>
-          <p className="mt-1 text-sm text-neutral-500">Complete the Business MRI to generate your health score.</p>
-          <Link
-            href={`/business/${businessId}/mri`}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Start Business MRI →
-          </Link>
-        </section>
-      )}
-
       {/* ── AI RECOMMENDATIONS ───────────────────────────────── */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg text-neutral-300">AI Recommendations</h2>
-          <Link
-            href={`${base}/recommendations`}
-            className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-          >
-            View all ({recommendations.length}) →
-          </Link>
-        </div>
-        {proposedRecs.length === 0 ? (
-          <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-neutral-400">
-            <p className="font-medium">No pending recommendations</p>
-            <p className="mt-1 text-sm">
-              {recommendations.length === 0
-                ? "Run a Business MRI to generate AI-powered recommendations."
-                : "All recommendations have been actioned. Well done."}
-            </p>
+      {proposedRecs.length > 0 && (
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-display text-lg text-neutral-300">AI Recommendations</h2>
+            <Link href={`${base}/recommendations`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+              View all ({recommendations.length}) →
+            </Link>
           </div>
-        ) : (
           <div className="flex flex-col gap-3">
             {proposedRecs.map((rec) => (
               <div key={rec.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
@@ -211,8 +258,8 @@ export default async function CommandCenterPage({ params }: Props) {
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ── KEY METRICS ──────────────────────────────────────── */}
       {kpis.readings.length > 0 && (
@@ -234,90 +281,27 @@ export default async function CommandCenterPage({ params }: Props) {
         </section>
       )}
 
-      {/* ── BOTTOM GRID: Decisions + Activity ────────────────── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-
-        {/* Decision Pipeline */}
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-neutral-300">Decision Pipeline</h2>
-            <Link
-              href={`${base}/approvals`}
-              className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
-              Approval Center →
-            </Link>
-          </div>
-          {decisions.pending.length === 0 && decisions.approved.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-sm text-neutral-400">
-              No active decisions. Run the operating loop to generate new decisions.
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {decisions.pending.map((d) => (
-                <div key={d.id} className="flex items-center justify-between rounded border border-yellow-900/50 bg-yellow-950/20 px-4 py-3 gap-4">
-                  <span className="text-sm flex-1 min-w-0 truncate">{d.objective}</span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-neutral-500">{Math.round(d.confidenceScore * 100)}%</span>
-                    <span className="rounded bg-yellow-900/60 px-2 py-0.5 text-xs text-yellow-400 capitalize">{d.status}</span>
-                  </div>
-                </div>
-              ))}
-              {decisions.approved.map((d) => (
-                <div key={d.id} className="flex items-center justify-between rounded border border-green-900/50 bg-green-950/20 px-4 py-3 gap-4">
-                  <span className="text-sm flex-1 min-w-0 truncate">{d.objective}</span>
-                  <span className="rounded bg-green-900/60 px-2 py-0.5 text-xs text-green-400 shrink-0">{d.status}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Recent Activity */}
+      {/* ── RECENT ACTIVITY ──────────────────────────────────── */}
+      {recentActivity.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-display text-lg text-neutral-300">Recent Activity</h2>
-            <Link
-              href={`${base}/timeline`}
-              className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-            >
+            <Link href={`${base}/timeline`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
               Full timeline →
             </Link>
           </div>
-          {recentActivity.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-sm text-neutral-400">
-              No activity yet.
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1.5">
-              {recentActivity.map((entry) => (
-                <div key={entry.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-3 py-2.5">
-                  <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-600" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm leading-snug text-neutral-300 truncate">{entry.description}</p>
-                    <time className="text-xs text-neutral-600">
-                      {new Date(entry.occurredAt).toLocaleString([], {
-                        month: "short", day: "numeric",
-                        hour: "2-digit", minute: "2-digit",
-                      })}
-                    </time>
-                  </div>
+          <div className="flex flex-col gap-1.5">
+            {recentActivity.map((entry) => (
+              <div key={entry.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-3 py-2.5">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-600" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm leading-snug text-neutral-300 truncate">{entry.description}</p>
+                  <time className="text-xs text-neutral-600">
+                    {new Date(entry.occurredAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </time>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-
-      {/* ── LOOP STATUS ──────────────────────────────────────── */}
-      {loopStatus.lastRunAt && (
-        <section className="rounded border border-neutral-800 bg-neutral-900/50 px-5 py-3">
-          <div className="flex items-center gap-2 text-xs text-neutral-500">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-            Operating Loop last ran {new Date(loopStatus.lastRunAt).toLocaleString([], {
-              weekday: "short", month: "short", day: "numeric",
-              hour: "2-digit", minute: "2-digit",
-            })}
+              </div>
+            ))}
           </div>
         </section>
       )}
@@ -326,26 +310,75 @@ export default async function CommandCenterPage({ params }: Props) {
   );
 }
 
-/* Inline approve/dismiss for the recommendations strip (server renders the buttons,
-   actual actions are handled via form POST to avoid needing a client component here) */
+/* ─── Sub-components ─────────────────────────────────────────────────────── */
+
+function DailyBriefHeader({ date, stage, focus }: { date: Date; stage: string; focus: string }) {
+  const dayName = date.toLocaleDateString([], { weekday: "long" });
+  const dateStr = date.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
+  return (
+    <div className="flex items-start justify-between gap-6">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">{dayName} · {dateStr}</p>
+        <h1 className="mt-1 font-display text-3xl">Command Center</h1>
+        <p className="mt-2 text-sm text-neutral-400">{focus}</p>
+      </div>
+      <div className="shrink-0 rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs text-neutral-400 capitalize hidden sm:block">
+        Loop: <span className="text-neutral-200 font-medium">{stage}</span>
+      </div>
+    </div>
+  );
+}
+
+function DomainTiles({ base, customerCount }: { base: string; customerCount: number }) {
+  const counts: Record<string, number | null> = {
+    customers: customerCount,
+    work: null, money: null, operations: null, intelligence: null,
+  };
+  return (
+    <section>
+      <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Business Domains</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {DOMAIN_TILES.map((d) => (
+          <Link
+            key={d.key}
+            href={`${base}/${d.key}`}
+            className="flex flex-col gap-2 rounded border border-neutral-800 bg-neutral-900 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-800/60"
+          >
+            <span className="text-2xl">{d.icon}</span>
+            <div>
+              <p className="text-sm font-medium text-neutral-200">{d.label}</p>
+              <p className="text-xs text-neutral-500">
+                {counts[d.key] !== null ? `${counts[d.key]} records` : d.desc}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function StatBubble({ value, label, color }: { value: number; label: string; color: string }) {
+  return (
+    <div>
+      <p className={`text-xl font-bold ${color}`}>{value}</p>
+      <p className="text-xs text-neutral-500 mt-0.5">{label}</p>
+    </div>
+  );
+}
+
 function RecommendationInlineActions({ recommendationId, businessId }: { recommendationId: string; businessId: string }) {
   return (
     <div className="flex shrink-0 flex-col gap-2">
       <form action={`/api/recommendations/${recommendationId}/approve`} method="POST">
         <input type="hidden" name="businessId" value={businessId} />
-        <button
-          type="submit"
-          className="rounded bg-green-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors w-full"
-        >
+        <button type="submit" className="rounded bg-green-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 transition-colors w-full">
           Approve
         </button>
       </form>
       <form action={`/api/recommendations/${recommendationId}/dismiss`} method="POST">
         <input type="hidden" name="businessId" value={businessId} />
-        <button
-          type="submit"
-          className="rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-400 hover:bg-neutral-700 transition-colors w-full"
-        >
+        <button type="submit" className="rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-400 hover:bg-neutral-700 transition-colors w-full">
           Dismiss
         </button>
       </form>

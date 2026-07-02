@@ -41,6 +41,59 @@ export interface Employee extends TenantScoped, Timestamped {
   email: string;
 }
 
+// ─── Business Operating Runtime (RC2.2) ──────────────────────────────────────
+
+export type LoopStage =
+  | "observe"
+  | "understand"
+  | "prioritize"
+  | "recommend"
+  | "approve"
+  | "execute"
+  | "measure"
+  | "learn"
+  | "improve";
+
+export type BusinessDomain = "customer" | "work" | "money" | "operations" | "intelligence";
+
+export type CanonicalEventType =
+  | "customer.created"
+  | "customer.updated"
+  | "customer.status_changed"
+  | "lead.captured"
+  | "lead.qualified"
+  | "lead.converted"
+  | "appointment.booked"
+  | "appointment.completed"
+  | "appointment.cancelled"
+  | "appointment.no_show"
+  | "estimate.sent"
+  | "quote.sent"
+  | "quote.accepted"
+  | "invoice.created"
+  | "invoice.sent"
+  | "invoice.paid"
+  | "invoice.overdue"
+  | "payment.received"
+  | "review.received"
+  | "review.responded"
+  | "task.created"
+  | "task.completed"
+  | "task.overdue"
+  | "automation.executed"
+  | "automation.failed"
+  | "job.created"
+  | "job.assigned"
+  | "job.completed"
+  | "team.member_clocked_in"
+  | "team.member_clocked_out"
+  | "business.health_updated"
+  | "business.loop_cycle_started"
+  | "business.loop_cycle_completed"
+  | "recommendation.generated"
+  | "recommendation.approved"
+  | "recommendation.dismissed";
+
 export type CustomerStatus = "prospect" | "active" | "inactive" | "vip" | "churned";
 export type CustomerSource = "walk_in" | "referral" | "online" | "phone" | "social_media" | "repeat" | "other";
 

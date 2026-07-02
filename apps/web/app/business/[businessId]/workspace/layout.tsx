@@ -8,14 +8,13 @@ interface WorkspaceLayoutProps {
 }
 
 const NAV_ITEMS = [
-  { href: "", label: "Command Center" },
-  { href: "/customers", label: "Customers" },
-  { href: "/recommendations", label: "Recommendations" },
-  { href: "/approvals", label: "Approvals" },
-  { href: "/timeline", label: "Timeline" },
-  { href: "/automation", label: "Automation" },
-  { href: "/intelligence", label: "Intelligence" },
-  { href: "/settings", label: "Settings" },
+  { href: "",               label: "Command Center" },
+  { href: "/customers",     label: "Customers" },
+  { href: "/work",          label: "Work" },
+  { href: "/money",         label: "Money" },
+  { href: "/operations",    label: "Operations" },
+  { href: "/intelligence",  label: "Intelligence" },
+  { href: "/settings",      label: "Settings" },
 ];
 
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
