@@ -111,8 +111,6 @@ const KPI_SCORE_CONFIGS: KpiScoreConfig[] = [
   },
 ];
 
-const TOTAL_WEIGHT = KPI_SCORE_CONFIGS.reduce((sum, c) => sum + c.weight, 0);
-
 /**
  * Derives a composite business health score (0–100) from a set of KPI readings.
  * Only readings with non-null values contribute to the score. When fewer than
