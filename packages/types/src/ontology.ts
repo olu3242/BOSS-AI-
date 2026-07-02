@@ -330,8 +330,11 @@ export type TimelineEventType =
   | "capability_updated"
   | "constraint_analysis_completed"
   | "recommendations_generated"
+  | "recommendation_approved"
+  | "recommendation_dismissed"
   | "workflow_generated"
-  | "diagnostic_completed";
+  | "diagnostic_completed"
+  | "kpi_measured";
 
 export interface BusinessTimelineEntry extends TenantScoped, Timestamped {
   id: ID;
@@ -456,7 +459,7 @@ export type RecommendationStatus = "proposed" | "approved" | "rejected" | "in_pr
 export type RecommendationPriorityLevel = "critical" | "high" | "medium" | "low" | "informational";
 
 export interface RecommendationEvidenceItem {
-  source: "constraint_analysis" | "business_health" | "capability_assessment" | "business_mri" | "configuration";
+  source: "constraint_analysis" | "business_health" | "capability_assessment" | "business_mri" | "configuration" | "kpi_reading";
   description: string;
   data: Record<string, unknown>;
 }

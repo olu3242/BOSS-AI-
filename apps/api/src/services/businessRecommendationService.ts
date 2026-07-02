@@ -146,6 +146,14 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         "dismissed",
         "Dismissed via API"
       );
+      await repos.businessTimeline.append({
+        orgId,
+        businessId: updated.businessId,
+        type: "recommendation_dismissed",
+        description: `Recommendation dismissed: "${updated.title}"`,
+        metadata: { recommendationId, definitionKey: updated.definitionKey },
+        occurredAt: nowIso(),
+      });
       return updated;
     },
     async approve(orgId, recommendationId) {
@@ -157,6 +165,19 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         "approved",
         "Approved via API"
       );
+      await repos.businessTimeline.append({
+        orgId,
+        businessId: updated.businessId,
+        type: "recommendation_approved",
+        description: `Recommendation approved: "${updated.title}"`,
+        metadata: {
+          recommendationId,
+          definitionKey: updated.definitionKey,
+          relatedKpiKeys: updated.relatedKpiKeys,
+          estimatedRoiAnnual: updated.estimatedRoi.profitImpactAnnual,
+        },
+        occurredAt: nowIso(),
+      });
       await repos.eventBus.publish({
         type: "business.recommendation.approved",
         payload: { orgId, businessId: updated.businessId, recommendationId },
