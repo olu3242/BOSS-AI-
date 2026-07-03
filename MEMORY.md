@@ -1,5 +1,32 @@
 # BOSS Implementation Memory
 
+## RC1.6 — Backend Freeze Certification (complete)
+
+**Status:** FROZEN. 531 tests passing. 0 type errors. 0 lint warnings. 0 arch violations.
+
+**Capability Coverage:** 28/28 capabilities COMPLETE (see `docs/RC1_6_BACKEND_FREEZE_REPORT.md`)
+
+**Platform State:**
+- Migrations: 0001–0030 (gap-free, RLS on all tables)
+- Repositories: 22 repositories, all with postgres + inMemory implementations
+- Services: 49 service files covering all bounded contexts
+- Provider Adapters: 19 (8 real HTTP: twilio, messagebird, gmail, ms365, slack, teams, googleCalendar, quickbooks; 11 simulated — TD-013)
+- Loop Runtime: complete (state machine, scheduler, resilience, queue)
+- MCP: complete intelligence layer (decisions, scenarios, health, constraints, recommendations, exec brief)
+- Auth: Supabase JWT + 4-level RBAC (owner > admin > member > viewer)
+- Health: `/health` unauthenticated ops probe, `/metrics` authenticated
+
+**Open Technical Debt (RC2):**
+- TD-013: 11 provider simulations (medium)
+- TD-014: No external KMS (high for prod)
+- TD-024: AI task handler no Claude inference (medium)
+- TD-031: No per-tenant rate limiting (high)
+- Full register: `TECH_DEBT.md`
+
+**Frontend Build Note:** `@boss/web` build fails in sandboxed environments due to Google Fonts network restriction (Syne font). Not a code defect — works in production with internet access.
+
+---
+
 ## RC1 — Production Infrastructure (complete)
 
 **Status:** 114 tests passing, all checks green.

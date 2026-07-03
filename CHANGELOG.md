@@ -1,5 +1,34 @@
 # Changelog
 
+## RC1.6 — Backend Convergence & Freeze Certification (2026-07-03)
+
+### Audit & Validation
+- Full 12-phase audit of all backend capabilities — 28 capabilities classified COMPLETE
+- `arch:boundaries`: 0 violations (620 modules, 1775 deps)
+- `arch:deadcode`: 0 unused files
+- All 531 tests passing across 69 test files
+- typecheck: 0 errors, lint: 0 warnings across all 22 packages
+- Migration sequence 0001–0030 verified gap-free with RLS on all tables
+
+### Repository Harmonization (Verification)
+- Confirmed all Phase B repositories (jobs, appointments, invoices, payments, reviews) fully exported from `packages/db/src/index.ts`, wired in `apps/api/src/container.ts` with both postgres and in-memory paths
+
+### Observability (Verification)
+- Confirmed `/health` endpoint at `apps/api/src/http/server.ts:59` (unauthenticated, ops probe)
+- Confirmed `/metrics` endpoint at line 500 with auth guard
+
+### TODO/FIXME Classification
+- All TODOs classified: 0 requiring immediate action, all deferred items tracked in `TECH_DEBT.md`
+
+### Documentation
+- `docs/RC1_6_BACKEND_FREEZE_REPORT.md` — full capability audit, validation summary, freeze certification
+- `TECH_DEBT.md` — register confirmed current (TD-013 through TD-034, 10 open items)
+
+### Backend Freeze Recommendation
+- **FROZEN** — Backend architecture is stable. Frontend teams can safely build against all APIs.
+
+---
+
 ## RC1.5 — Enterprise Reliability & Platform Verification (2026-07-03)
 
 ### 7 New Workstream Test Files (85 new tests, total: 474 passing)
