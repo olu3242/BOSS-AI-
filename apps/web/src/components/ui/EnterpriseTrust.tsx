@@ -1,3 +1,5 @@
+"use client";
+
 const TRUST_PILLARS = [
   {
     icon: "🔒",

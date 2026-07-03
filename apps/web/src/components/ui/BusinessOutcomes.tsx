@@ -1,3 +1,5 @@
+"use client";
+
 const OUTCOMES = [
   {
     metric: "2× faster invoicing",
