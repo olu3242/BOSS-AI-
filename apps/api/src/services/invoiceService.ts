@@ -1,4 +1,4 @@
-import type { Invoice, InvoiceStatus, InvoiceLineItem } from "@boss/types";
+import type { Invoice, InvoiceLineItem } from "@boss/types";
 import type { InvoicePatch } from "@boss/db";
 import { randomUUID } from "node:crypto";
 import type { RepositoryContainer } from "../container.js";
