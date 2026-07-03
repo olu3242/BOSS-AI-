@@ -20,11 +20,6 @@ const STATUS_STYLE: Record<string, string> = {
   no_show:     "bg-neutral-800 text-neutral-400",
 };
 
-function formatDateTime(dt: string) {
-  return new Date(dt).toLocaleString("en-US", {
-    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-  });
-}
 
 function groupByDay(appts: Appointment[]) {
   const groups = new Map<string, Appointment[]>();
