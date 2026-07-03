@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4
  */
 export async function GET() {
   try {
-    const { organization, accessToken: _supabaseToken } = await requireActiveTenant("/auth/sign-in");
+    const { organization } = await requireActiveTenant("/auth/sign-in");
 
     const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token`, {
       method: "POST",
