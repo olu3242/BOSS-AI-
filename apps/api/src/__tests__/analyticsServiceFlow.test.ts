@@ -110,7 +110,7 @@ describe("Phase B — Analytics Service Flow", () => {
     });
     await paySvc.updateStatus(ORG, pay1.id, "completed");
 
-    const pay2 = await paySvc.createPayment(ORG, BIZ, {
+    await paySvc.createPayment(ORG, BIZ, {
       customerId: CUST,
       invoiceId: inv2.id,
       amountCents: 4000,
