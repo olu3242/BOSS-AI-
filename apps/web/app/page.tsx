@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingNav } from "../src/components/ui/MarketingNav";
 import { HeroSection } from "../src/components/ui/HeroSection";
+import { BusinessOutcomes } from "../src/components/ui/BusinessOutcomes";
+import { IntelligencePreview } from "../src/components/ui/IntelligencePreview";
+import { AiWorkforceSection } from "../src/components/ui/AiWorkforceSection";
+import { EnterpriseTrust } from "../src/components/ui/EnterpriseTrust";
+import { WorkspacePreview } from "../src/components/ui/WorkspacePreview";
 import "./landing.css";
 
 export const metadata: Metadata = {
@@ -52,6 +57,9 @@ export default function LandingPage() {
         </div>
       </div>
 
+      {/* ── BUSINESS OUTCOMES ─────────────────────────────────── */}
+      <BusinessOutcomes />
+
       {/* ── PAIN POINTS ───────────────────────────────────────── */}
       <section className="l-section" id="pain" aria-labelledby="pain-title">
         <p className="l-section-label">Sound familiar?</p>
@@ -94,6 +102,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── INTELLIGENCE PREVIEW ──────────────────────────────── */}
+      <IntelligencePreview />
+
       {/* ── AI TEAM ───────────────────────────────────────────── */}
       <section className="l-section" id="team" aria-labelledby="team-title">
         <p className="l-section-label">Your AI team</p>
@@ -114,6 +125,9 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ── AI WORKFORCE ──────────────────────────────────────── */}
+      <AiWorkforceSection />
 
       {/* ── DAILY WATCH ───────────────────────────────────────── */}
       <section className="l-section l-bg-card" aria-labelledby="daily-title">
@@ -147,6 +161,9 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ── WORKSPACE PREVIEW ─────────────────────────────────── */}
+      <WorkspacePreview />
 
       {/* ── INDUSTRIES ────────────────────────────────────────── */}
       <section className="l-section" aria-labelledby="industries-title">
@@ -224,6 +241,9 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      {/* ── ENTERPRISE TRUST ──────────────────────────────────── */}
+      <EnterpriseTrust />
 
       {/* ── FAQ ───────────────────────────────────────────────── */}
       <section className="l-section l-bg-card" aria-labelledby="faq-title">
