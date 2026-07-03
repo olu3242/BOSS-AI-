@@ -15,6 +15,9 @@ const NAV_ITEMS = [
   { href: "/money",         label: "Money" },
   { href: "/operations",    label: "Operations" },
   { href: "/intelligence",  label: "Intelligence" },
+  { href: "/decisions",     label: "Decisions" },
+  { href: "/scenarios",     label: "Scenarios" },
+  { href: "/workflows",     label: "Workflows" },
   { href: "/settings",      label: "Settings" },
 ];
 

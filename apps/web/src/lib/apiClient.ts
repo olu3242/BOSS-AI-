@@ -324,6 +324,77 @@ export const apiClient = {
       orgId, `/marketplace/packs/${encodeURIComponent(packKey)}/install`, { method: "DELETE" }
     ),
 
+  // Workflow executions
+  listWorkflowExecutions: (orgId: string, businessId: string, status?: string) => {
+    const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+    return request<Array<{
+      id: string;
+      workflowKey: string;
+      workflowName: string;
+      status: string;
+      startedAt: string;
+      completedAt: string | null;
+      durationMs: number | null;
+      errorMessage: string | null;
+    }>>(orgId, `/businesses/${businessId}/workflows/executions${qs}`);
+  },
+
+  getWorkflowExecution: (orgId: string, businessId: string, executionId: string) =>
+    request<{
+      id: string;
+      workflowKey: string;
+      workflowName: string;
+      status: string;
+      startedAt: string;
+      completedAt: string | null;
+      durationMs: number | null;
+      errorMessage: string | null;
+      steps: Array<{
+        stepKey: string;
+        taskType: string;
+        status: string;
+        startedAt: string | null;
+        completedAt: string | null;
+        durationMs: number | null;
+        outputSummary: string | null;
+        errorMessage: string | null;
+      }>;
+    }>(orgId, `/businesses/${businessId}/workflows/executions/${executionId}`),
+
+  retryWorkflow: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/retry`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  // Scenarios
+  listScenarios: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      name: string;
+      description: string;
+      status: string;
+      timeHorizonMonths: number;
+      priorityFocus: string;
+      confidenceScore: number;
+      projectedRevenueImpact: number | null;
+      riskLevel: string;
+      keyAssumptions: string[];
+      kpiProjections: Array<{ kpiKey: string; label: string; currentValue: number | null; projectedValue: number | null; unit: string }>;
+      createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/scenarios`),
+
+  createScenario: (orgId: string, businessId: string, input: {
+    name: string;
+    timeHorizonMonths: number;
+    priorityFocus: string;
+    description?: string;
+  }) =>
+    request<{ id: string; name: string; status: string }>(
+      orgId, `/businesses/${businessId}/scenarios`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
   // Org-level business list
   listBusinesses: (orgId: string) =>
     request<Array<{
