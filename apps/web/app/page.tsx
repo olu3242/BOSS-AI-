@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MarketingNav } from "../src/components/ui/MarketingNav";
+import { HeroSection } from "../src/components/ui/HeroSection";
 import "./landing.css";
 
 export const metadata: Metadata = {
@@ -36,31 +37,7 @@ export default function LandingPage() {
       <MarketingNav />
 
       {/* ── HERO ──────────────────────────────────────────────── */}
-      <header className="l-hero">
-        <div className="l-hero-tag">
-          <span className="l-hero-dot" aria-hidden="true" />
-          AI-powered · always on
-        </div>
-        <h1 className="l-hero-headline">
-          Your business,
-          <br />finally running
-          <br /><span className="l-red">like it should.</span>
-        </h1>
-        <p className="l-hero-sub">
-          BOSS watches over every part of your business — sales, bookings,
-          follow-ups, finances — and handles the daily grind so you can focus
-          on what you actually built this for.
-        </p>
-        <div className="l-hero-cta">
-          <Link href="/auth/sign-up" className="l-btn-red">
-            See what BOSS spots in your business
-          </Link>
-          <Link href="/waitlist" className="l-btn-ghost">
-            Watch a 2-min demo
-          </Link>
-        </div>
-        <p className="l-hero-note">Takes 10 minutes to set up. No tech skills needed.</p>
-      </header>
+      <HeroSection />
 
       {/* ── TRUST BAR ─────────────────────────────────────────── */}
       <div className="l-trust-bar" role="list" aria-label="Trusted by industries">
