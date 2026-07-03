@@ -74,7 +74,7 @@ describe("RC1.5 WS3 — Resilience Matrix", () => {
     // Read operations must always work regardless of provider health
     const wfs = await c.workflowExecutions.listByBusinessId("org-2", "biz-2");
     expect(wfs.length).toBe(1);
-    expect(wfs[0].state).toBe("completed");
+    expect(wfs[0]!.state).toBe("completed");
   });
 
   // ─── Expired / Invalid JWT ────────────────────────────────────────────────
@@ -187,15 +187,15 @@ describe("RC1.5 WS3 — Resilience Matrix", () => {
 
     await c.deadLetters.add({
       orgId: "org-5", businessId: "biz-5",
-      jobType: "workflow", jobId: wf.id,
-      errorMessage: "executor error", attemptCount: 3,
-      payload: { workflowKey: "wf-dead" }, failedAt: nowIso(),
+      workflowExecutionId: wf.id, taskExecutionId: "task-dead-1",
+      stepKey: "main", reason: "executor error",
+      payload: { workflowKey: "wf-dead" },
     });
 
     const dls = await c.deadLetters.listByBusinessId("org-5", "biz-5");
     expect(dls.length).toBe(1);
-    expect(dls[0].jobId).toBe(wf.id);
-    expect(dls[0].errorMessage).toBe("executor error");
+    expect(dls[0]!.workflowExecutionId).toBe(wf.id);
+    expect(dls[0]!.reason).toBe("executor error");
   });
 
   // ─── Event Replay / Idempotency ───────────────────────────────────────────

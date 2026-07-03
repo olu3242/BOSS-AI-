@@ -140,8 +140,9 @@ describe("RC1.5 WS1 — E2E Business Lifecycle", () => {
     const recSvc = createBusinessRecommendationService(c);
     const { recommendations } = await recSvc.analyze(ORG, business.id);
     expect(recommendations.length).toBeGreaterThan(0);
-    expect(recommendations[0].businessId).toBe(business.id);
-    expect(recommendations[0].orgId).toBe(ORG);
+    const rec0 = recommendations[0]!;
+    expect(rec0.businessId).toBe(business.id);
+    expect(rec0.orgId).toBe(ORG);
 
     const stored = await c.businessRecommendations.listByBusinessId(ORG, business.id);
     expect(stored.length).toBeGreaterThan(0);
@@ -223,7 +224,7 @@ describe("RC1.5 WS1 — E2E Business Lifecycle", () => {
 
     const taskRecords = await c.taskExecutions.listByWorkflowExecutionId(ORG, execution.id);
     expect(taskRecords.length).toBeGreaterThan(0);
-    expect(taskRecords[0].stepKey).toBe("notify");
+    expect(taskRecords[0]!.stepKey).toBe("notify");
   });
 
   it("stage 9: mission control snapshot reflects full lifecycle state", async () => {

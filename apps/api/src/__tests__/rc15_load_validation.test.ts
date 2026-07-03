@@ -191,8 +191,8 @@ describe("RC1.5 WS4 — Load Validation", () => {
 
     // Assert no O(n²): time per analysis should not grow with n
     // The last analysis shouldn't take more than 3x the first
-    const first = times[0];
-    const last = times[times.length - 1];
+    const first = times[0] ?? 0;
+    const last = times[times.length - 1] ?? 0;
     // Permissive check — just assert no runaway growth
     expect(last).toBeLessThan(Math.max(first * 5, 500));
   });
@@ -216,7 +216,7 @@ describe("RC1.5 WS4 — Load Validation", () => {
           workflowExecutionId: wf.id,
           stepKey: `step-${i}`,
           taskType: "tool",
-          status: i % 4 === 0 ? "failed" : "succeeded",
+          state: i % 4 === 0 ? "failed" : "completed",
           input: { i },
           output: i % 4 === 0 ? null : { ok: true },
           errorMessage: i % 4 === 0 ? "simulated failure" : null,
@@ -233,8 +233,8 @@ describe("RC1.5 WS4 — Load Validation", () => {
     expect(tasks.length).toBe(500);
 
     // Queue depth analytics
-    const pending = tasks.filter((t) => t.status === "failed").length;
-    const succeeded = tasks.filter((t) => t.status === "succeeded").length;
+    const pending = tasks.filter((t) => t.state === "failed").length;
+    const succeeded = tasks.filter((t) => t.state === "completed").length;
     expect(pending).toBe(125); // 500 / 4
     expect(succeeded).toBe(375);
   });

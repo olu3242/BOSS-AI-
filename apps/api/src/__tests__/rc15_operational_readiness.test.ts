@@ -167,9 +167,9 @@ describe("RC1.5 WS7 — Mission Control Operational Visibility", () => {
 
     await c.deadLetters.add({
       orgId, businessId: business.id,
-      jobType: "workflow", jobId: "wf-dead-1",
-      errorMessage: "max retries exceeded",
-      attemptCount: 3, payload: {}, failedAt: nowIso(),
+      workflowExecutionId: "wf-dead-1", taskExecutionId: "task-dead-1",
+      stepKey: "main", reason: "max retries exceeded",
+      payload: {},
     });
 
     const mcSvc = createMissionControlService(c);
@@ -234,10 +234,10 @@ describe("RC1.5 WS7 — Mission Control Operational Visibility", () => {
 
     const execs = await c.toolExecutions.listByBusinessId("org-tool-audit", "biz-tool-audit");
     expect(execs.length).toBe(1);
-    expect(execs[0].requestedBy).toBe("user-admin-001");
-    expect(execs[0].startedAt).toBeTruthy();
-    expect(execs[0].completedAt).toBeTruthy();
-    expect(execs[0].orgId).toBe("org-tool-audit");
+    expect(execs[0]!.requestedBy).toBe("user-admin-001");
+    expect(execs[0]!.startedAt).toBeTruthy();
+    expect(execs[0]!.completedAt).toBeTruthy();
+    expect(execs[0]!.orgId).toBe("org-tool-audit");
   });
 
   it("listPending scheduler returns all pending jobs across business for ops dashboard", async () => {

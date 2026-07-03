@@ -33,8 +33,8 @@ function grepForPattern(files: string[], pattern: RegExp): Array<{ file: string;
   for (const f of files) {
     const lines = readFileSync(f, "utf-8").split("\n");
     for (let i = 0; i < lines.length; i++) {
-      if (pattern.test(lines[i])) {
-        hits.push({ file: f, line: i + 1, text: lines[i].trim() });
+      if (pattern.test(lines[i] ?? "")) {
+        hits.push({ file: f, line: i + 1, text: (lines[i] ?? "").trim() });
       }
     }
   }

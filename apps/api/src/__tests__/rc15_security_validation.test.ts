@@ -83,7 +83,7 @@ describe("RC1.5 WS6 — Security & Tenant Isolation", () => {
     await c.taskExecutions.create({
       orgId: "org-E", businessId: "biz-E",
       workflowExecutionId: wf.id, stepKey: "s1",
-      taskType: "tool", status: "succeeded",
+      taskType: "tool", state: "completed",
       input: {}, output: {}, errorMessage: null,
       startedAt: nowIso(), completedAt: nowIso(),
     });
@@ -127,7 +127,7 @@ describe("RC1.5 WS6 — Security & Tenant Isolation", () => {
     const roles = ["owner", "admin", "member", "viewer"] as const;
 
     for (let i = 0; i < roles.length; i++) {
-      const actorRole = roles[i];
+      const actorRole = roles[i]!;
       const token = await mintDevToken("org-rbac", actorRole);
 
       // Actor can satisfy their own level
@@ -136,7 +136,7 @@ describe("RC1.5 WS6 — Security & Tenant Isolation", () => {
 
       // Actor cannot satisfy a higher level (lower index = higher privilege)
       for (let j = 0; j < i; j++) {
-        const higherRole = roles[j];
+        const higherRole = roles[j]!;
         await expect(requireRole(fakeReq(token), higherRole)).rejects.toMatchObject({
           code: "insufficient_role",
         });
@@ -222,8 +222,8 @@ describe("RC1.5 WS6 — Security & Tenant Isolation", () => {
   // ─── Dead Letter Isolation ────────────────────────────────────────────────
 
   it("dead letters are isolated per org and business", async () => {
-    await c.deadLetters.add({ orgId: "org-dl-A", businessId: "biz-A", jobType: "workflow", jobId: "wf-1", errorMessage: "err", attemptCount: 3, payload: {}, failedAt: nowIso() });
-    await c.deadLetters.add({ orgId: "org-dl-B", businessId: "biz-B", jobType: "workflow", jobId: "wf-2", errorMessage: "err", attemptCount: 3, payload: {}, failedAt: nowIso() });
+    await c.deadLetters.add({ orgId: "org-dl-A", businessId: "biz-A", workflowExecutionId: "wf-1", taskExecutionId: "t-1", stepKey: "main", reason: "err", payload: {} });
+    await c.deadLetters.add({ orgId: "org-dl-B", businessId: "biz-B", workflowExecutionId: "wf-2", taskExecutionId: "t-2", stepKey: "main", reason: "err", payload: {} });
 
     const dlA = await c.deadLetters.listByBusinessId("org-dl-A", "biz-A");
     const dlB = await c.deadLetters.listByBusinessId("org-dl-B", "biz-B");
