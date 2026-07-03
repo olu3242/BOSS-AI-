@@ -1,5 +1,25 @@
 # Changelog
 
+## RC1.5 — Enterprise Reliability & Platform Verification (2026-07-03)
+
+### 7 New Workstream Test Files (85 new tests, total: 474 passing)
+
+- **WS1 E2E Lifecycle** (`rc15_e2e_business_lifecycle.test.ts`) — Exercises full pipeline: Business → MRI → Health → Constraints → Recommendations → Decisions → Executive Brief → Loop Execution → Mission Control. Verifies domain events at each stage.
+- **WS2 Integration Audit** (`rc15_integration_audit.test.ts`) — Static code analysis verifying MCP/Loop boundary, no repository bypasses, no provider adapter leakage. 0 violations.
+- **WS3 Resilience Matrix** (`rc15_resilience_matrix.test.ts`) — Provider outage degradation, JWT expiry/tampering, tenant mismatch, worker failure recovery, dead-letter persistence, event log idempotency.
+- **WS4 Load Validation** (`rc15_load_validation.test.ts`) — 100 businesses, 1000 workflows, 10000 events, 500 tasks — all within time budgets with bounded memory growth.
+- **WS5 Decision Quality** (`rc15_decision_quality.test.ts`) — Cross-industry determinism (retail, restaurant, professional_services), recommendation traceability, decision explainability, executive brief persistence.
+- **WS6 Security Validation** (`rc15_security_validation.test.ts`) — 14 tenant isolation and RBAC tests across all repos. Cross-org reads return empty/null. JWT hierarchy enforced.
+- **WS7 Operational Readiness** (`rc15_operational_readiness.test.ts`) — Health/metrics HTTP endpoints, scheduler diagnostics, Mission Control dead letter visibility, tool execution audit trail.
+
+### Documentation
+- `docs/RC1_5_ENTERPRISE_RELIABILITY_REPORT.md`
+- `docs/RC1_5_INTEGRATION_MATRIX.md`
+- `docs/RC1_5_LOAD_TEST_REPORT.md`
+- `docs/RC1_5_SECURITY_VALIDATION.md`
+- `docs/RC1_5_OPERATIONAL_READINESS.md`
+- `docs/RC1_5_PLATFORM_CERTIFICATION.md`
+
 ## Unreleased
 
 ### Phase B - Capability Pack Platform
