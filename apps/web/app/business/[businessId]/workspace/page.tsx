@@ -106,7 +106,12 @@ export default async function CommandCenterPage({ params }: Props) {
   const recentActivity = timeline.slice(0, 5);
   const tone = health ? healthTone(health.overallScore) : null;
 
-  const currentStage = loopStatus.currentStage ?? "observe";
+  const currentStage: string =
+    approvalQueue.totalPending > 0 ? "approve" :
+    proposedRecs.length > 0       ? "recommend" :
+    loopStatus.activeConstraints > 0 ? "understand" :
+    loopStatus.lastRunAt          ? "measure" :
+    "observe";
   const focusMessage = dailyFocus(proposedRecs.length, approvalQueue.totalPending);
 
   return (
