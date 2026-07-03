@@ -1,5 +1,5 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -7,13 +7,15 @@ interface Props {
 
 export default async function AutomationPage({ params }: Props) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   let integrations;
   let executions;
 
   try {
     [integrations, executions] = await Promise.all([
-      apiClient.getIntegrations(DEMO_ORG_ID, businessId),
-      apiClient.getToolExecutions(DEMO_ORG_ID, businessId),
+      apiClient.getIntegrations(orgId, businessId),
+      apiClient.getToolExecutions(orgId, businessId),
     ]);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load automation data.";

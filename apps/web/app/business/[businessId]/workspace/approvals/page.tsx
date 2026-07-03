@@ -1,5 +1,5 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
@@ -8,9 +8,11 @@ interface Props {
 
 export default async function ApprovalsPage({ params }: Props) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   let queue;
   try {
-    queue = await apiClient.getPendingApprovals(DEMO_ORG_ID, businessId);
+    queue = await apiClient.getPendingApprovals(orgId, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load approvals.";
     return (
@@ -63,7 +65,7 @@ export default async function ApprovalsPage({ params }: Props) {
                         {d.status}
                       </span>
                     </div>
-                    <DecisionActions decisionId={d.id} />
+                    <DecisionActions decisionId={d.id} orgId={orgId} />
                   </div>
                 ))}
               </div>
@@ -82,7 +84,7 @@ export default async function ApprovalsPage({ params }: Props) {
                       <p className="font-medium">{r.title}</p>
                       <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400">{r.status}</span>
                     </div>
-                    <RecommendationActions recommendationId={r.id} />
+                    <RecommendationActions recommendationId={r.id} orgId={orgId} />
                   </div>
                 ))}
               </div>

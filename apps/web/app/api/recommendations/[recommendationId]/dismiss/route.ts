@@ -12,9 +12,15 @@ export async function POST(
   const businessId = data.get("businessId")?.toString();
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+  const tokenRes = await fetch(`${apiBase}/api/v1/auth/dev-token`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ orgId: organization.id }),
+  });
+  const { token } = (await tokenRes.json()) as { token: string };
   await fetch(`${apiBase}/api/v1/recommendations/${recommendationId}/dismiss`, {
     method: "POST",
-    headers: { "content-type": "application/json", "x-org-id": organization.id },
+    headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
     body: JSON.stringify({}),
   });
 

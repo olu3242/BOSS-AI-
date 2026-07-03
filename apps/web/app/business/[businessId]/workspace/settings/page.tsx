@@ -1,5 +1,5 @@
 import { apiClient } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -7,9 +7,11 @@ interface Props {
 
 export default async function SettingsPage({ params }: Props) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   let business: Awaited<ReturnType<typeof apiClient.getBusiness>> | null = null;
   try {
-    business = await apiClient.getBusiness(DEMO_ORG_ID, businessId);
+    business = await apiClient.getBusiness(orgId, businessId);
   } catch {
     business = null;
   }

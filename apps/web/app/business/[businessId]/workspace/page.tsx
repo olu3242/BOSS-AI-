@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -70,11 +70,14 @@ export default async function CommandCenterPage({ params }: Props) {
   const { businessId } = await params;
   const base = `/business/${businessId}/workspace`;
 
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
+
   const [snapshotResult, recommendationsResult, timelineResult, customersResult] = await Promise.allSettled([
-    apiClient.getWorkspace(DEMO_ORG_ID, businessId),
-    apiClient.listRecommendations(DEMO_ORG_ID, businessId),
-    apiClient.getTimeline(DEMO_ORG_ID, businessId),
-    apiClient.listCustomers(DEMO_ORG_ID, businessId),
+    apiClient.getWorkspace(orgId, businessId),
+    apiClient.listRecommendations(orgId, businessId),
+    apiClient.getTimeline(orgId, businessId),
+    apiClient.listCustomers(orgId, businessId),
   ]);
 
   if (snapshotResult.status === "rejected") {

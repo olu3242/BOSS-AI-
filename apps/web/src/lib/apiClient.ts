@@ -25,12 +25,16 @@ async function getBearerToken(orgId: string): Promise<string> {
   const staticToken = process.env.NEXT_PUBLIC_STATIC_TOKEN;
   if (staticToken) return staticToken;
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "No auth token available in production. Set NEXT_PUBLIC_STATIC_TOKEN or implement Supabase session auth (TD-030)."
-    );
+  // In browser context, exchange the session cookie for a BOSS JWT via the
+  // Next.js proxy route which reads requireActiveTenant() server-side.
+  if (typeof window !== "undefined") {
+    const res = await fetch("/api/auth/token");
+    if (!res.ok) throw new Error("Not authenticated");
+    const body = (await res.json()) as { token: string; orgId: string };
+    return body.token;
   }
 
+  // Server-side: mint directly from the known orgId (dev/staging only).
   const res = await fetch(`${API_BASE_URL}/api/v1/auth/dev-token`, {
     method: "POST",
     headers: { "content-type": "application/json" },

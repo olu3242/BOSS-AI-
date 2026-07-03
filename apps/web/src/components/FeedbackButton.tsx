@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../lib/apiClient";
-import { DEMO_ORG_ID } from "../lib/demoOrg";
 
 interface FeedbackButtonProps {
   businessId: string;
+  orgId: string;
 }
 
-export function FeedbackButton({ businessId }: FeedbackButtonProps) {
+export function FeedbackButton({ businessId, orgId }: FeedbackButtonProps) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -22,7 +22,7 @@ export function FeedbackButton({ businessId }: FeedbackButtonProps) {
     const message = String(form.get("message") ?? "").trim();
     const category = String(form.get("category") ?? "general");
     try {
-      await apiClient.submitFeedback(DEMO_ORG_ID, {
+      await apiClient.submitFeedback(orgId, {
         message,
         businessId,
         pageUrl: typeof window !== "undefined" ? window.location.href : undefined,

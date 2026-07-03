@@ -12,7 +12,7 @@ AS $$
   );
 $$;
 
-CREATE TABLE runtime_workers (
+CREATE TABLE IF NOT EXISTS runtime_workers (
   id text PRIMARY KEY,
   instance_id text NOT NULL,
   status text NOT NULL CHECK (status IN ('starting', 'ready', 'draining', 'stopped', 'unhealthy')),
@@ -24,7 +24,7 @@ CREATE TABLE runtime_workers (
 
 CREATE INDEX idx_runtime_workers_heartbeat ON runtime_workers(heartbeat_at);
 
-CREATE TABLE workflow_executions (
+CREATE TABLE IF NOT EXISTS workflow_executions (
   id uuid PRIMARY KEY,
   org_id uuid NOT NULL,
   definition_id text NOT NULL,
@@ -48,7 +48,7 @@ CREATE INDEX idx_workflow_executions_org_updated
   ON workflow_executions(org_id, updated_at DESC)
   WHERE deleted_at IS NULL;
 
-CREATE TABLE runtime_jobs (
+CREATE TABLE IF NOT EXISTS runtime_jobs (
   id uuid PRIMARY KEY,
   org_id uuid NOT NULL,
   queue_name text NOT NULL,
@@ -78,7 +78,7 @@ CREATE INDEX idx_runtime_jobs_claim
   ON runtime_jobs(queue_name, state, available_at, lease_expires_at)
   WHERE deleted_at IS NULL;
 
-CREATE TABLE runtime_schedules (
+CREATE TABLE IF NOT EXISTS runtime_schedules (
   id uuid PRIMARY KEY,
   org_id uuid NOT NULL,
   queue_name text NOT NULL,
@@ -104,7 +104,7 @@ CREATE UNIQUE INDEX uq_runtime_schedules_idempotency
   ON runtime_schedules(org_id, queue_name, idempotency_key)
   WHERE idempotency_key IS NOT NULL AND deleted_at IS NULL;
 
-CREATE TABLE runtime_events (
+CREATE TABLE IF NOT EXISTS runtime_events (
   id uuid PRIMARY KEY,
   org_id uuid NOT NULL,
   event_type text NOT NULL,
@@ -121,7 +121,7 @@ CREATE INDEX idx_runtime_events_org_published
 CREATE INDEX idx_runtime_events_correlation
   ON runtime_events(correlation_id);
 
-CREATE TABLE agent_executions (
+CREATE TABLE IF NOT EXISTS agent_executions (
   id uuid PRIMARY KEY,
   org_id uuid NOT NULL,
   agent_id text NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE agent_executions (
 CREATE INDEX idx_agent_executions_org_updated
   ON agent_executions(org_id, updated_at DESC);
 
-CREATE TABLE runtime_checkpoints (
+CREATE TABLE IF NOT EXISTS runtime_checkpoints (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL,
   execution_type text NOT NULL CHECK (execution_type IN ('workflow', 'agent', 'automation')),

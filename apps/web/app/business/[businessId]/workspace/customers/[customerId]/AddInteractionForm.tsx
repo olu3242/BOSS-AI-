@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../../src/lib/demoOrg";
 
 const TYPES = [
   { value: "note", label: "Note" },
@@ -18,9 +17,11 @@ const TYPES = [
 export function AddInteractionForm({
   businessId,
   customerId,
+  orgId,
 }: {
   businessId: string;
   customerId: string;
+  orgId: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -34,7 +35,7 @@ export function AddInteractionForm({
     if (!summary.trim()) return;
     setError(null);
     try {
-      await apiClient.addCustomerInteraction(DEMO_ORG_ID, businessId, customerId, {
+      await apiClient.addCustomerInteraction(orgId, businessId, customerId, {
         type,
         summary: summary.trim(),
       });

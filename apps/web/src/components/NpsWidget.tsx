@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { apiClient } from "../lib/apiClient";
-import { DEMO_ORG_ID } from "../lib/demoOrg";
 
 interface NpsWidgetProps {
   businessId: string;
+  orgId: string;
   context?: string;
 }
 
-export function NpsWidget({ businessId, context = "BOSS" }: NpsWidgetProps) {
+export function NpsWidget({ businessId, orgId, context = "BOSS" }: NpsWidgetProps) {
   const [selected, setSelected] = useState<number | null>(null);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -19,7 +19,7 @@ export function NpsWidget({ businessId, context = "BOSS" }: NpsWidgetProps) {
     if (selected === null) return;
     setSubmitting(true);
     try {
-      await apiClient.submitNps(DEMO_ORG_ID, { businessId, score: selected, comment: comment || undefined });
+      await apiClient.submitNps(orgId, { businessId, score: selected, comment: comment || undefined });
       setSubmitted(true);
     } finally {
       setSubmitting(false);

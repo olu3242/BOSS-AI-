@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 import { RecommendationActions } from "../approvals/ApprovalActions";
 
 interface Props {
@@ -33,13 +33,16 @@ export default async function RecommendationsPage({ params }: Props) {
   const { businessId } = await params;
   const base = `/business/${businessId}/workspace`;
 
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
+
   let recommendations: Awaited<ReturnType<typeof apiClient.listRecommendations>> = [];
   let priorities: Awaited<ReturnType<typeof apiClient.getRecommendationPriorities>> = [];
 
   try {
     [recommendations, priorities] = await Promise.all([
-      apiClient.listRecommendations(DEMO_ORG_ID, businessId),
-      apiClient.getRecommendationPriorities(DEMO_ORG_ID, businessId).catch(() => []),
+      apiClient.listRecommendations(orgId, businessId),
+      apiClient.getRecommendationPriorities(orgId, businessId).catch(() => []),
     ]);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load recommendations.";
@@ -115,6 +118,7 @@ export default async function RecommendationsPage({ params }: Props) {
                   rec={rec}
                   priority={priority}
                   showActions
+                  orgId={orgId}
                 />
               );
             })}
@@ -169,10 +173,12 @@ function RecommendationCard({
   rec,
   priority,
   showActions = false,
+  orgId = "",
 }: {
   rec: RecType;
   priority?: { priority: string; rank: number };
   showActions?: boolean;
+  orgId?: string;
 }) {
   return (
     <article className="rounded border border-neutral-800 bg-neutral-900 p-5">
@@ -244,7 +250,7 @@ function RecommendationCard({
 
           {showActions && (
             <div className="mt-4 border-t border-neutral-800 pt-4">
-              <RecommendationActions recommendationId={rec.id} />
+              <RecommendationActions recommendationId={rec.id} orgId={orgId} />
             </div>
           )}
         </div>

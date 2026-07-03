@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -30,11 +30,14 @@ export default async function CustomersPage({ params, searchParams }: Props) {
   const { q } = await searchParams;
   const base = `/business/${businessId}/workspace`;
 
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
+
   let customers: Awaited<ReturnType<typeof apiClient.listCustomers>> = [];
   let error: string | null = null;
 
   try {
-    customers = await apiClient.listCustomers(DEMO_ORG_ID, businessId, q);
+    customers = await apiClient.listCustomers(orgId, businessId, q);
   } catch (err) {
     error = err instanceof ApiClientError ? err.body.message : "Failed to load customers";
   }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../../src/server/auth";
 import { AddInteractionForm } from "./AddInteractionForm";
 
 interface Props {
@@ -40,9 +40,12 @@ export default async function CustomerProfilePage({ params }: Props) {
   const { businessId, customerId } = await params;
   const base = `/business/${businessId}/workspace`;
 
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
+
   const [customerResult, interactionsResult] = await Promise.allSettled([
-    apiClient.getCustomer(DEMO_ORG_ID, businessId, customerId),
-    apiClient.listCustomerInteractions(DEMO_ORG_ID, businessId, customerId),
+    apiClient.getCustomer(orgId, businessId, customerId),
+    apiClient.listCustomerInteractions(orgId, businessId, customerId),
   ]);
 
   if (customerResult.status === "rejected") {
@@ -150,7 +153,7 @@ export default async function CustomerProfilePage({ params }: Props) {
           <span className="text-xs text-neutral-600">{interactions.length} interactions</span>
         </div>
 
-        <AddInteractionForm businessId={businessId} customerId={customerId} />
+        <AddInteractionForm businessId={businessId} customerId={customerId} orgId={orgId} />
 
         {interactions.length === 0 ? (
           <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-sm text-neutral-500">

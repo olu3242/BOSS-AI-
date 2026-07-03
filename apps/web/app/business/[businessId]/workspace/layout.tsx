@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FeedbackButton } from "../../../../src/components/FeedbackButton";
+import { requireActiveTenant } from "../../../../src/server/auth";
 
 interface WorkspaceLayoutProps {
   children: ReactNode;
@@ -20,6 +21,8 @@ const NAV_ITEMS = [
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const { businessId } = await params;
   const base = `/business/${businessId}/workspace`;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -52,7 +55,7 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
         <div className="mx-auto flex max-w-6xl items-center justify-between text-xs text-neutral-600">
           <span>BOSS v2.0.0-rc2</span>
           <div className="flex items-center gap-4">
-            <FeedbackButton businessId={businessId} />
+            <FeedbackButton businessId={businessId} orgId={orgId} />
             <a
               href="mailto:support@boss.ai"
               className="hover:text-neutral-400 transition-colors"
