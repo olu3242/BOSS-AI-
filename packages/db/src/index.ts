@@ -45,3 +45,7 @@ export * from "./repositories/postgres/appointmentRepository.js";
 export * from "./repositories/inMemory/appointmentRepository.js";
 export * from "./repositories/postgres/invoiceRepository.js";
 export * from "./repositories/inMemory/invoiceRepository.js";
+export * from "./repositories/postgres/paymentRepository.js";
+export * from "./repositories/inMemory/paymentRepository.js";
+export * from "./repositories/postgres/reviewRepository.js";
+export * from "./repositories/inMemory/reviewRepository.js";

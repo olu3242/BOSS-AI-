@@ -76,6 +76,12 @@ import { createAppointmentService } from "./services/appointmentService.js";
 import { createAppointmentController } from "./controllers/appointmentController.js";
 import { createInvoiceService } from "./services/invoiceService.js";
 import { createInvoiceController } from "./controllers/invoiceController.js";
+import { createPaymentService } from "./services/paymentService.js";
+import { createPaymentController } from "./controllers/paymentController.js";
+import { createReviewService } from "./services/reviewService.js";
+import { createReviewController } from "./controllers/reviewController.js";
+import { createAnalyticsService } from "./services/analyticsService.js";
+import { createAnalyticsController } from "./controllers/analyticsController.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
@@ -247,6 +253,9 @@ export function createApiFromContainer(
     job: createJobController(createJobService(repos)),
     appointment: createAppointmentController(createAppointmentService(repos)),
     invoice: createInvoiceController(createInvoiceService(repos)),
+    payment: createPaymentController(createPaymentService(repos)),
+    review: createReviewController(createReviewService(repos)),
+    analytics: createAnalyticsController(createAnalyticsService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
     businessGraph,

@@ -1068,6 +1068,44 @@ export interface Invoice extends TenantScoped, Timestamped {
   metadata: Record<string, unknown>;
 }
 
+// ─── Payments ─────────────────────────────────────────────────────────────────
+
+export type PaymentMethod = 'cash' | 'card' | 'bank_transfer' | 'check' | 'other';
+export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
+
+export interface Payment extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID;
+  invoiceId: ID;
+  amountCents: number;
+  currency: string;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  reference: string | null;
+  notes: string | null;
+  paidAt: string | null;
+}
+
+// ─── Customer Reviews ──────────────────────────────────────────────────────────
+
+export type ReviewStatus = 'pending' | 'published' | 'flagged' | 'hidden';
+export type ReviewSource = 'internal' | 'google' | 'yelp' | 'facebook';
+
+export interface CustomerReview extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID;
+  jobId: ID | null;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  status: ReviewStatus;
+  source: ReviewSource;
+  response: string | null;
+  respondedAt: string | null;
+}
+
 // ─── Executive Briefings ──────────────────────────────────────────────────────
 
 export type BriefingPeriod = "daily" | "weekly" | "monthly" | "quarterly";

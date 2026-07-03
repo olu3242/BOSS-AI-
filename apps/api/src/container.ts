@@ -38,6 +38,12 @@ import {
   createPostgresInvoiceRepository,
   createInMemoryInvoiceRepository,
   type InvoiceRepository,
+  createPostgresPaymentRepository,
+  createInMemoryPaymentRepository,
+  type PaymentRepository,
+  createPostgresReviewRepository,
+  createInMemoryReviewRepository,
+  type ReviewRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -163,6 +169,8 @@ export interface RepositoryContainer {
   jobs: JobRepository;
   appointments: AppointmentRepository;
   invoices: InvoiceRepository;
+  payments: PaymentRepository;
+  reviews: ReviewRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -210,6 +218,8 @@ export function createPostgresContainer(): RepositoryContainer {
     jobs: createPostgresJobRepository(),
     appointments: createPostgresAppointmentRepository(),
     invoices: createPostgresInvoiceRepository(),
+    payments: createPostgresPaymentRepository(),
+    reviews: createPostgresReviewRepository(),
   };
 }
 
@@ -260,5 +270,7 @@ export function createInMemoryContainer(): RepositoryContainer {
     jobs: createInMemoryJobRepository(),
     appointments: createInMemoryAppointmentRepository(),
     invoices: createInMemoryInvoiceRepository(),
+    payments: createInMemoryPaymentRepository(),
+    reviews: createInMemoryReviewRepository(),
   };
 }

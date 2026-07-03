@@ -535,6 +535,70 @@ export const apiClient = {
       { method: "POST", body: JSON.stringify({ paymentMethod }) }
     ),
 
+  // Payments
+  listPayments: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string; customerId: string; invoiceId: string;
+      amountCents: number; currency: string; method: string; status: string;
+      reference: string | null; notes: string | null; paidAt: string | null; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/payments`),
+
+  createPayment: (orgId: string, businessId: string, input: {
+    customerId: string; invoiceId: string; amountCents: number;
+    method: string; currency?: string; reference?: string | null;
+    notes?: string | null; paidAt?: string | null;
+  }) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/payments`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
+  updatePaymentStatus: (orgId: string, businessId: string, paymentId: string, status: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/payments/${paymentId}/status`,
+      { method: "PATCH", body: JSON.stringify({ status }) }
+    ),
+
+  // Reviews
+  listReviews: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string; customerId: string; jobId: string | null; rating: number;
+      title: string | null; body: string | null; status: string; source: string;
+      response: string | null; respondedAt: string | null; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/reviews`),
+
+  createReview: (orgId: string, businessId: string, input: {
+    customerId: string; rating: number; jobId?: string | null;
+    title?: string | null; body?: string | null; source?: string;
+  }) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/reviews`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
+  respondToReview: (orgId: string, businessId: string, reviewId: string, response: string) =>
+    request<{ id: string; response: string | null }>(
+      orgId, `/businesses/${businessId}/reviews/${reviewId}/respond`,
+      { method: "PATCH", body: JSON.stringify({ response }) }
+    ),
+
+  updateReviewStatus: (orgId: string, businessId: string, reviewId: string, status: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/reviews/${reviewId}/status`,
+      { method: "PATCH", body: JSON.stringify({ status }) }
+    ),
+
+  // Analytics
+  getBusinessAnalytics: (orgId: string, businessId: string) =>
+    request<{
+      revenue: { totalCents: number; paidCents: number; pendingCents: number; overdueCount: number; monthlyTrend: Array<{ month: string; amountCents: number }> };
+      jobs: { total: number; completed: number; inProgress: number; completionRate: number; avgDurationMinutes: number | null };
+      appointments: { total: number; upcoming: number; noShowRate: number };
+      customers: { total: number; newThisMonth: number; withOpenInvoices: number };
+      reviews: { averageRating: number; total: number; responseRate: number };
+      payments: { totalReceivedCents: number; avgDaysToPay: number | null };
+    }>(orgId, `/businesses/${businessId}/analytics`),
+
   // Org-level dashboard summary
   getOrgDashboard: (orgId: string) =>
     request<{

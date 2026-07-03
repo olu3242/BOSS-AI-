@@ -957,6 +957,69 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── Payments routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/payments",
+    wrap(async (req) => api.payment.list(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/payments",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.payment.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.payment.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/payments/:paymentId",
+    wrap(async (req) => api.payment.get(await requireOrgId(req), param(req, "paymentId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/payments/:paymentId/status",
+    wrap(async (req) => {
+      const { status } = req.body as { status: string };
+      return api.payment.updateStatus(await requireOrgId(req), param(req, "paymentId"), status as Parameters<typeof api.payment.updateStatus>[2]);
+    })
+  );
+
+  // ── Reviews routes ────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/reviews",
+    wrap(async (req) => api.review.list(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/reviews",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.review.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.review.create>[2]);
+    })
+  );
+
+  v1.patch(
+    "/businesses/:businessId/reviews/:reviewId/respond",
+    wrap(async (req) => {
+      const { response } = req.body as { response: string };
+      return api.review.respond(await requireOrgId(req), param(req, "reviewId"), response);
+    })
+  );
+
+  v1.patch(
+    "/businesses/:businessId/reviews/:reviewId/status",
+    wrap(async (req) => {
+      const { status } = req.body as { status: string };
+      return api.review.updateStatus(await requireOrgId(req), param(req, "reviewId"), status as Parameters<typeof api.review.updateStatus>[2]);
+    })
+  );
+
+  // ── Analytics routes ──────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/analytics",
+    wrap(async (req) => api.analytics.getBusinessAnalytics(await requireOrgId(req), param(req, "businessId")))
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {

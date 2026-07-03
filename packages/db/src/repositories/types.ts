@@ -559,6 +559,26 @@ export interface InvoiceRepository {
 
 export type { JobStatus, AppointmentStatus, InvoiceStatus };
 
+export type { PaymentMethod, PaymentStatus, ReviewStatus, ReviewSource };
+import type { Payment, PaymentMethod, PaymentStatus, CustomerReview, ReviewStatus, ReviewSource } from '@boss/types';
+
+export interface PaymentRepository {
+  create(input: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Payment>;
+  findById(orgId: string, id: string): Promise<Payment | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Payment, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt'>>): Promise<Payment>;
+  listByBusiness(orgId: string, businessId: string): Promise<Payment[]>;
+  listByInvoice(orgId: string, invoiceId: string): Promise<Payment[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
+export interface ReviewRepository {
+  create(input: Omit<CustomerReview, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<CustomerReview>;
+  findById(orgId: string, id: string): Promise<CustomerReview | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<CustomerReview, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt'>>): Promise<CustomerReview>;
+  listByBusiness(orgId: string, businessId: string): Promise<CustomerReview[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
 export interface EventLogEntry {
   id: string;
   type: string;
