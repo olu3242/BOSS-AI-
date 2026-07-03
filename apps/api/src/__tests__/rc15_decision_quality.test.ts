@@ -179,7 +179,7 @@ describe("RC1.5 WS5 — Decision Quality Validation", () => {
     // With all-manual signals, constraints must fire
     expect(constraints.length).toBeGreaterThan(0);
     // All constraints traceable to a key
-    expect(constraints.every((con) => con.constraintKey || con.category || con.definitionKey)).toBe(true);
+    expect(constraints.every((con) => con.category || con.definitionKey)).toBe(true);
   });
 
   it("recommendation priorities from analyze() contain valid levels", async () => {

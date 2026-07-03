@@ -64,7 +64,7 @@ describe("RC1.5 WS1 — E2E Business Lifecycle", () => {
 
     const stored = await c.businesses.list(ORG);
     expect(stored.length).toBe(1);
-    expect(stored[0].id).toBe(business.id);
+    expect(stored[0]!.id).toBe(business.id);
   });
 
   it("stage 2: MRI completion persists answers and emits mri.completed", async () => {
@@ -121,8 +121,8 @@ describe("RC1.5 WS1 — E2E Business Lifecycle", () => {
     const constraintSvc = createBusinessConstraintService(c);
     const { constraints } = await constraintSvc.analyze(ORG, business.id, mri.id);
     expect(constraints.length).toBeGreaterThan(0);
-    expect(constraints[0].businessId).toBe(business.id);
-    expect(constraints[0].orgId).toBe(ORG);
+    expect(constraints[0]!.businessId).toBe(business.id);
+    expect(constraints[0]!.orgId).toBe(ORG);
   });
 
   it("stage 5: recommendations generated from constraints and persisted to repo", async () => {

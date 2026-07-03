@@ -84,6 +84,7 @@ describe("RC1.5 WS6 — Security & Tenant Isolation", () => {
       orgId: "org-E", businessId: "biz-E",
       workflowExecutionId: wf.id, stepKey: "s1",
       taskType: "tool", state: "completed",
+      attempt: 1, maxRetries: 3,
       input: {}, output: {}, errorMessage: null,
       startedAt: nowIso(), completedAt: nowIso(),
     });

@@ -217,6 +217,7 @@ describe("RC1.5 WS4 — Load Validation", () => {
           stepKey: `step-${i}`,
           taskType: "tool",
           state: i % 4 === 0 ? "failed" : "completed",
+          attempt: 1, maxRetries: 3,
           input: { i },
           output: i % 4 === 0 ? null : { ok: true },
           errorMessage: i % 4 === 0 ? "simulated failure" : null,
