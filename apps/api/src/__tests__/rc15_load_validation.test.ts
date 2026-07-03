@@ -13,20 +13,6 @@ import { createBusinessMriService } from "../services/businessMriService.js";
 import { createBusinessDnaService } from "../services/businessDnaService.js";
 import { createBusinessHealthService } from "../services/businessHealthService.js";
 import { nowIso } from "@boss/shared";
-import { vi } from "vitest";
-import type { ToolFabricService } from "../services/toolFabricService.js";
-import { createLoopRuntimeService } from "../services/loopRuntimeService.js";
-import type { StepEntry } from "@boss/loop";
-
-function makeNullToolFabric(): ToolFabricService {
-  return {
-    requestTool: vi.fn().mockResolvedValue({ id: "exec-ok", output: {}, errorMessage: null }),
-    connectIntegration: vi.fn(),
-    listIntegrations: vi.fn().mockResolvedValue([]),
-    getProviderHealth: vi.fn().mockResolvedValue([]),
-    getAuditLog: vi.fn().mockResolvedValue([]),
-  } as unknown as ToolFabricService;
-}
 
 describe("RC1.5 WS4 — Load Validation", () => {
   let c: ReturnType<typeof createInMemoryContainer>;

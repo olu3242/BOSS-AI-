@@ -67,7 +67,7 @@ describe("RC1.5 WS2 — Cross-System Integration Audit", () => {
     const serviceFiles = readAllTs(API_SERVICES).filter(
       (f) => !f.includes("loopRuntimeService")
     );
-    const violations = grepForPattern(serviceFiles, /from\s+['"]@boss\/loop['"].*\bRuntime\b/);
+    grepForPattern(serviceFiles, /from\s+['"]@boss\/loop['"].*\bRuntime\b/);
     // Services may import types from @boss/loop but must not instantiate Loop internals directly
     // Check for direct Loop executor instantiation
     const executorViolations = grepForPattern(serviceFiles, /new\s+LoopRuntime|createLoopRuntime(?!Service)/);
@@ -99,7 +99,7 @@ describe("RC1.5 WS2 — Cross-System Integration Audit", () => {
     // MCP should not reference repository imports
     const repoImports = grepForPattern(mcpFiles, /Repository|\.upsert\(|\.create\(|\.update\(/);
     // These are allowed only if they are type imports or interface references
-    const badImports = repoImports.filter((h) => !h.text.startsWith("//") && !h.text.includes("type ") && !h.text.includes("interface "));
+    repoImports.filter((h) => !h.text.startsWith("//") && !h.text.includes("type ") && !h.text.includes("interface "));
     // MCP may have some DB references through types — the key is no direct instantiation
     const directInstantiation = grepForPattern(mcpFiles, /createPostgres|createInMemory/);
     expect(directInstantiation).toEqual([]);
