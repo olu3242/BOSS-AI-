@@ -323,4 +323,33 @@ export const apiClient = {
     request<{ status: string }>(
       orgId, `/marketplace/packs/${encodeURIComponent(packKey)}/install`, { method: "DELETE" }
     ),
+
+  // Org-level business list
+  listBusinesses: (orgId: string) =>
+    request<Array<{
+      id: string;
+      businessName: string;
+      businessType: string;
+      employeeCount: number;
+      locationCount: number;
+      yearsOperating: number;
+      health: { overallScore: number; generatedAt: string } | null;
+    }>>(orgId, "/businesses"),
+
+  // Health history for sparkline (last N scores)
+  getHealthHistory: (orgId: string, businessId: string) =>
+    request<Array<{ score: number; generatedAt: string }>>(
+      orgId, `/businesses/${businessId}/health/history`
+    ),
+
+  // Org-level dashboard summary
+  getOrgDashboard: (orgId: string) =>
+    request<{
+      businessCount: number;
+      healthDistribution: { excellent: number; good: number; needsAttention: number; critical: number };
+      topAlerts: Array<{ businessId: string; businessName: string; healthScore: number }>;
+      recentDecisions: Array<{ id: string; businessId: string; businessName: string; objective: string; status: string; createdAt: string }>;
+      pendingApprovalsCount: number;
+      revenueAtRisk: number;
+    }>(orgId, "/dashboard"),
 };

@@ -18,6 +18,11 @@ const NAV_ITEMS = [
   { href: "/settings",      label: "Settings" },
 ];
 
+const GLOBAL_NAV = [
+  { href: "/dashboard",   label: "Dashboard" },
+  { href: "/businesses",  label: "Businesses" },
+];
+
 export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const { businessId } = await params;
   const base = `/business/${businessId}/workspace`;
@@ -28,22 +33,41 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-neutral-800 bg-neutral-950 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link href="/" className="font-display text-xl tracking-tight hover:text-accent transition-colors">
-            BOSS
-          </Link>
-          <nav className="flex gap-1">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="font-display text-xl tracking-tight hover:text-accent transition-colors">
+              BOSS
+            </Link>
+            <div className="hidden sm:flex gap-1 border-l border-neutral-800 pl-4">
+              {GLOBAL_NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded px-2 py-1 text-xs text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <nav className="flex gap-1 overflow-x-auto">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={`${base}${item.href}`}
-                className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+                className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white whitespace-nowrap"
               >
                 {item.label}
               </Link>
             ))}
             <Link
+              href={`/business/${businessId}/health`}
+              className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white whitespace-nowrap"
+            >
+              Health
+            </Link>
+            <Link
               href="/marketplace"
-              className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+              className="rounded px-3 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white whitespace-nowrap"
             >
               Marketplace
             </Link>
