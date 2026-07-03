@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarketingNav } from "../src/components/ui/MarketingNav";
 import "./landing.css";
 
 export const metadata: Metadata = {
@@ -32,18 +33,7 @@ export default function LandingPage() {
       />
 
       {/* ── NAV ───────────────────────────────────────────────── */}
-      <nav className="l-nav">
-        <Link href="/" className="l-logo">
-          B<em>O</em>SS
-        </Link>
-        <div className="l-nav-right">
-          <a href="#how" className="l-nav-link">How it works</a>
-          <a href="#team" className="l-nav-link">Your team</a>
-          <a href="#pricing" className="l-nav-link">Pricing</a>
-          <Link href="/auth/sign-in" className="l-nav-link">Sign in</Link>
-          <Link href="/auth/sign-up" className="l-nav-btn">Start free — no card needed</Link>
-        </div>
-      </nav>
+      <MarketingNav />
 
       {/* ── HERO ──────────────────────────────────────────────── */}
       <header className="l-hero">
