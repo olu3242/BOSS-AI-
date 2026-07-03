@@ -70,6 +70,12 @@ import { createOrgHealthService } from "./services/orgHealthService.js";
 import { createInsightService } from "./services/insightService.js";
 import { createCustomerService } from "./services/customerService.js";
 import { createCustomerController } from "./controllers/customerController.js";
+import { createJobService } from "./services/jobService.js";
+import { createJobController } from "./controllers/jobController.js";
+import { createAppointmentService } from "./services/appointmentService.js";
+import { createAppointmentController } from "./controllers/appointmentController.js";
+import { createInvoiceService } from "./services/invoiceService.js";
+import { createInvoiceController } from "./controllers/invoiceController.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
@@ -238,6 +244,9 @@ export function createApiFromContainer(
     orgHealth,
     insight,
     customer: createCustomerController(createCustomerService(repos)),
+    job: createJobController(createJobService(repos)),
+    appointment: createAppointmentController(createAppointmentService(repos)),
+    invoice: createInvoiceController(createInvoiceService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
     businessGraph,
@@ -365,6 +374,9 @@ export * from "./services/aiWorkforceService.js";
 export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
 export * from "./services/customerService.js";
+export * from "./services/jobService.js";
+export * from "./services/appointmentService.js";
+export * from "./services/invoiceService.js";
 export * from "./services/businessDiagnosticService.js";
 export * from "./controllers/businessDiagnosticController.js";
 export * from "./security.js";

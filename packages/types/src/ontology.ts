@@ -156,27 +156,7 @@ export interface Service extends TenantScoped, Timestamped {
   price: number;
 }
 
-export type AppointmentStatus = "scheduled" | "completed" | "cancelled" | "no_show";
-
-export interface Appointment extends TenantScoped, Timestamped {
-  id: ID;
-  businessId: ID;
-  customerId: ID;
-  serviceId: ID;
-  startsAt: string;
-  status: AppointmentStatus;
-}
-
-export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "void";
-
-export interface Invoice extends TenantScoped, Timestamped {
-  id: ID;
-  businessId: ID;
-  customerId: ID;
-  amount: number;
-  status: InvoiceStatus;
-  dueAt: string;
-}
+// Appointment and Invoice are defined below in the Phase B operational section
 
 export type TaskStatus = "open" | "in_progress" | "done" | "blocked";
 
@@ -1007,6 +987,85 @@ export interface BusinessGoal extends TenantScoped, Timestamped {
   completedAt: string | null;
   milestones: GoalMilestone[];
   status: GoalStatus;
+}
+
+// ─── Jobs / Work Orders ──────────────────────────────────────────────────────
+
+export type JobStatus = 'draft' | 'scheduled' | 'in_progress' | 'on_hold' | 'completed' | 'cancelled';
+export type JobPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export interface Job extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  title: string;
+  description: string | null;
+  status: JobStatus;
+  priority: JobPriority;
+  assignedTo: string | null;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  estimatedDurationMinutes: number | null;
+  actualDurationMinutes: number | null;
+  location: string | null;
+  notes: string | null;
+  tags: string[];
+  metadata: Record<string, unknown>;
+}
+
+// ─── Appointments ─────────────────────────────────────────────────────────────
+
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+
+export interface Appointment extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  jobId: ID | null;
+  title: string;
+  notes: string | null;
+  status: AppointmentStatus;
+  startAt: string;
+  endAt: string;
+  location: string | null;
+  assignedTo: string | null;
+  reminderSent: boolean;
+  metadata: Record<string, unknown>;
+}
+
+// ─── Invoices ─────────────────────────────────────────────────────────────────
+
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unitPriceCents: number;
+  totalCents: number;
+}
+
+export type InvoiceStatus = 'draft' | 'sent' | 'viewed' | 'paid' | 'overdue' | 'cancelled' | 'refunded';
+
+export interface Invoice extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID;
+  jobId: ID | null;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  lineItems: InvoiceLineItem[];
+  subtotalCents: number;
+  taxCents: number;
+  discountCents: number;
+  totalCents: number;
+  currency: string;
+  dueAt: string | null;
+  sentAt: string | null;
+  paidAt: string | null;
+  paymentMethod: string | null;
+  notes: string | null;
+  terms: string | null;
+  metadata: Record<string, unknown>;
 }
 
 // ─── Executive Briefings ──────────────────────────────────────────────────────

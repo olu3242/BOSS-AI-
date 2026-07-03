@@ -29,6 +29,15 @@ import {
   createInMemoryCustomerInteractionRepository,
   type CustomerRepository,
   type CustomerInteractionRepository,
+  createPostgresJobRepository,
+  createInMemoryJobRepository,
+  type JobRepository,
+  createPostgresAppointmentRepository,
+  createInMemoryAppointmentRepository,
+  type AppointmentRepository,
+  createPostgresInvoiceRepository,
+  createInMemoryInvoiceRepository,
+  type InvoiceRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -151,6 +160,9 @@ export interface RepositoryContainer {
   executiveBriefings: ExecutiveBriefingRepository;
   customers: CustomerRepository;
   customerInteractions: CustomerInteractionRepository;
+  jobs: JobRepository;
+  appointments: AppointmentRepository;
+  invoices: InvoiceRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -195,6 +207,9 @@ export function createPostgresContainer(): RepositoryContainer {
     executiveBriefings: createPostgresExecutiveBriefingRepository(),
     customers: createPostgresCustomerRepository(),
     customerInteractions: createPostgresCustomerInteractionRepository(),
+    jobs: createPostgresJobRepository(),
+    appointments: createPostgresAppointmentRepository(),
+    invoices: createPostgresInvoiceRepository(),
   };
 }
 
@@ -242,5 +257,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     executiveBriefings: createInMemoryExecutiveBriefingRepository(),
     customers: createInMemoryCustomerRepository(),
     customerInteractions: createInMemoryCustomerInteractionRepository(),
+    jobs: createInMemoryJobRepository(),
+    appointments: createInMemoryAppointmentRepository(),
+    invoices: createInMemoryInvoiceRepository(),
   };
 }

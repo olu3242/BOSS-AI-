@@ -413,6 +413,128 @@ export const apiClient = {
       orgId, `/businesses/${businessId}/health/history`
     ),
 
+  // Jobs
+  listJobs: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string; title: string; description: string | null;
+      status: string; priority: string; customerId: string | null;
+      assignedTo: string | null; scheduledAt: string | null;
+      startedAt: string | null; completedAt: string | null;
+      estimatedDurationMinutes: number | null; location: string | null;
+      tags: string[]; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/jobs`),
+
+  createJob: (orgId: string, businessId: string, input: {
+    title: string; description?: string | null; customerId?: string | null;
+    priority?: string; scheduledAt?: string | null;
+    estimatedDurationMinutes?: number | null; location?: string | null;
+    assignedTo?: string | null; tags?: string[]; notes?: string | null;
+  }) =>
+    request<{ id: string; title: string; status: string }>(
+      orgId, `/businesses/${businessId}/jobs`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
+  updateJob: (orgId: string, businessId: string, jobId: string, patch: Record<string, unknown>) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/jobs/${jobId}`,
+      { method: "PATCH", body: JSON.stringify(patch) }
+    ),
+
+  startJob: (orgId: string, businessId: string, jobId: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/jobs/${jobId}/start`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  completeJob: (orgId: string, businessId: string, jobId: string, actualDurationMinutes?: number) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/jobs/${jobId}/complete`,
+      { method: "POST", body: JSON.stringify({ actualDurationMinutes }) }
+    ),
+
+  deleteJob: (orgId: string, businessId: string, jobId: string) =>
+    request<{ deleted: boolean }>(
+      orgId, `/businesses/${businessId}/jobs/${jobId}`,
+      { method: "DELETE" }
+    ),
+
+  // Appointments
+  listAppointments: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string; title: string; notes: string | null;
+      status: string; startAt: string; endAt: string;
+      customerId: string | null; jobId: string | null;
+      location: string | null; assignedTo: string | null;
+      createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/appointments`),
+
+  createAppointment: (orgId: string, businessId: string, input: {
+    title: string; startAt: string; endAt: string;
+    customerId?: string | null; jobId?: string | null;
+    notes?: string | null; location?: string | null; assignedTo?: string | null;
+  }) =>
+    request<{ id: string; title: string; status: string }>(
+      orgId, `/businesses/${businessId}/appointments`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
+  updateAppointment: (orgId: string, businessId: string, appointmentId: string, patch: Record<string, unknown>) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/appointments/${appointmentId}`,
+      { method: "PATCH", body: JSON.stringify(patch) }
+    ),
+
+  confirmAppointment: (orgId: string, businessId: string, appointmentId: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/appointments/${appointmentId}/confirm`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  cancelAppointment: (orgId: string, businessId: string, appointmentId: string) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/appointments/${appointmentId}/cancel`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  // Invoices
+  listInvoices: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string; invoiceNumber: string; customerId: string; jobId: string | null;
+      status: string; subtotalCents: number; taxCents: number; discountCents: number;
+      totalCents: number; currency: string; dueAt: string | null;
+      sentAt: string | null; paidAt: string | null; createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/invoices`),
+
+  createInvoice: (orgId: string, businessId: string, input: {
+    customerId: string; jobId?: string | null;
+    lineItems: Array<{ description: string; quantity: number; unitPriceCents: number }>;
+    taxCents?: number; discountCents?: number; currency?: string;
+    dueAt?: string | null; notes?: string | null; terms?: string | null;
+  }) =>
+    request<{ id: string; invoiceNumber: string; status: string }>(
+      orgId, `/businesses/${businessId}/invoices`,
+      { method: "POST", body: JSON.stringify(input) }
+    ),
+
+  updateInvoice: (orgId: string, businessId: string, invoiceId: string, patch: Record<string, unknown>) =>
+    request<{ id: string; status: string }>(
+      orgId, `/businesses/${businessId}/invoices/${invoiceId}`,
+      { method: "PATCH", body: JSON.stringify(patch) }
+    ),
+
+  sendInvoice: (orgId: string, businessId: string, invoiceId: string) =>
+    request<{ id: string; status: string; sentAt: string }>(
+      orgId, `/businesses/${businessId}/invoices/${invoiceId}/send`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  markInvoicePaid: (orgId: string, businessId: string, invoiceId: string, paymentMethod?: string) =>
+    request<{ id: string; status: string; paidAt: string }>(
+      orgId, `/businesses/${businessId}/invoices/${invoiceId}/mark-paid`,
+      { method: "POST", body: JSON.stringify({ paymentMethod }) }
+    ),
+
   // Org-level dashboard summary
   getOrgDashboard: (orgId: string) =>
     request<{

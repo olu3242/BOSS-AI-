@@ -833,6 +833,130 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── Jobs routes ───────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/jobs",
+    wrap(async (req) => api.job.list(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/jobs",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.job.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.job.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/jobs/:jobId",
+    wrap(async (req) => api.job.get(await requireOrgId(req), param(req, "jobId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/jobs/:jobId",
+    wrap(async (req) => api.job.update(await requireOrgId(req), param(req, "jobId"), req.body as Parameters<typeof api.job.update>[2]))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/jobs/:jobId",
+    wrap(async (req) => {
+      await api.job.delete(await requireOrgId(req), param(req, "jobId"));
+      return { deleted: true };
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/jobs/:jobId/start",
+    wrap(async (req) => api.job.start(await requireOrgId(req), param(req, "jobId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/jobs/:jobId/complete",
+    wrap(async (req) => {
+      const body = req.body as { actualDurationMinutes?: number };
+      return api.job.complete(await requireOrgId(req), param(req, "jobId"), body.actualDurationMinutes);
+    })
+  );
+
+  // ── Appointments routes ───────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/appointments",
+    wrap(async (req) => api.appointment.list(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/appointments",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.appointment.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.appointment.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/appointments/:appointmentId",
+    wrap(async (req) => api.appointment.get(await requireOrgId(req), param(req, "appointmentId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/appointments/:appointmentId",
+    wrap(async (req) => api.appointment.update(await requireOrgId(req), param(req, "appointmentId"), req.body as Parameters<typeof api.appointment.update>[2]))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/appointments/:appointmentId",
+    wrap(async (req) => {
+      await api.appointment.delete(await requireOrgId(req), param(req, "appointmentId"));
+      return { deleted: true };
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/appointments/:appointmentId/confirm",
+    wrap(async (req) => api.appointment.confirm(await requireOrgId(req), param(req, "appointmentId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/appointments/:appointmentId/cancel",
+    wrap(async (req) => api.appointment.cancel(await requireOrgId(req), param(req, "appointmentId")))
+  );
+
+  // ── Invoices routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/invoices",
+    wrap(async (req) => api.invoice.list(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.invoice.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.invoice.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/invoices/:invoiceId",
+    wrap(async (req) => api.invoice.get(await requireOrgId(req), param(req, "invoiceId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/invoices/:invoiceId",
+    wrap(async (req) => api.invoice.update(await requireOrgId(req), param(req, "invoiceId"), req.body as Parameters<typeof api.invoice.update>[2]))
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/send",
+    wrap(async (req) => api.invoice.send(await requireOrgId(req), param(req, "invoiceId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/mark-paid",
+    wrap(async (req) => {
+      const body = req.body as { paymentMethod?: string };
+      return api.invoice.markPaid(await requireOrgId(req), param(req, "invoiceId"), body.paymentMethod);
+    })
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {
