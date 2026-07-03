@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface KpiProjection {
   kpiKey: string;
@@ -236,16 +237,18 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
 
       {/* Scenario list */}
       {scenarios.length === 0 ? (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="text-neutral-400 font-medium">No scenarios yet</p>
-          <p className="mt-1 text-sm text-neutral-600">Generate your first scenario to model strategic options and compare projected outcomes.</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 rounded bg-[#C8102E] px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Generate Your First Scenario
-          </button>
-        </div>
+        <EmptyState
+          title="No scenarios yet"
+          description="Generate your first scenario to model strategic options and compare projected outcomes."
+          action={
+            <button
+              onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Generate your first scenario
+            </button>
+          }
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {compareIds.length > 0 && compareIds.length < 2 && (

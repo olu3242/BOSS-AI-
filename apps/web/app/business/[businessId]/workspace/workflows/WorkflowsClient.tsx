@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface WorkflowExecution {
   id: string;
@@ -172,12 +173,11 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="text-neutral-400 font-medium">No workflow executions</p>
-          <p className="mt-1 text-sm text-neutral-600">
-            Workflow executions appear here when the Loop runtime processes decisions and automated actions.
-          </p>
-        </div>
+        <EmptyState
+          title="No workflow executions"
+          description="Workflow executions appear here when the Loop runtime processes decisions and automated actions."
+          dashed={false}
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {filtered.map((ex) => (

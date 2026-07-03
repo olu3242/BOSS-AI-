@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 type Review = {
   id: string; customerId: string; jobId: string | null; rating: number;
@@ -221,11 +222,16 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-neutral-800 p-12 text-center">
-          <p className="text-neutral-400">No reviews found.</p>
-          <button onClick={() => setShowForm(true)}
-            className="mt-4 text-sm text-accent hover:underline">Add first review</button>
-        </div>
+        <EmptyState
+          title="No reviews found"
+          description="Collect and manage customer reviews to build your reputation."
+          action={
+            <button onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+              Add first review
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-4">
           {filtered.map((review) => (

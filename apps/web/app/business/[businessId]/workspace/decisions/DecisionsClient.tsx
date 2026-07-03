@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface Decision {
   id: string;
@@ -154,12 +155,11 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
         {/* List */}
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           {filtered.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-              <p className="text-neutral-400 font-medium">No decisions yet</p>
-              <p className="mt-1 text-sm text-neutral-600">
-                Decisions are generated automatically from your business health analysis. Run your first MRI to get started.
-              </p>
-            </div>
+            <EmptyState
+              title="No decisions yet"
+              description="Decisions are generated automatically from your business health analysis. Run your first MRI to get started."
+              dashed={false}
+            />
           ) : (
             filtered.map((d) => (
               <button

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 type Invoice = {
   id: string; invoiceNumber: string; customerId: string; jobId: string | null;
@@ -297,22 +298,18 @@ export function InvoicesClient({ orgId, businessId, invoices: initialInvoices, e
 
       {/* Empty state */}
       {!error && filtered.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="font-display text-lg text-neutral-300">
-            {activeTab === "all" ? "No invoices yet" : `No ${activeTab} invoices`}
-          </p>
-          <p className="mt-2 text-sm text-neutral-500">
-            {activeTab === "all" && "Create invoices to track payments from your customers."}
-          </p>
-          {activeTab === "all" && (
+        <EmptyState
+          title={activeTab === "all" ? "No invoices yet" : `No ${activeTab} invoices`}
+          description={activeTab === "all" ? "Create invoices to track payments from your customers." : undefined}
+          action={activeTab === "all" ? (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
             >
               Create first invoice
             </button>
-          )}
-        </div>
+          ) : undefined}
+        />
       )}
 
       {/* Invoice list */}

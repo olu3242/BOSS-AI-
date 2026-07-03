@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 type Job = {
   id: string; title: string; description: string | null;
@@ -251,22 +252,18 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
 
       {/* Empty state */}
       {!error && filtered.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="font-display text-lg text-neutral-300">
-            {activeTab === "all" ? "No jobs yet" : `No ${activeTab.replace("_", " ")} jobs`}
-          </p>
-          <p className="mt-2 text-sm text-neutral-500">
-            {activeTab === "all" && "Start tracking work orders and field jobs for your business."}
-          </p>
-          {activeTab === "all" && (
+        <EmptyState
+          title={activeTab === "all" ? "No jobs yet" : `No ${activeTab.replace("_", " ")} jobs`}
+          description={activeTab === "all" ? "Start tracking work orders and field jobs for your business." : undefined}
+          action={activeTab === "all" ? (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
             >
               Create your first job
             </button>
-          )}
-        </div>
+          ) : undefined}
+        />
       )}
 
       {/* Job list */}

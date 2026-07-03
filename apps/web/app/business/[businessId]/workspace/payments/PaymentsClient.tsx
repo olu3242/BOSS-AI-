@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 type Payment = {
   id: string; customerId: string; invoiceId: string;
@@ -205,11 +206,16 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-neutral-800 p-12 text-center">
-          <p className="text-neutral-400">No payments found.</p>
-          <button onClick={() => setShowForm(true)}
-            className="mt-4 text-sm text-accent hover:underline">Record first payment</button>
-        </div>
+        <EmptyState
+          title="No payments found"
+          description="Record payments received from customers to track your cash flow."
+          action={
+            <button onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+              Record first payment
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map((payment) => (

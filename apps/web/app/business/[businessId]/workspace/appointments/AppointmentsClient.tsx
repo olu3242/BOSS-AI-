@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 type Appointment = {
   id: string; title: string; notes: string | null;
@@ -214,16 +215,18 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
 
       {/* Empty state */}
       {!error && appointments.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="font-display text-lg text-neutral-300">No appointments yet</p>
-          <p className="mt-2 text-sm text-neutral-500">Schedule appointments with customers and track them here.</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Book first appointment
-          </button>
-        </div>
+        <EmptyState
+          title="No appointments yet"
+          description="Schedule appointments with customers and track them here."
+          action={
+            <button
+              onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Book first appointment
+            </button>
+          }
+        />
       )}
 
       {/* Calendar-style grouped list */}
