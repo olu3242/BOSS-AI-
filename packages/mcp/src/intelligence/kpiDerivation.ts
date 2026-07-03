@@ -16,14 +16,23 @@ export interface KpiSnapshotInput {
   aiAdoptionScore?: number;
   toolExecutionCount?: number;
   workflowCompletionCount?: number;
+  // Financial signals
+  revenue?: number;
+  profitMargin?: number;
+  outstandingInvoices?: number;
+  // Customer signals
+  leadResponseTimeMinutes?: number;
+  leadConversionRate?: number;
+  customerRetentionRate?: number;
+  reviewRating?: number;
   measuredAt: string;
 }
 
 /**
  * Deterministic KPI derivation from existing platform evidence.
- * Sources platform signals (health score, event counts, tool executions)
- * and maps them onto registered KPI keys. No AI inference — pure derivation.
- * Law 1 compliant: MCP owns the derivation logic; Loop supplies raw counts.
+ * Sources platform signals (health score, event counts, financial data,
+ * customer metrics) and maps them onto registered KPI keys.
+ * No AI inference — pure derivation. Law 1: MCP owns derivation, Loop supplies counts.
  */
 export function deriveKpiReadings(input: KpiSnapshotInput): KpiReading[] {
   const readings: KpiReading[] = [];
@@ -42,6 +51,7 @@ export function deriveKpiReadings(input: KpiSnapshotInput): KpiReading[] {
           trend = value >= 70 ? "up" : value >= 50 ? "stable" : "down";
         }
         break;
+
       case "business_growth_score":
         if (input.growthScore !== undefined) {
           value = Math.round(input.growthScore);
@@ -49,6 +59,7 @@ export function deriveKpiReadings(input: KpiSnapshotInput): KpiReading[] {
           trend = value >= 70 ? "up" : "stable";
         }
         break;
+
       case "ai_adoption_score":
         if (input.aiAdoptionScore !== undefined) {
           value = Math.round(input.aiAdoptionScore);
@@ -60,13 +71,74 @@ export function deriveKpiReadings(input: KpiSnapshotInput): KpiReading[] {
           trend = input.toolExecutionCount > 0 ? "up" : "stable";
         }
         break;
+
       case "administrative_hours":
         if (input.workflowCompletionCount !== undefined) {
+          // Each completed workflow saves ~2 hrs/week of admin time
           value = Math.max(0, 40 - input.workflowCompletionCount * 2);
           source = "event_log";
           trend = input.workflowCompletionCount > 5 ? "down" : "stable";
         }
         break;
+
+      case "revenue":
+        if (input.revenue !== undefined) {
+          value = Math.round(input.revenue);
+          source = "event_log";
+          trend = value > 0 ? "up" : "stable";
+        }
+        break;
+
+      case "profit_margin":
+        if (input.profitMargin !== undefined) {
+          value = Math.round(input.profitMargin * 10) / 10;
+          source = "event_log";
+          trend = value >= 20 ? "up" : value >= 10 ? "stable" : "down";
+        }
+        break;
+
+      case "outstanding_invoices":
+        if (input.outstandingInvoices !== undefined) {
+          value = Math.round(input.outstandingInvoices);
+          source = "event_log";
+          // Lower outstanding invoices is better
+          trend = value === 0 ? "up" : input.revenue && value > input.revenue * 0.1 ? "down" : "stable";
+        }
+        break;
+
+      case "lead_response_time":
+        if (input.leadResponseTimeMinutes !== undefined) {
+          value = Math.round(input.leadResponseTimeMinutes);
+          source = "event_log";
+          // Lower response time is better
+          trend = value <= 60 ? "up" : value <= 240 ? "stable" : "down";
+        }
+        break;
+
+      case "lead_conversion_rate":
+        if (input.leadConversionRate !== undefined) {
+          value = Math.round(input.leadConversionRate * 10) / 10;
+          source = "event_log";
+          trend = value >= 20 ? "up" : value >= 10 ? "stable" : "down";
+        }
+        break;
+
+      case "customer_retention":
+        if (input.customerRetentionRate !== undefined) {
+          value = Math.round(input.customerRetentionRate * 10) / 10;
+          source = "event_log";
+          trend = value >= 80 ? "up" : value >= 60 ? "stable" : "down";
+        }
+        break;
+
+      case "review_rating":
+        if (input.reviewRating !== undefined) {
+          value = Math.round(input.reviewRating * 10) / 10;
+          source = "event_log";
+          trend = value >= 4.5 ? "up" : value >= 4.0 ? "stable" : "down";
+        }
+        break;
+
       default:
         break;
     }

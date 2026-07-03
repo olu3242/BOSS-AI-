@@ -40,3 +40,5 @@ export * from "./intelligence/rootCauseEngine.js";
 export * from "./intelligence/planningEngine.js";
 export * from "./intelligence/verificationEngine.js";
 export * from "./intelligence/diagnosticEngine.js";
+export * from "./intelligence/kpiRecommendationEngine.js";
+export * from "./intelligence/kpiHealthScore.js";

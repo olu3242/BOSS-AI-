@@ -13,6 +13,7 @@ export interface RecommendationAnalysisResult {
 export interface BusinessRecommendationService {
   analyze(orgId: string, businessId: string): Promise<RecommendationAnalysisResult>;
   list(orgId: string, businessId: string): Promise<BusinessRecommendation[]>;
+  get(orgId: string, recommendationId: string): Promise<BusinessRecommendation | null>;
   getPriorities(orgId: string, businessId: string): Promise<RecommendationPriority[]>;
   getRoadmap(orgId: string, businessId: string): Promise<TransformationRoadmap | null>;
   dismiss(orgId: string, recommendationId: string): Promise<BusinessRecommendation>;
@@ -131,6 +132,9 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
     async list(orgId, businessId) {
       return repos.businessRecommendations.listByBusinessId(orgId, businessId);
     },
+    async get(orgId, recommendationId) {
+      return repos.businessRecommendations.findById(orgId, recommendationId);
+    },
     async getPriorities(orgId, businessId) {
       return repos.recommendationPriorities.listByBusinessId(orgId, businessId);
     },
@@ -146,6 +150,14 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         "dismissed",
         "Dismissed via API"
       );
+      await repos.businessTimeline.append({
+        orgId,
+        businessId: updated.businessId,
+        type: "recommendation_dismissed",
+        description: `Recommendation dismissed: "${updated.title}"`,
+        metadata: { recommendationId, definitionKey: updated.definitionKey },
+        occurredAt: nowIso(),
+      });
       return updated;
     },
     async approve(orgId, recommendationId) {
@@ -157,6 +169,19 @@ export function createBusinessRecommendationService(repos: RepositoryContainer):
         "approved",
         "Approved via API"
       );
+      await repos.businessTimeline.append({
+        orgId,
+        businessId: updated.businessId,
+        type: "recommendation_approved",
+        description: `Recommendation approved: "${updated.title}"`,
+        metadata: {
+          recommendationId,
+          definitionKey: updated.definitionKey,
+          relatedKpiKeys: updated.relatedKpiKeys,
+          estimatedRoiAnnual: updated.estimatedRoi.profitImpactAnnual,
+        },
+        occurredAt: nowIso(),
+      });
       await repos.eventBus.publish({
         type: "business.recommendation.approved",
         payload: { orgId, businessId: updated.businessId, recommendationId },

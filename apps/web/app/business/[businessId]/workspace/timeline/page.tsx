@@ -1,5 +1,5 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -24,9 +24,11 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 
 export default async function TimelinePage({ params }: Props) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   let data;
   try {
-    data = await apiClient.getTimeline(DEMO_ORG_ID, businessId);
+    data = await apiClient.getTimeline(orgId, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load timeline.";
     return (

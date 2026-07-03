@@ -3,6 +3,21 @@ import type {
   BusinessProfile,
   BusinessMRI,
   BusinessMriSection,
+  KpiReadingRecord,
+  Customer,
+  CustomerInteraction,
+  CustomerStatus,
+  CustomerInteractionType,
+  BusinessGoal,
+  GoalStatus,
+  ExecutiveBriefingRecord,
+  BriefingPeriod,
+  Job,
+  JobStatus,
+  Appointment,
+  AppointmentStatus,
+  Invoice,
+  InvoiceStatus,
   BusinessMriResponse,
   BusinessDNA,
   BusinessHealth,
@@ -313,6 +328,29 @@ export interface BusinessGraphRepository {
 
 export type { TransformationRoadmapStageEntry };
 
+export interface KpiReadingRepository {
+  append(input: Omit<KpiReadingRecord, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<KpiReadingRecord>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<KpiReadingRecord[]>;
+  listByKpiKey(orgId: string, businessId: string, kpiKey: string, limit?: number): Promise<KpiReadingRecord[]>;
+  latestByKpiKey(orgId: string, businessId: string, kpiKey: string): Promise<KpiReadingRecord | null>;
+}
+
+export interface BusinessGoalRepository {
+  create(input: Omit<BusinessGoal, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<BusinessGoal>;
+  findById(orgId: string, id: string): Promise<BusinessGoal | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<BusinessGoal, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<BusinessGoal>;
+  updateStatus(orgId: string, id: string, status: GoalStatus): Promise<BusinessGoal>;
+  listByBusinessId(orgId: string, businessId: string): Promise<BusinessGoal[]>;
+  listByStatus(orgId: string, businessId: string, status: GoalStatus): Promise<BusinessGoal[]>;
+}
+
+export interface ExecutiveBriefingRepository {
+  create(input: Omit<ExecutiveBriefingRecord, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<ExecutiveBriefingRecord>;
+  findById(orgId: string, id: string): Promise<ExecutiveBriefingRecord | null>;
+  findLatest(orgId: string, businessId: string, period?: BriefingPeriod): Promise<ExecutiveBriefingRecord | null>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<ExecutiveBriefingRecord[]>;
+}
+
 export interface IntegrationAccountRepository {
   upsert(input: Omit<IntegrationAccount, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<IntegrationAccount>;
   listByBusinessId(orgId: string, businessId: string): Promise<IntegrationAccount[]>;
@@ -438,6 +476,107 @@ export interface BusinessScenarioRepository {
   listByBusinessId(orgId: string, businessId: string): Promise<BusinessScenario[]>;
   createComparison(input: Omit<ScenarioComparison, "id" | "createdAt">): Promise<ScenarioComparison>;
   listComparisons(orgId: string, businessId: string): Promise<ScenarioComparison[]>;
+}
+
+export interface CustomerRepository {
+  create(input: Omit<Customer, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Customer>;
+  findById(orgId: string, id: string): Promise<Customer | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Customer, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Customer>;
+  updateStatus(orgId: string, id: string, status: CustomerStatus): Promise<Customer>;
+  updateRevenue(orgId: string, id: string, totalRevenue: number): Promise<Customer>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Customer[]>;
+  search(orgId: string, businessId: string, query: string): Promise<Customer[]>;
+}
+
+export interface CustomerInteractionRepository {
+  create(input: Omit<CustomerInteraction, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<CustomerInteraction>;
+  listByCustomerId(orgId: string, customerId: string): Promise<CustomerInteraction[]>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<CustomerInteraction[]>;
+  countByType(orgId: string, customerId: string, type: CustomerInteractionType): Promise<number>;
+}
+
+export type { CustomerStatus, CustomerInteractionType };
+
+export interface JobRepository {
+  create(input: Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Job>;
+  findById(orgId: string, id: string): Promise<Job | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Job, 'id' | 'orgId' | 'createdAt' | 'updatedAt'>>): Promise<Job>;
+  listByBusiness(orgId: string, businessId: string): Promise<Job[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Job[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
+export type AppointmentPatch = {
+  title?: string;
+  customerId?: string | null;
+  jobId?: string | null;
+  notes?: string | null;
+  status?: AppointmentStatus;
+  startAt?: string;
+  endAt?: string;
+  location?: string | null;
+  assignedTo?: string | null;
+  reminderSent?: boolean;
+  metadata?: Record<string, unknown>;
+  deletedAt?: string | null;
+};
+
+export interface AppointmentRepository {
+  create(input: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Appointment>;
+  findById(orgId: string, id: string): Promise<Appointment | null>;
+  update(orgId: string, id: string, patch: AppointmentPatch): Promise<Appointment>;
+  listByBusiness(orgId: string, businessId: string): Promise<Appointment[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Appointment[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
+export type InvoicePatch = {
+  status?: InvoiceStatus;
+  lineItems?: import('@boss/types').InvoiceLineItem[];
+  subtotalCents?: number;
+  taxCents?: number;
+  discountCents?: number;
+  totalCents?: number;
+  dueAt?: string | null;
+  sentAt?: string | null;
+  paidAt?: string | null;
+  paymentMethod?: string | null;
+  notes?: string | null;
+  terms?: string | null;
+  metadata?: Record<string, unknown>;
+  deletedAt?: string | null;
+};
+
+export interface InvoiceRepository {
+  create(input: Omit<Invoice, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Invoice>;
+  findById(orgId: string, id: string): Promise<Invoice | null>;
+  update(orgId: string, id: string, patch: InvoicePatch): Promise<Invoice>;
+  listByBusiness(orgId: string, businessId: string): Promise<Invoice[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Invoice[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
+export type { JobStatus, AppointmentStatus, InvoiceStatus };
+
+export type { PaymentMethod, PaymentStatus, ReviewStatus, ReviewSource };
+import type { Payment, PaymentMethod, PaymentStatus, CustomerReview, ReviewStatus, ReviewSource } from '@boss/types';
+
+export interface PaymentRepository {
+  create(input: Omit<Payment, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<Payment>;
+  findById(orgId: string, id: string): Promise<Payment | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Payment, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt'>>): Promise<Payment>;
+  listByBusiness(orgId: string, businessId: string): Promise<Payment[]>;
+  listByInvoice(orgId: string, invoiceId: string): Promise<Payment[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
+}
+
+export interface ReviewRepository {
+  create(input: Omit<CustomerReview, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<CustomerReview>;
+  findById(orgId: string, id: string): Promise<CustomerReview | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<CustomerReview, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt'>>): Promise<CustomerReview>;
+  listByBusiness(orgId: string, businessId: string): Promise<CustomerReview[]>;
+  softDelete(orgId: string, id: string): Promise<void>;
 }
 
 export interface EventLogEntry {

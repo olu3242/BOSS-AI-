@@ -1,5 +1,32 @@
 # BOSS Implementation Memory
 
+## RC1.6 — Backend Freeze Certification (complete)
+
+**Status:** FROZEN. 531 tests passing. 0 type errors. 0 lint warnings. 0 arch violations.
+
+**Capability Coverage:** 28/28 capabilities COMPLETE (see `docs/RC1_6_BACKEND_FREEZE_REPORT.md`)
+
+**Platform State:**
+- Migrations: 0001–0030 (gap-free, RLS on all tables)
+- Repositories: 22 repositories, all with postgres + inMemory implementations
+- Services: 49 service files covering all bounded contexts
+- Provider Adapters: 19 (8 real HTTP: twilio, messagebird, gmail, ms365, slack, teams, googleCalendar, quickbooks; 11 simulated — TD-013)
+- Loop Runtime: complete (state machine, scheduler, resilience, queue)
+- MCP: complete intelligence layer (decisions, scenarios, health, constraints, recommendations, exec brief)
+- Auth: Supabase JWT + 4-level RBAC (owner > admin > member > viewer)
+- Health: `/health` unauthenticated ops probe, `/metrics` authenticated
+
+**Open Technical Debt (RC2):**
+- TD-013: 11 provider simulations (medium)
+- TD-014: No external KMS (high for prod)
+- TD-024: AI task handler no Claude inference (medium)
+- TD-031: No per-tenant rate limiting (high)
+- Full register: `TECH_DEBT.md`
+
+**Frontend Build Note:** `@boss/web` build fails in sandboxed environments due to Google Fonts network restriction (Syne font). Not a code defect — works in production with internet access.
+
+---
+
 ## RC1 — Production Infrastructure (complete)
 
 **Status:** 114 tests passing, all checks green.
@@ -1057,3 +1084,37 @@ calls for the remaining 18 providers.
 - TD-024: AI Employee "ai" handler has no real LLM inference (Claude API not called yet)
 - TD-028: No Zod input validation on HTTP request bodies
 - TD-030: `POST /api/v1/auth/dev-token` is the only token issuance path (no real auth/signup)
+
+## RC1.5 — Enterprise Reliability & Platform Verification (complete)
+
+**Branch:** `claude/boss-repo-normalization-n1jdx5`  
+**Date:** 2026-07-03  
+**Tests:** 474 passing (was 389 — added 85 new integration tests)
+
+### What was verified
+
+**WS1 — E2E Business Lifecycle**: Full pipeline Business → MRI → DNA → Health → Constraints → Recommendations → Decisions → Executive Brief → Loop Execution → Mission Control. All stages produce domain events and persist to correct repos.
+
+**WS2 — Integration Audit**: Static code analysis confirms 0 MCP/Loop boundary violations, 0 repo bypass violations, 0 provider adapter leakage. Container is the single composition root.
+
+**WS3 — Resilience Matrix**: Provider outage degrades gracefully. JWT expiry/tampering rejected. Tenant mismatch blocked at repo layer. `recoverFailed()` restores failed jobs with exponential back-off. Dead letters persisted via `deadLetters.add()`. Event log is append-only.
+
+**WS4 — Load Validation**: 100 businesses, 1000 workflows, 10K events, 500 tasks — all within performance budgets. Memory growth bounded.
+
+**WS5 — Decision Quality**: Health scoring is deterministic. Recommendations have title + confidence across retail/restaurant/professional_services. Decisions have `context`/`objective` for explainability. Executive briefs persisted via `executiveBriefings.findLatest()`.
+
+**WS6 — Security**: All repos scoped by `orgId`. Cross-tenant reads return empty/null. RBAC 4-level hierarchy enforced. JWT `org_id` from claims only — no spoofing via body. Provider credentials isolated per org+business. Event log org-scoped.
+
+**WS7 — Operational Readiness**: `GET /health` returns structured JSON with uptime, memory, counters. `GET /api/v1/metrics` exposes counters. Scheduler `listPending()`, `recoverFailed()` operational. Mission Control snapshot includes dead letters. Tool audit log has `requestedBy` + timestamps.
+
+### Architecture Law Status
+- Law 1 (MCP/Loop separation): **ENFORCED** — verified by static AST scan
+- Law 2 (Everything measurable): **ENFORCED** — domain events + audit log at every stage
+
+### Key remaining gaps for RC2
+- Postgres RLS integration tests (real DB environment)
+- Connection pool tuning under concurrent load
+- Rate limiting per tenant
+- Event log compaction/archival (TD-030)
+- Prometheus/OTEL metrics export
+- Alerting rules (dead letter threshold, health degradation)

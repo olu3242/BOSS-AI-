@@ -1,5 +1,54 @@
 # Changelog
 
+## RC1.6 — Backend Convergence & Freeze Certification (2026-07-03)
+
+### Audit & Validation
+- Full 12-phase audit of all backend capabilities — 28 capabilities classified COMPLETE
+- `arch:boundaries`: 0 violations (620 modules, 1775 deps)
+- `arch:deadcode`: 0 unused files
+- All 531 tests passing across 69 test files
+- typecheck: 0 errors, lint: 0 warnings across all 22 packages
+- Migration sequence 0001–0030 verified gap-free with RLS on all tables
+
+### Repository Harmonization (Verification)
+- Confirmed all Phase B repositories (jobs, appointments, invoices, payments, reviews) fully exported from `packages/db/src/index.ts`, wired in `apps/api/src/container.ts` with both postgres and in-memory paths
+
+### Observability (Verification)
+- Confirmed `/health` endpoint at `apps/api/src/http/server.ts:59` (unauthenticated, ops probe)
+- Confirmed `/metrics` endpoint at line 500 with auth guard
+
+### TODO/FIXME Classification
+- All TODOs classified: 0 requiring immediate action, all deferred items tracked in `TECH_DEBT.md`
+
+### Documentation
+- `docs/RC1_6_BACKEND_FREEZE_REPORT.md` — full capability audit, validation summary, freeze certification
+- `TECH_DEBT.md` — register confirmed current (TD-013 through TD-034, 10 open items)
+
+### Backend Freeze Recommendation
+- **FROZEN** — Backend architecture is stable. Frontend teams can safely build against all APIs.
+
+---
+
+## RC1.5 — Enterprise Reliability & Platform Verification (2026-07-03)
+
+### 7 New Workstream Test Files (85 new tests, total: 474 passing)
+
+- **WS1 E2E Lifecycle** (`rc15_e2e_business_lifecycle.test.ts`) — Exercises full pipeline: Business → MRI → Health → Constraints → Recommendations → Decisions → Executive Brief → Loop Execution → Mission Control. Verifies domain events at each stage.
+- **WS2 Integration Audit** (`rc15_integration_audit.test.ts`) — Static code analysis verifying MCP/Loop boundary, no repository bypasses, no provider adapter leakage. 0 violations.
+- **WS3 Resilience Matrix** (`rc15_resilience_matrix.test.ts`) — Provider outage degradation, JWT expiry/tampering, tenant mismatch, worker failure recovery, dead-letter persistence, event log idempotency.
+- **WS4 Load Validation** (`rc15_load_validation.test.ts`) — 100 businesses, 1000 workflows, 10000 events, 500 tasks — all within time budgets with bounded memory growth.
+- **WS5 Decision Quality** (`rc15_decision_quality.test.ts`) — Cross-industry determinism (retail, restaurant, professional_services), recommendation traceability, decision explainability, executive brief persistence.
+- **WS6 Security Validation** (`rc15_security_validation.test.ts`) — 14 tenant isolation and RBAC tests across all repos. Cross-org reads return empty/null. JWT hierarchy enforced.
+- **WS7 Operational Readiness** (`rc15_operational_readiness.test.ts`) — Health/metrics HTTP endpoints, scheduler diagnostics, Mission Control dead letter visibility, tool execution audit trail.
+
+### Documentation
+- `docs/RC1_5_ENTERPRISE_RELIABILITY_REPORT.md`
+- `docs/RC1_5_INTEGRATION_MATRIX.md`
+- `docs/RC1_5_LOAD_TEST_REPORT.md`
+- `docs/RC1_5_SECURITY_VALIDATION.md`
+- `docs/RC1_5_OPERATIONAL_READINESS.md`
+- `docs/RC1_5_PLATFORM_CERTIFICATION.md`
+
 ## Unreleased
 
 ### Phase B - Capability Pack Platform

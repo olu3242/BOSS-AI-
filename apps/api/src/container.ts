@@ -14,6 +14,36 @@ import {
   createPostgresEventLogRepository,
   createInMemoryEventLogRepository,
   type EventLogRepository,
+  createPostgresKpiReadingRepository,
+  createInMemoryKpiReadingRepository,
+  type KpiReadingRepository,
+  createPostgresBusinessGoalRepository,
+  createInMemoryBusinessGoalRepository,
+  type BusinessGoalRepository,
+  createPostgresExecutiveBriefingRepository,
+  createInMemoryExecutiveBriefingRepository,
+  type ExecutiveBriefingRepository,
+  createPostgresCustomerRepository,
+  createPostgresCustomerInteractionRepository,
+  createInMemoryCustomerRepository,
+  createInMemoryCustomerInteractionRepository,
+  type CustomerRepository,
+  type CustomerInteractionRepository,
+  createPostgresJobRepository,
+  createInMemoryJobRepository,
+  type JobRepository,
+  createPostgresAppointmentRepository,
+  createInMemoryAppointmentRepository,
+  type AppointmentRepository,
+  createPostgresInvoiceRepository,
+  createInMemoryInvoiceRepository,
+  type InvoiceRepository,
+  createPostgresPaymentRepository,
+  createInMemoryPaymentRepository,
+  type PaymentRepository,
+  createPostgresReviewRepository,
+  createInMemoryReviewRepository,
+  type ReviewRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -131,6 +161,16 @@ export interface RepositoryContainer {
   businessDiagnostics: BusinessDiagnosticRepository;
   businessDiscovery: BusinessDiscoveryRepository;
   businessGraph: BusinessGraphRepository;
+  kpiReadings: KpiReadingRepository;
+  businessGoals: BusinessGoalRepository;
+  executiveBriefings: ExecutiveBriefingRepository;
+  customers: CustomerRepository;
+  customerInteractions: CustomerInteractionRepository;
+  jobs: JobRepository;
+  appointments: AppointmentRepository;
+  invoices: InvoiceRepository;
+  payments: PaymentRepository;
+  reviews: ReviewRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -170,6 +210,16 @@ export function createPostgresContainer(): RepositoryContainer {
     businessDiagnostics: createPostgresBusinessDiagnosticRepository(),
     businessDiscovery: createPostgresBusinessDiscoveryRepository(),
     businessGraph: createPostgresBusinessGraphRepository(),
+    kpiReadings: createPostgresKpiReadingRepository(),
+    businessGoals: createPostgresBusinessGoalRepository(),
+    executiveBriefings: createPostgresExecutiveBriefingRepository(),
+    customers: createPostgresCustomerRepository(),
+    customerInteractions: createPostgresCustomerInteractionRepository(),
+    jobs: createPostgresJobRepository(),
+    appointments: createPostgresAppointmentRepository(),
+    invoices: createPostgresInvoiceRepository(),
+    payments: createPostgresPaymentRepository(),
+    reviews: createPostgresReviewRepository(),
   };
 }
 
@@ -212,5 +262,15 @@ export function createInMemoryContainer(): RepositoryContainer {
     businessDiagnostics: createInMemoryBusinessDiagnosticRepository(),
     businessDiscovery: createInMemoryBusinessDiscoveryRepository(),
     businessGraph: createInMemoryBusinessGraphRepository(),
+    kpiReadings: createInMemoryKpiReadingRepository(),
+    businessGoals: createInMemoryBusinessGoalRepository(),
+    executiveBriefings: createInMemoryExecutiveBriefingRepository(),
+    customers: createInMemoryCustomerRepository(),
+    customerInteractions: createInMemoryCustomerInteractionRepository(),
+    jobs: createInMemoryJobRepository(),
+    appointments: createInMemoryAppointmentRepository(),
+    invoices: createInMemoryInvoiceRepository(),
+    payments: createInMemoryPaymentRepository(),
+    reviews: createInMemoryReviewRepository(),
   };
 }

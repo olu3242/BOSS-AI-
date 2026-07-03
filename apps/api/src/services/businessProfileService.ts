@@ -17,6 +17,7 @@ export interface CreateBusinessInput {
 export interface BusinessProfileService {
   createBusiness(input: CreateBusinessInput): Promise<{ business: Business; profile: BusinessProfile }>;
   getProfile(orgId: string, businessId: string): Promise<BusinessProfile | null>;
+  list(orgId: string): Promise<Business[]>;
 }
 
 export function createBusinessProfileService(repos: RepositoryContainer): BusinessProfileService {
@@ -60,6 +61,9 @@ export function createBusinessProfileService(repos: RepositoryContainer): Busine
     },
     async getProfile(orgId, businessId) {
       return repos.businessProfiles.findByBusinessId(orgId, businessId);
+    },
+    async list(orgId) {
+      return repos.businesses.list(orgId);
     },
   };
 }

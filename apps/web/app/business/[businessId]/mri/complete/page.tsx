@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NpsWidget } from "../../../../../src/components/NpsWidget";
+import { requireActiveTenant } from "../../../../../src/server/auth";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -7,6 +8,8 @@ interface Props {
 
 export default async function MriCompletePage({ params }: Props) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   return (
     <main className="mx-auto flex max-w-2xl flex-col items-center gap-8 px-6 py-24">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-900/40 text-3xl">
@@ -34,7 +37,7 @@ export default async function MriCompletePage({ params }: Props) {
       </div>
 
       <div className="w-full max-w-lg">
-        <NpsWidget businessId={businessId} context="BOSS" />
+        <NpsWidget businessId={businessId} orgId={orgId} context="BOSS" />
       </div>
     </main>
   );

@@ -27,11 +27,12 @@ export default async function OrganizationOnboarding({
         <p className="subtle">This creates the secure tenant for your team and business data.</p>
         {query.error ? <p className="form-error" role="alert">{query.error}</p> : null}
         <form action="/api/organizations" method="post">
+          <input type="hidden" name="next" value="/onboarding/setup" />
           <label>
             Business name
             <input autoComplete="organization" maxLength={100} minLength={2} name="name" required />
           </label>
-          <button type="submit">Create organization</button>
+          <button type="submit">Create organization →</button>
         </form>
       </section>
     </main>

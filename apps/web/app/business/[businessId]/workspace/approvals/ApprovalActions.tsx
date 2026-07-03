@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../../src/lib/demoOrg";
 
 interface DecisionActionsProps {
   decisionId: string;
+  orgId: string;
 }
 
-export function DecisionActions({ decisionId }: DecisionActionsProps) {
+export function DecisionActions({ decisionId, orgId }: DecisionActionsProps) {
   const router = useRouter();
   const [pending, setPending] = useState<"approve" | "reject" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export function DecisionActions({ decisionId }: DecisionActionsProps) {
     setPending("approve");
     setError(null);
     try {
-      await apiClient.approveDecision(DEMO_ORG_ID, decisionId);
+      await apiClient.approveDecision(orgId, decisionId);
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.body.message : "Failed to approve.");
@@ -30,7 +30,7 @@ export function DecisionActions({ decisionId }: DecisionActionsProps) {
     setPending("reject");
     setError(null);
     try {
-      await apiClient.rejectDecision(DEMO_ORG_ID, decisionId, "Rejected by owner");
+      await apiClient.rejectDecision(orgId, decisionId, "Rejected by owner");
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.body.message : "Failed to reject.");
@@ -65,9 +65,10 @@ export function DecisionActions({ decisionId }: DecisionActionsProps) {
 
 interface RecommendationActionsProps {
   recommendationId: string;
+  orgId: string;
 }
 
-export function RecommendationActions({ recommendationId }: RecommendationActionsProps) {
+export function RecommendationActions({ recommendationId, orgId }: RecommendationActionsProps) {
   const router = useRouter();
   const [pending, setPending] = useState<"approve" | "dismiss" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +77,7 @@ export function RecommendationActions({ recommendationId }: RecommendationAction
     setPending("approve");
     setError(null);
     try {
-      await apiClient.approveRecommendation(DEMO_ORG_ID, recommendationId);
+      await apiClient.approveRecommendation(orgId, recommendationId);
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.body.message : "Failed to approve.");

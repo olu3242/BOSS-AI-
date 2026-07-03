@@ -107,3 +107,27 @@ export const CompareScenarioSchema = z.object({
   scenarioIds: z.array(z.string()).default([]),
 });
 
+// ─── Business Goals / OKRs ────────────────────────────────────────────────────
+
+export const CreateGoalSchema = z.object({
+  category: z.enum(["growth", "profitability", "customer_experience", "operations", "automation", "staff_productivity"]),
+  title: z.string().min(1).max(300),
+  description: z.string().max(1000).optional(),
+  kpiKey: z.string().min(1).nullable().optional(),
+  targetValue: z.number().nullable().optional(),
+  unit: z.string().min(1).nullable().optional(),
+  dueDate: z.string().datetime({ offset: true }).nullable().optional(),
+});
+
+export const UpdateGoalSchema = z.object({
+  title: z.string().min(1).max(300).optional(),
+  description: z.string().max(1000).optional(),
+  targetValue: z.number().nullable().optional(),
+  currentValue: z.number().nullable().optional(),
+  dueDate: z.string().datetime({ offset: true }).nullable().optional(),
+});
+
+export const UpdateGoalStatusSchema = z.object({
+  status: z.enum(["active", "paused", "completed", "cancelled"]),
+});
+

@@ -1,5 +1,5 @@
 import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
-import { DEMO_ORG_ID } from "../../../../src/lib/demoOrg";
+import { requireActiveTenant } from "../../../../src/server/auth";
 
 export default async function MissionControlPage({
   params,
@@ -7,9 +7,11 @@ export default async function MissionControlPage({
   params: Promise<{ businessId: string }>;
 }) {
   const { businessId } = await params;
+  const { organization } = await requireActiveTenant(`/auth/sign-in`);
+  const orgId = organization.id;
   let snapshot;
   try {
-    snapshot = await apiClient.getMissionControlSnapshot(DEMO_ORG_ID, businessId);
+    snapshot = await apiClient.getMissionControlSnapshot(orgId, businessId);
   } catch (error) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load Mission Control.";
     return (

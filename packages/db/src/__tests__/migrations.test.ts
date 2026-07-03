@@ -39,7 +39,7 @@ describe("migration file conventions", () => {
       "agent_executions",
       "runtime_checkpoints",
     ]) {
-      expect(sql).toContain(`CREATE TABLE ${table}`);
+      expect(sql).toContain(`CREATE TABLE IF NOT EXISTS ${table}`);
       expect(sql).toContain(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`);
     }
     expect(sql).toContain("uq_runtime_jobs_idempotency");
@@ -128,6 +128,57 @@ describe("migration file conventions", () => {
     expect(sql).toContain("lock_version integer NOT NULL");
     expect(sql).toContain("correlation_id text NOT NULL");
     expect(sql).toContain("trace_id text NOT NULL");
+  });
+
+  it("defines Phase B operational service tables (jobs, appointments, invoices, payments, reviews)", () => {
+    // 0026 — jobs
+    const jobsSql = readFileSync(join(MIGRATIONS_DIR, "0026_jobs.sql"), "utf-8");
+    expect(jobsSql).toContain("CREATE TABLE IF NOT EXISTS jobs");
+    expect(jobsSql).toContain("ALTER TABLE jobs ENABLE ROW LEVEL SECURITY");
+    expect(jobsSql).toContain("status IN ('draft','scheduled','in_progress','on_hold','completed','cancelled')");
+    expect(jobsSql).toContain("priority IN ('low','normal','high','urgent')");
+    expect(jobsSql).toContain("jobs_tenant_policy");
+    expect(jobsSql).toContain("org_id = boss_current_org_id()");
+    expect(jobsSql).toContain("idx_jobs_org_business");
+    expect(jobsSql).toContain("deleted_at timestamptz");
+
+    // 0027 — appointments
+    const apptSql = readFileSync(join(MIGRATIONS_DIR, "0027_appointments.sql"), "utf-8");
+    expect(apptSql).toContain("CREATE TABLE IF NOT EXISTS appointments");
+    expect(apptSql).toContain("ALTER TABLE appointments ENABLE ROW LEVEL SECURITY");
+    expect(apptSql).toContain("status IN ('scheduled','confirmed','in_progress','completed','cancelled','no_show')");
+    expect(apptSql).toContain("appointments_tenant_policy");
+    expect(apptSql).toContain("org_id = boss_current_org_id()");
+    expect(apptSql).toContain("start_at timestamptz NOT NULL");
+    expect(apptSql).toContain("end_at timestamptz NOT NULL");
+
+    // 0028 — invoices
+    const invSql = readFileSync(join(MIGRATIONS_DIR, "0028_invoices.sql"), "utf-8");
+    expect(invSql).toContain("CREATE TABLE IF NOT EXISTS invoices");
+    expect(invSql).toContain("ALTER TABLE invoices ENABLE ROW LEVEL SECURITY");
+    expect(invSql).toContain("status IN ('draft','sent','viewed','paid','overdue','cancelled','refunded')");
+    expect(invSql).toContain("uq_invoices_number");
+    expect(invSql).toContain("subtotal_cents integer NOT NULL");
+    expect(invSql).toContain("total_cents integer NOT NULL");
+    expect(invSql).toContain("org_id = boss_current_org_id()");
+
+    // 0029 — payments
+    const paySql = readFileSync(join(MIGRATIONS_DIR, "0029_payments.sql"), "utf-8");
+    expect(paySql).toContain("CREATE TABLE IF NOT EXISTS payments");
+    expect(paySql).toContain("ALTER TABLE payments ENABLE ROW LEVEL SECURITY");
+    expect(paySql).toContain("status IN ('pending','completed','failed','refunded')");
+    expect(paySql).toContain("method IN ('cash','card','bank_transfer','check','other')");
+    expect(paySql).toContain("payments_tenant_policy");
+    expect(paySql).toContain("amount_cents integer NOT NULL CHECK (amount_cents > 0)");
+
+    // 0030 — customer_reviews
+    const revSql = readFileSync(join(MIGRATIONS_DIR, "0030_customer_reviews.sql"), "utf-8");
+    expect(revSql).toContain("CREATE TABLE IF NOT EXISTS customer_reviews");
+    expect(revSql).toContain("ALTER TABLE customer_reviews ENABLE ROW LEVEL SECURITY");
+    expect(revSql).toContain("rating integer NOT NULL CHECK (rating BETWEEN 1 AND 5)");
+    expect(revSql).toContain("status IN ('pending','published','flagged','hidden')");
+    expect(revSql).toContain("customer_reviews_tenant_policy");
+    expect(revSql).toContain("responded_at timestamptz");
   });
 
   it("defines normalized, versioned tenant-scoped Business Knowledge Graphs", () => {

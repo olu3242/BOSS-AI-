@@ -45,6 +45,11 @@ import type {
   BusinessGraphHistoryEntry,
   BusinessNode,
   GraphSnapshot,
+  KpiReadingRecord,
+  BusinessGoal,
+  GoalStatus,
+  ExecutiveBriefingRecord,
+  BriefingPeriod,
 } from "@boss/types";
 import {
   BusinessDiscoveryConcurrencyError,
@@ -84,6 +89,9 @@ import {
   type BusinessScenarioRepository,
   type BusinessDiscoveryRepository,
   type BusinessGraphRepository,
+  type KpiReadingRepository,
+  type BusinessGoalRepository,
+  type ExecutiveBriefingRepository,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -1380,6 +1388,107 @@ export function createInMemoryOrganizationRepository(): OrganizationRepository {
       }
       active.set(userId, orgId);
       return organization;
+    },
+  };
+}
+
+export function createInMemoryKpiReadingRepository(): KpiReadingRepository {
+  const items = new Map<string, KpiReadingRecord>();
+  return {
+    async append(input) {
+      const record: KpiReadingRecord = {
+        ...input,
+        id: randomUUID(),
+        ...stamp(),
+      };
+      items.set(record.id, record);
+      return record;
+    },
+    async listByBusinessId(orgId, businessId, limit = 200) {
+      return Array.from(items.values())
+        .filter((r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt)
+        .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))
+        .slice(0, limit);
+    },
+    async listByKpiKey(orgId, businessId, kpiKey, limit = 90) {
+      return Array.from(items.values())
+        .filter((r) => r.orgId === orgId && r.businessId === businessId && r.kpiKey === kpiKey && !r.deletedAt)
+        .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))
+        .slice(0, limit);
+    },
+    async latestByKpiKey(orgId, businessId, kpiKey) {
+      return (
+        Array.from(items.values())
+          .filter((r) => r.orgId === orgId && r.businessId === businessId && r.kpiKey === kpiKey && !r.deletedAt)
+          .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))[0] ?? null
+      );
+    },
+  };
+}
+
+export function createInMemoryBusinessGoalRepository(): BusinessGoalRepository {
+  const items = new Map<string, BusinessGoal>();
+  return {
+    async create(input) {
+      const goal: BusinessGoal = { ...input, id: randomUUID(), ...stamp() };
+      items.set(goal.id, goal);
+      return goal;
+    },
+    async findById(orgId, id) {
+      const g = items.get(id);
+      return g && g.orgId === orgId && !g.deletedAt ? g : null;
+    },
+    async update(orgId, id, patch) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Goal ${id} not found`);
+      const updated: BusinessGoal = { ...existing, ...patch, updatedAt: new Date().toISOString() };
+      items.set(id, updated);
+      return updated;
+    },
+    async updateStatus(orgId, id, status: GoalStatus) {
+      const existing = items.get(id);
+      if (!existing || existing.orgId !== orgId || existing.deletedAt) throw new Error(`Goal ${id} not found`);
+      const updated: BusinessGoal = { ...existing, status, updatedAt: new Date().toISOString() };
+      items.set(id, updated);
+      return updated;
+    },
+    async listByBusinessId(orgId, businessId) {
+      return Array.from(items.values())
+        .filter((g) => g.orgId === orgId && g.businessId === businessId && !g.deletedAt)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+    async listByStatus(orgId, businessId, status: GoalStatus) {
+      return Array.from(items.values())
+        .filter((g) => g.orgId === orgId && g.businessId === businessId && g.status === status && !g.deletedAt)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+  };
+}
+
+export function createInMemoryExecutiveBriefingRepository(): ExecutiveBriefingRepository {
+  const items = new Map<string, ExecutiveBriefingRecord>();
+  return {
+    async create(input) {
+      const record: ExecutiveBriefingRecord = { ...input, id: randomUUID(), ...stamp() };
+      items.set(record.id, record);
+      return record;
+    },
+    async findById(orgId, id) {
+      const r = items.get(id);
+      return r && r.orgId === orgId && !r.deletedAt ? r : null;
+    },
+    async findLatest(orgId, businessId, period?: BriefingPeriod) {
+      return (
+        Array.from(items.values())
+          .filter((r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt && (!period || r.period === period))
+          .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))[0] ?? null
+      );
+    },
+    async listByBusinessId(orgId, businessId, limit = 30) {
+      return Array.from(items.values())
+        .filter((r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt)
+        .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))
+        .slice(0, limit);
     },
   };
 }
