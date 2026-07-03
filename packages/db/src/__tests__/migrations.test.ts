@@ -39,7 +39,7 @@ describe("migration file conventions", () => {
       "agent_executions",
       "runtime_checkpoints",
     ]) {
-      expect(sql).toContain(`CREATE TABLE ${table}`);
+      expect(sql).toContain(`CREATE TABLE IF NOT EXISTS ${table}`);
       expect(sql).toContain(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`);
     }
     expect(sql).toContain("uq_runtime_jobs_idempotency");
