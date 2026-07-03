@@ -76,7 +76,7 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
     setFormError(null);
     try {
       const inv = invoices.find((i) => i.id === invoiceId);
-      const result = await apiClient.createPayment(orgId, businessId, {
+      await apiClient.createPayment(orgId, businessId, {
         customerId: inv?.customerId ?? "",
         invoiceId,
         amountCents: cents,
