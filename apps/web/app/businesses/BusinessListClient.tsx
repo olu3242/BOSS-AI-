@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeader } from "../src/components/ui/PageHeader";
+import { EmptyState } from "../src/components/ui/EmptyState";
+import { Badge } from "../src/components/ui/Badge";
+import { Button } from "../src/components/ui/Button";
 
 interface BusinessSummary {
   id: string;
@@ -29,16 +33,11 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader />
+        <PageHeader title="Businesses" description="All businesses in your organization." action={<Link href="/business/new"><Button>+ Add Business</Button></Link>} />
         <div className="rounded border border-red-800 bg-red-950/30 p-5 text-red-400">
           <p className="font-medium">Failed to load businesses</p>
           <p className="mt-1 text-sm">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Retry
-          </button>
+          <Button variant="danger" onClick={() => window.location.reload()} className="mt-4">Retry</Button>
         </div>
       </div>
     );
@@ -59,21 +58,18 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader />
+      <PageHeader
+        title="Businesses"
+        description="All businesses in your organization."
+        action={<Link href="/business/new"><Button>+ Add Business</Button></Link>}
+      />
 
       {businesses.length === 0 ? (
-        <div className="rounded border border-neutral-700 bg-neutral-900 p-12 text-center">
-          <p className="text-lg font-medium text-neutral-200">No businesses yet</p>
-          <p className="mt-2 text-sm text-neutral-400 max-w-sm mx-auto">
-            Add your first business to start tracking health, KPIs, and AI recommendations.
-          </p>
-          <Link
-            href="/business/new"
-            className="mt-5 inline-flex rounded bg-red-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Add Your First Business →
-          </Link>
-        </div>
+        <EmptyState
+          title="No businesses yet"
+          description="Add your first business to start tracking health, KPIs, and AI recommendations."
+          action={<Link href="/business/new"><Button>Add Your First Business →</Button></Link>}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {businesses.map((business) => {
@@ -94,17 +90,11 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                     </p>
                   </div>
                   {tone && business.health ? (
-                    <div className={`flex-shrink-0 rounded border px-2 py-1 text-center ${tone.bg}`}>
-                      <p className={`font-display text-xl font-black leading-none ${tone.color}`}>
-                        {business.health.overallScore}
-                      </p>
-                      <p className={`text-[10px] font-medium leading-tight ${tone.color}`}>{tone.label}</p>
-                    </div>
+                    <Badge color={tone.label === "Excellent" ? "green" : tone.label === "Good" ? "blue" : tone.label === "Needs Attention" ? "yellow" : "red"}>
+                      {business.health.overallScore} · {tone.label}
+                    </Badge>
                   ) : (
-                    <div className="flex-shrink-0 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center">
-                      <p className="font-display text-sm font-medium leading-none text-neutral-500">—</p>
-                      <p className="text-[10px] text-neutral-600 leading-tight">No score</p>
-                    </div>
+                    <Badge color="neutral">No score</Badge>
                   )}
                 </div>
 
@@ -145,20 +135,3 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   );
 }
 
-function PageHeader() {
-  return (
-    <div className="flex items-start justify-between gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Organization</p>
-        <h1 className="mt-1 font-display text-3xl">Businesses</h1>
-        <p className="mt-2 text-sm text-neutral-400">All businesses in your organization.</p>
-      </div>
-      <Link
-        href="/business/new"
-        className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-      >
-        + Add Business
-      </Link>
-    </div>
-  );
-}

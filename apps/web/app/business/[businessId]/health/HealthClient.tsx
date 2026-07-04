@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeader } from "../../../../src/components/ui/PageHeader";
+import { Button } from "../../../../src/components/ui/Button";
 
 interface KpiReading {
   kpiKey: string;
@@ -117,7 +119,12 @@ export default function HealthClient({
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader businessName={businessName} businessId={businessId} />
+        <PageHeader
+          title="Business Health"
+          description="Real-time health score, constraints, and AI recommendations."
+          back={<Link href={`/business/${businessId}/workspace`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← {businessName}</Link>}
+          action={<Link href={`/business/${businessId}/mri`}><Button variant="secondary" size="sm">Re-run MRI</Button></Link>}
+        />
         <div className="rounded border border-red-800 bg-red-950/30 p-5 text-red-400">
           <p className="font-medium">Health data unavailable</p>
           <p className="mt-1 text-sm">{error}</p>
@@ -326,25 +333,3 @@ export default function HealthClient({
   );
 }
 
-function PageHeader({ businessName, businessId }: { businessName: string; businessId: string }) {
-  return (
-    <div className="flex items-start justify-between gap-6">
-      <div>
-        <Link
-          href={`/business/${businessId}/workspace`}
-          className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
-        >
-          ← {businessName}
-        </Link>
-        <h1 className="mt-1 font-display text-3xl">Business Health</h1>
-        <p className="mt-2 text-sm text-neutral-400">Real-time health score, constraints, and AI recommendations.</p>
-      </div>
-      <Link
-        href={`/business/${businessId}/mri`}
-        className="shrink-0 rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
-      >
-        Re-run MRI
-      </Link>
-    </div>
-  );
-}
