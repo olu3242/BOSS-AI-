@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { StatTile } from "../src/components/ui/StatTile";
-import { EmptyState } from "../src/components/ui/EmptyState";
+import { StatTile } from "../../src/components/ui/StatTile";
+import { EmptyState } from "../../src/components/ui/EmptyState";
 
 interface HealthDistribution {
   excellent: number;
