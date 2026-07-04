@@ -53,7 +53,7 @@ export function AddInteractionForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="mb-6 flex w-full items-center gap-2 rounded border border-dashed border-neutral-700 bg-neutral-900/40 px-4 py-3 text-sm text-neutral-500 hover:border-neutral-600 hover:text-neutral-400 transition-colors"
+        className="mb-6 flex w-full items-center gap-2 rounded border border-dashed border-border bg-surface/40 px-4 py-3 text-sm text-text-muted hover:border-border-strong hover:text-text-secondary transition-colors"
       >
         <span className="text-lg">+</span> Log interaction
       </button>
@@ -61,14 +61,14 @@ export function AddInteractionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 rounded border border-neutral-700 bg-neutral-900 p-4">
+    <form onSubmit={handleSubmit} className="mb-6 rounded border border-border bg-surface p-4">
       <div className="mb-3 flex gap-2">
         {TYPES.map((t) => (
           <button
             key={t.value}
             type="button"
             onClick={() => setType(t.value)}
-            className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${type === t.value ? "bg-red-800 text-white" : "bg-neutral-800 text-neutral-500 hover:text-neutral-300"}`}
+            className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${type === t.value ? "bg-red-800 text-white" : "bg-elevated text-text-muted hover:text-text-secondary"}`}
           >
             {t.label}
           </button>
@@ -89,7 +89,7 @@ export function AddInteractionForm({
         <button
           type="button"
           onClick={() => { setOpen(false); setSummary(""); }}
-          className="rounded bg-neutral-800 px-4 py-1.5 text-sm text-neutral-400 hover:bg-neutral-700 transition-colors"
+          className="rounded bg-elevated px-4 py-1.5 text-sm text-text-muted hover:bg-border transition-colors"
         >
           Cancel
         </button>

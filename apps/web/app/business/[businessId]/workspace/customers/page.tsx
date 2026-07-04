@@ -6,19 +6,20 @@ import { Input } from "../../../../../src/components/ui/Input";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 import { StatTile } from "../../../../../src/components/ui/StatTile";
 import { Button } from "../../../../../src/components/ui/Button";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 interface Props {
   params: Promise<{ businessId: string }>;
   searchParams: Promise<{ q?: string }>;
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  prospect:  "bg-yellow-900/40 text-yellow-400",
-  active:    "bg-green-900/40 text-green-400",
-  inactive:  "bg-neutral-800 text-neutral-500",
-  vip:       "bg-purple-900/40 text-purple-300",
-  churned:   "bg-red-900/40 text-red-400",
-};
+function customerStatusColor(status: string): "yellow" | "green" | "red" | "neutral" {
+  if (status === "prospect") return "yellow";
+  if (status === "active" || status === "vip") return "green";
+  if (status === "churned") return "red";
+  return "neutral";
+}
 
 function initials(first: string, last: string) {
   return `${first[0] ?? ""}${last[0] ?? ""}`.toUpperCase();
@@ -86,7 +87,7 @@ export default async function CustomersPage({ params, searchParams }: Props) {
         {q && (
           <Link
             href={`${base}/customers`}
-            className="rounded border border-neutral-700 bg-neutral-800 px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-700 transition-colors"
+            className="rounded border border-border bg-elevated px-4 py-2 text-sm text-text-muted hover:bg-border transition-colors"
           >
             Clear
           </Link>
@@ -125,24 +126,24 @@ export default async function CustomersPage({ params, searchParams }: Props) {
 
       {/* ── Customer list ─────────────────────────────────── */}
       {customers.length > 0 && (
-        <div className="flex flex-col divide-y divide-neutral-800 rounded border border-neutral-800">
+        <Card className="flex flex-col divide-y divide-border overflow-hidden">
           {customers.map((c) => (
             <Link
               key={c.id}
               href={`${base}/customers/${c.id}`}
-              className="flex items-center gap-4 px-5 py-4 hover:bg-neutral-900/60 transition-colors"
+              className="flex items-center gap-4 px-5 py-4 hover:bg-elevated/60 transition-colors"
             >
               {/* Avatar */}
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-800 font-display text-sm font-bold text-neutral-300">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-elevated font-display text-sm font-bold text-text-secondary">
                 {initials(c.firstName, c.lastName)}
               </div>
 
               {/* Name + contact */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-white truncate">
+                <p className="font-medium text-text-primary truncate">
                   {c.firstName} {c.lastName}
                 </p>
-                <p className="text-xs text-neutral-500 truncate">
+                <p className="text-xs text-text-muted truncate">
                   {c.email ?? c.phone ?? "No contact info"}
                 </p>
               </div>
@@ -151,28 +152,24 @@ export default async function CustomersPage({ params, searchParams }: Props) {
               {c.tags.length > 0 && (
                 <div className="hidden sm:flex gap-1">
                   {c.tags.slice(0, 2).map((t) => (
-                    <span key={t} className="rounded bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-500">
-                      {t}
-                    </span>
+                    <Badge key={t} color="neutral">{t}</Badge>
                   ))}
                 </div>
               )}
 
               {/* Revenue */}
               <div className="hidden md:block w-20 text-right">
-                <p className="text-sm text-neutral-300">{revenueLabel(c.totalRevenue)}</p>
-                <p className="text-[11px] text-neutral-600">revenue</p>
+                <p className="text-sm text-text-secondary">{revenueLabel(c.totalRevenue)}</p>
+                <p className="text-[11px] text-text-muted">revenue</p>
               </div>
 
               {/* Status */}
-              <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLE[c.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                {c.status}
-              </span>
+              <Badge color={customerStatusColor(c.status)}>{c.status}</Badge>
 
-              <span className="shrink-0 text-neutral-600">→</span>
+              <span className="shrink-0 text-text-muted">→</span>
             </Link>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   );

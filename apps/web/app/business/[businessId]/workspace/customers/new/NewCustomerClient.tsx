@@ -82,7 +82,7 @@ export function NewCustomerClient({ orgId }: { orgId: string }) {
           </Button>
           <Link
             href={`${base}/customers`}
-            className="rounded bg-neutral-800 px-5 py-2 text-sm text-neutral-400 hover:bg-neutral-700 transition-colors"
+            className="rounded bg-elevated px-5 py-2 text-sm text-text-muted hover:bg-border transition-colors"
           >
             Cancel
           </Link>

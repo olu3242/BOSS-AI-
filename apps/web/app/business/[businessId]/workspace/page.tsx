@@ -114,9 +114,9 @@ export default async function CommandCenterPage({ params }: Props) {
       {/* ── OPERATING LOOP ──────────────────────────────────── */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Operating Loop</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Operating Loop</h2>
           {loopStatus.lastRunAt && (
-            <span className="text-xs text-neutral-600">
+            <span className="text-xs text-text-muted">
               Last run {new Date(loopStatus.lastRunAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -132,17 +132,17 @@ export default async function CommandCenterPage({ params }: Props) {
                 key={stage.key}
                 className={`flex min-w-[80px] flex-1 flex-col items-center gap-1 rounded border py-2 px-1 text-center transition-colors ${
                   isActive  ? "border-red-800 bg-red-950/40" :
-                  isPast    ? "border-neutral-700 bg-neutral-900/60" :
-                              "border-neutral-800 bg-neutral-900/20"
+                  isPast    ? "border-border bg-elevated/60" :
+                              "border-border bg-surface/20"
                 }`}
               >
                 <span className={`text-[10px] font-medium leading-tight ${
-                  isActive ? "text-red-300" : isPast ? "text-neutral-400" : "text-neutral-600"
+                  isActive ? "text-red-300" : isPast ? "text-text-secondary" : "text-text-muted"
                 }`}>
                   {stage.label}
                 </span>
                 <span className={`h-1 w-1 rounded-full ${
-                  isActive ? "bg-red-500" : isPast ? "bg-neutral-500" : "bg-neutral-700"
+                  isActive ? "bg-red-500" : isPast ? "bg-border" : "bg-elevated"
                 }`} />
               </div>
             );
@@ -158,20 +158,20 @@ export default async function CommandCenterPage({ params }: Props) {
 
         {/* Health Score */}
         {health ? (
-          <section className={`rounded border p-6 ${tone?.bg ?? "border-neutral-800 bg-neutral-900"}`}>
+          <section className={`rounded border p-6 ${tone?.bg ?? "border-border bg-surface"}`}>
             <p className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Health</p>
             <div className="mt-2 flex items-baseline gap-3">
-              <span className={`font-display text-5xl font-black ${tone?.color ?? "text-white"}`}>{health.overallScore}</span>
-              <span className="text-lg text-neutral-500">/ 100</span>
+              <span className={`font-display text-5xl font-black ${tone?.color ?? "text-text-primary"}`}>{health.overallScore}</span>
+              <span className="text-lg text-text-muted">/ 100</span>
               <span className={`text-sm font-medium ${tone?.color}`}>{tone?.label}</span>
             </div>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-elevated">
               <div className={`h-full rounded-full ${tone?.bar} transition-all`} style={{ width: `${health.overallScore}%` }} />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <StatBubble value={loopStatus.activeConstraints} label="Constraints" color={loopStatus.activeConstraints > 0 ? "text-red-400" : "text-neutral-400"} />
-              <StatBubble value={proposedRecs.length} label="Recommendations" color={proposedRecs.length > 0 ? "text-yellow-400" : "text-neutral-400"} />
-              <StatBubble value={approvalQueue.totalPending} label="Approvals" color={approvalQueue.totalPending > 0 ? "text-blue-400" : "text-neutral-400"} />
+              <StatBubble value={loopStatus.activeConstraints} label="Constraints" color={loopStatus.activeConstraints > 0 ? "text-red-400" : "text-text-muted"} />
+              <StatBubble value={proposedRecs.length} label="Recommendations" color={proposedRecs.length > 0 ? "text-yellow-400" : "text-text-muted"} />
+              <StatBubble value={approvalQueue.totalPending} label="Approvals" color={approvalQueue.totalPending > 0 ? "text-blue-400" : "text-text-muted"} />
             </div>
           </section>
         ) : (
@@ -214,7 +214,7 @@ export default async function CommandCenterPage({ params }: Props) {
                 <div key={d.id} className="flex items-center gap-3 rounded border border-yellow-900/40 bg-yellow-950/20 px-4 py-3">
                   <span className="text-yellow-400 text-xs font-bold uppercase">Decision</span>
                   <span className="flex-1 min-w-0 truncate text-sm">{d.objective}</span>
-                  <span className="shrink-0 text-xs text-neutral-500">{Math.round(d.confidenceScore * 100)}%</span>
+                  <span className="shrink-0 text-xs text-text-muted">{Math.round(d.confidenceScore * 100)}%</span>
                 </div>
               ))}
               {proposedRecs.slice(0, 3 - Math.min(decisions.pending.length, 3)).map((r) => (
@@ -338,18 +338,18 @@ function DomainTiles({ base, customerCount }: { base: string; customerCount: num
   };
   return (
     <section>
-      <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Business Domains</h2>
+      <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Business Domains</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {DOMAIN_TILES.map((d) => (
           <Link
             key={d.key}
             href={`${base}/${d.key}`}
-            className="flex flex-col gap-2 rounded border border-neutral-800 bg-neutral-900 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-800/60"
+            className="flex flex-col gap-2 rounded border border-border bg-surface p-4 transition-colors hover:border-border-strong hover:bg-elevated/60"
           >
             <span className="text-2xl">{d.icon}</span>
             <div>
-              <p className="text-sm font-medium text-neutral-200">{d.label}</p>
-              <p className="text-xs text-neutral-500">
+              <p className="text-sm font-medium text-text-primary">{d.label}</p>
+              <p className="text-xs text-text-muted">
                 {counts[d.key] !== null ? `${counts[d.key]} records` : d.desc}
               </p>
             </div>
@@ -364,7 +364,7 @@ function StatBubble({ value, label, color }: { value: number; label: string; col
   return (
     <div>
       <p className={`text-xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-neutral-500 mt-0.5">{label}</p>
+      <p className="text-xs text-text-muted mt-0.5">{label}</p>
     </div>
   );
 }
@@ -380,7 +380,7 @@ function RecommendationInlineActions({ recommendationId, businessId }: { recomme
       </form>
       <form action={`/api/recommendations/${recommendationId}/dismiss`} method="POST">
         <input type="hidden" name="businessId" value={businessId} />
-        <button type="submit" className="rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-400 hover:bg-neutral-700 transition-colors w-full">
+        <button type="submit" className="rounded bg-elevated px-3 py-1.5 text-xs font-medium text-text-muted hover:bg-border transition-colors w-full">
           Dismiss
         </button>
       </form>

@@ -59,7 +59,7 @@ export default async function CustomerProfilePage({ params }: Props) {
       : "Customer not found";
     return (
       <div className="flex flex-col gap-4">
-        <Link href={`${base}/customers`} className="text-sm text-neutral-500 hover:text-neutral-300">
+        <Link href={`${base}/customers`} className="text-sm text-text-muted hover:text-text-secondary">
           ← Customers
         </Link>
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-sm text-red-400">{msg}</div>
@@ -139,18 +139,18 @@ export default async function CustomerProfilePage({ params }: Props) {
           />
         ) : (
           <div className="relative flex flex-col gap-0">
-            <div className="absolute left-[17px] top-0 bottom-0 w-px bg-neutral-800" />
+            <div className="absolute left-[17px] top-0 bottom-0 w-px bg-border" />
             {interactions.map((ix) => (
               <div key={ix.id} className="relative flex gap-4 pb-6">
-                <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-800 bg-neutral-950 text-base">
+                <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-base">
                   {INTERACTION_ICON[ix.type] ?? "💬"}
                 </div>
                 <div className="flex-1 min-w-0 pt-0.5">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm text-neutral-200 leading-relaxed">{ix.summary}</p>
-                    <span className="shrink-0 text-xs text-neutral-600">{timeAgo(ix.occurredAt)}</span>
+                    <p className="text-sm text-text-secondary leading-relaxed">{ix.summary}</p>
+                    <span className="shrink-0 text-xs text-text-muted">{timeAgo(ix.occurredAt)}</span>
                   </div>
-                  <p className="mt-0.5 text-xs capitalize text-neutral-600">{ix.type.replace(/_/g, " ")}</p>
+                  <p className="mt-0.5 text-xs capitalize text-text-muted">{ix.type.replace(/_/g, " ")}</p>
                 </div>
               </div>
             ))}
