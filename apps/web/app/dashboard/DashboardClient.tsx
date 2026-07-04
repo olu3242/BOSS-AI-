@@ -5,6 +5,8 @@ import { StatTile } from "../../src/components/ui/StatTile";
 import { EmptyState } from "../../src/components/ui/EmptyState";
 import { PageHeader } from "../../src/components/ui/PageHeader";
 import { Button } from "../../src/components/ui/Button";
+import { Card } from "../../src/components/ui/Card";
+import { Badge } from "../../src/components/ui/Badge";
 
 interface HealthDistribution {
   excellent: number;
@@ -55,11 +57,11 @@ function healthScoreBg(score: number) {
   return "border-red-900/50 bg-red-950/20";
 }
 
-function statusColor(status: string) {
-  if (status === "approved") return "text-green-400";
-  if (status === "rejected") return "text-red-400";
-  if (status === "pending") return "text-yellow-400";
-  return "text-neutral-400";
+function decisionStatusColor(status: string): "green" | "red" | "yellow" | "neutral" {
+  if (status === "approved") return "green";
+  if (status === "rejected") return "red";
+  if (status === "pending") return "yellow";
+  return "neutral";
 }
 
 export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
@@ -145,7 +147,7 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
       {/* Health Distribution */}
       {totalWithScores > 0 && (
         <section>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Health Distribution</h2>
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Health Distribution</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <HealthBucket label="Excellent" count={healthDistribution.excellent} color="text-green-400" barColor="bg-green-500" total={totalWithScores} />
             <HealthBucket label="Good" count={healthDistribution.good} color="text-blue-400" barColor="bg-blue-500" total={totalWithScores} />
@@ -160,8 +162,8 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
         {/* Top Alerts */}
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-base text-neutral-300">Top Alerts</h2>
-            <Link href="/businesses" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-base text-text-primary">Top Alerts</h2>
+            <Link href="/businesses" className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               All businesses →
             </Link>
           </div>
@@ -176,8 +178,8 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
                   className={`flex items-center gap-4 rounded border px-4 py-3 transition-colors hover:bg-neutral-800/60 ${healthScoreBg(alert.healthScore)}`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-200 truncate">{alert.businessName}</p>
-                    <p className="text-xs text-neutral-500">Needs immediate attention</p>
+                    <p className="text-sm font-medium text-text-primary truncate">{alert.businessName}</p>
+                    <p className="text-xs text-text-muted">Needs immediate attention</p>
                   </div>
                   <span className={`shrink-0 font-display text-xl font-black ${healthScoreColor(alert.healthScore)}`}>
                     {alert.healthScore}
@@ -191,25 +193,23 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
         {/* Recent Decisions */}
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-base text-neutral-300">Recent Decisions</h2>
+            <h2 className="font-display text-base text-text-primary">Recent Decisions</h2>
           </div>
           {recentDecisions.length === 0 ? (
             <EmptyState title="No decisions yet" description="Decisions will appear here as BOSS analyzes your businesses." dashed={false} />
           ) : (
             <div className="flex flex-col gap-2">
               {recentDecisions.slice(0, 5).map((decision) => (
-                <div key={decision.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+                <Card key={decision.id} padding="sm" className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm leading-snug text-neutral-300 truncate">{decision.objective}</p>
-                    <p className="text-xs text-neutral-500 mt-0.5">
+                    <p className="text-sm leading-snug text-text-secondary truncate">{decision.objective}</p>
+                    <p className="text-xs text-text-muted mt-0.5">
                       {decision.businessName} ·{" "}
                       {new Date(decision.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                     </p>
                   </div>
-                  <span className={`shrink-0 text-xs font-medium capitalize ${statusColor(decision.status)}`}>
-                    {decision.status}
-                  </span>
-                </div>
+                  <Badge color={decisionStatusColor(decision.status)}>{decision.status}</Badge>
+                </Card>
               ))}
             </div>
           )}
@@ -248,13 +248,13 @@ function HealthBucket({
 }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900 p-4">
-      <p className="text-xs text-neutral-500">{label}</p>
+    <Card padding="sm">
+      <p className="text-xs text-text-muted">{label}</p>
       <p className={`mt-1 font-display text-2xl font-bold ${color}`}>{count}</p>
-      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-neutral-800">
+      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-elevated">
         <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1 text-xs text-neutral-600">{pct}%</p>
-    </div>
+      <p className="mt-1 text-xs text-text-muted">{pct}%</p>
+    </Card>
   );
 }
