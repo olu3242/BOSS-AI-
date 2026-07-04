@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Review = {
   id: string; customerId: string; jobId: string | null; rating: number;
@@ -168,12 +170,7 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
           <h2 className="font-semibold text-neutral-100">Add Review</h2>
           {formError && <p className="text-sm text-red-400">{formError}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Customer ID *</label>
-              <input type="text" value={customerId} onChange={(e) => setCustomerId(e.target.value)}
-                placeholder="Customer ID"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
+            <Input label="Customer ID *" value={customerId} onChange={(e) => setCustomerId(e.target.value)} placeholder="Customer ID" />
             <div>
               <label className="block text-xs text-neutral-400 mb-1">Rating *</label>
               <div className="flex gap-2">
@@ -185,22 +182,15 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Title</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
+            <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="sm:col-span-2">
-              <label className="block text-xs text-neutral-400 mb-1">Review</label>
-              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
+              <Textarea label="Review" value={body} onChange={(e) => setBody(e.target.value)} rows={3} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50">
+            <Button type="submit" disabled={loading} loading={loading}>
               {loading ? "Saving…" : "Add Review"}
-            </button>
+            </Button>
             <button type="button" onClick={() => { setShowForm(false); setFormError(null); }}
               className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white">
               Cancel
@@ -282,14 +272,12 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
 
               {respondingId === review.id ? (
                 <div className="space-y-2">
-                  <textarea value={responseText} onChange={(e) => setResponseText(e.target.value)}
-                    rows={3} placeholder="Write your response…"
-                    className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
+                  <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)}
+                    rows={3} placeholder="Write your response…" />
                   <div className="flex gap-2">
-                    <button onClick={() => handleRespond(review.id)}
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs text-white hover:bg-accent/90">
+                    <Button size="sm" onClick={() => handleRespond(review.id)}>
                       Save Response
-                    </button>
+                    </Button>
                     <button onClick={() => { setRespondingId(null); setResponseText(""); }}
                       className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 hover:text-white">
                       Cancel

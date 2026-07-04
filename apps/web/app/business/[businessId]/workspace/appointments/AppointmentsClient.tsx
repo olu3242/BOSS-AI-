@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Appointment = {
   id: string; title: string; notes: string | null;
@@ -137,65 +139,19 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
               <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Title *</label>
-                <input
-                  value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Initial consultation"
-                  required
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
+              <Input label="Title *" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Initial consultation" required />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">Start *</label>
-                  <input
-                    type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)}
-                    required
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">End *</label>
-                  <input
-                    type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)}
-                    required
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  />
-                </div>
+                <Input label="Start *" type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} required />
+                <Input label="End *" type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} required />
               </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Location</label>
-                <input
-                  value={location} onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Address or virtual link"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Assigned To</label>
-                <input
-                  value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
-                  placeholder="Employee name or ID"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Notes</label>
-                <textarea
-                  value={notes} onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              {formError && <p className="text-sm text-red-400">{formError}</p>}
+              <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Address or virtual link" />
+              <Input label="Assigned To" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Employee name or ID" />
+              <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              {formError && <p className="text-sm text-status-danger">{formError}</p>}
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit" disabled={loading}
-                  className="flex-1 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                >
+                <Button type="submit" disabled={loading} loading={loading} className="flex-1">
                   {loading ? "Creating…" : "Create Appointment"}
-                </button>
+                </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
                   className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"

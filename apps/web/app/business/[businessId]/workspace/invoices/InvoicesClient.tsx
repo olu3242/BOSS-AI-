@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Invoice = {
   id: string; invoiceNumber: string; customerId: string; jobId: string | null;
@@ -167,15 +169,7 @@ export function InvoicesClient({ orgId, businessId, invoices: initialInvoices, e
               <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Customer ID *</label>
-                <input
-                  value={customerId} onChange={(e) => setCustomerId(e.target.value)}
-                  placeholder="Customer UUID"
-                  required
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
+              <Input label="Customer ID *" value={customerId} onChange={(e) => setCustomerId(e.target.value)} placeholder="Customer UUID" required />
 
               {/* Line items */}
               <div>
@@ -238,30 +232,14 @@ export function InvoicesClient({ orgId, businessId, invoices: initialInvoices, e
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Due Date</label>
-                <input
-                  type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Notes</label>
-                <textarea
-                  value={notes} onChange={(e) => setNotes(e.target.value)}
-                  rows={2}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
+              <Input label="Due Date" type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
+              <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
 
-              {formError && <p className="text-sm text-red-400">{formError}</p>}
+              {formError && <p className="text-sm text-status-danger">{formError}</p>}
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit" disabled={loading}
-                  className="flex-1 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                >
+                <Button type="submit" disabled={loading} loading={loading} className="flex-1">
                   {loading ? "Creating…" : "Create Invoice"}
-                </button>
+                </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
                   className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"
