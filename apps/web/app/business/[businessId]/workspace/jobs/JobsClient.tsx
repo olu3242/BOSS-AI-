@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea, Select } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Job = {
   id: string; title: string; description: string | null;
@@ -145,77 +147,25 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
               <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Title *</label>
-                <input
-                  value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. HVAC maintenance"
-                  required
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Description</label>
-                <textarea
-                  value={description} onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
+              <Input label="Title *" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. HVAC maintenance" required />
+              <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">Priority</label>
-                  <select
-                    value={priority} onChange={(e) => setPriority(e.target.value)}
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  >
-                    <option value="low">Low</option>
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">Est. Duration (min)</label>
-                  <input
-                    type="number" min="1" value={estimatedDuration} onChange={(e) => setEstimatedDuration(e.target.value)}
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  />
-                </div>
+                <Select label="Priority" value={priority} onChange={(e) => setPriority(e.target.value)}>
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </Select>
+                <Input label="Est. Duration (min)" type="number" min="1" value={estimatedDuration} onChange={(e) => setEstimatedDuration(e.target.value)} />
               </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Scheduled Date/Time</label>
-                <input
-                  type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Location</label>
-                <input
-                  value={location} onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Address or description"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Assigned To</label>
-                <input
-                  value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
-                  placeholder="Employee name or ID"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              {formError && (
-                <p className="text-sm text-red-400">{formError}</p>
-              )}
+              <Input label="Scheduled Date/Time" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+              <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Address or description" />
+              <Input label="Assigned To" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Employee name or ID" />
+              {formError && <p className="text-sm text-status-danger">{formError}</p>}
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit" disabled={loading}
-                  className="flex-1 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                >
+                <Button type="submit" disabled={loading} loading={loading} className="flex-1">
                   {loading ? "Creating…" : "Create Job"}
-                </button>
+                </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
                   className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"
