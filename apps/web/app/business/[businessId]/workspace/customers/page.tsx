@@ -4,6 +4,8 @@ import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input } from "../../../../../src/components/ui/Input";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { StatTile } from "../../../../../src/components/ui/StatTile";
+import { Button } from "../../../../../src/components/ui/Button";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -65,16 +67,9 @@ export default async function CustomersPage({ params, searchParams }: Props) {
       {/* ── Stats strip ───────────────────────────────────── */}
       {customers.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: "Total customers", value: customers.length.toString() },
-            { label: "Active / VIP", value: `${activeCount}` },
-            { label: "Total revenue", value: revenueLabel(totalRevenue) },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded border border-neutral-800 bg-neutral-900 p-4">
-              <p className="text-xs text-neutral-500 uppercase tracking-wide">{stat.label}</p>
-              <p className="mt-1 font-display text-2xl">{stat.value}</p>
-            </div>
-          ))}
+          <StatTile label="Total customers" value={customers.length} />
+          <StatTile label="Active / VIP" value={activeCount} />
+          <StatTile label="Total revenue" value={revenueLabel(totalRevenue)} />
         </div>
       )}
 
@@ -87,12 +82,7 @@ export default async function CustomersPage({ params, searchParams }: Props) {
             placeholder="Search by name, email, or phone…"
           />
         </div>
-        <button
-          type="submit"
-          className="rounded border border-neutral-700 bg-neutral-800 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-700 transition-colors"
-        >
-          Search
-        </button>
+        <Button type="submit" variant="secondary">Search</Button>
         {q && (
           <Link
             href={`${base}/customers`}
