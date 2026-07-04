@@ -6,6 +6,8 @@ import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 interface KpiProjection {
   kpiKey: string;
@@ -50,22 +52,16 @@ const HORIZON_OPTIONS = [
   { value: 12, label: "12 months" },
 ];
 
-function riskBadge(level: string) {
-  switch (level) {
-    case "low": return "bg-green-900/40 text-green-400 border border-green-800/50";
-    case "medium": return "bg-yellow-900/40 text-yellow-400 border border-yellow-800/50";
-    case "high": return "bg-red-900/40 text-red-400 border border-red-800/50";
-    default: return "bg-neutral-800 text-neutral-400 border border-neutral-700";
-  }
+function riskBadgeColor(level: string): "green" | "yellow" | "red" | "neutral" {
+  if (level === "low") return "green";
+  if (level === "medium") return "yellow";
+  if (level === "high") return "red";
+  return "neutral";
 }
 
-function statusBadge(status: string) {
-  switch (status) {
-    case "active": return "bg-blue-900/40 text-blue-400 border border-blue-800/50";
-    case "draft": return "bg-neutral-800 text-neutral-400 border border-neutral-700";
-    case "archived": return "bg-neutral-900 text-neutral-600 border border-neutral-800";
-    default: return "bg-neutral-800 text-neutral-400 border border-neutral-700";
-  }
+function scenarioStatusColor(status: string): "blue" | "neutral" {
+  if (status === "active") return "blue";
+  return "neutral";
 }
 
 function fmt(val: number | null, unit: string) {
@@ -132,8 +128,8 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
 
       {/* Generate form */}
       {showForm && (
-        <div className="rounded border border-neutral-700 bg-neutral-900 p-5 flex flex-col gap-4">
-          <h3 className="text-sm font-medium text-white">New Scenario</h3>
+        <Card className="flex flex-col gap-4">
+          <h3 className="text-sm font-medium text-text-primary">New Scenario</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input label="Scenario Name" placeholder="e.g. Expand to second location" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
             <Select label="Time Horizon" value={form.timeHorizonMonths} onChange={(e) => setForm((f) => ({ ...f, timeHorizonMonths: Number(e.target.value) }))}>
@@ -151,7 +147,7 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setShowForm(false)}
-              className="rounded px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors"
+              className="rounded px-4 py-2 text-sm text-text-muted hover:text-text-primary transition-colors"
             >
               Cancel
             </button>
@@ -159,7 +155,7 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
               {creating ? "Generating…" : "Generate Scenario"}
             </Button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Compare panel */}
@@ -167,25 +163,25 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
         <div className="rounded border border-blue-900/50 bg-blue-950/10 p-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-blue-400">Scenario Comparison ({compareIds.length}/3)</h3>
-            <button onClick={() => setCompareIds([])} className="text-xs text-neutral-500 hover:text-white transition-colors">Clear</button>
+            <button onClick={() => setCompareIds([])} className="text-xs text-text-muted hover:text-text-primary transition-colors">Clear</button>
           </div>
           <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${compareScenarios.length}, 1fr)` }}>
             {compareScenarios.map((s) => (
               <div key={s.id} className="flex flex-col gap-2">
-                <p className="text-xs font-semibold text-white">{s.name}</p>
-                <p className="text-xs text-neutral-500">{s.timeHorizonMonths}mo · {s.priorityFocus.replace(/_/g, " ")}</p>
+                <p className="text-xs font-semibold text-text-primary">{s.name}</p>
+                <p className="text-xs text-text-muted">{s.timeHorizonMonths}mo · {s.priorityFocus.replace(/_/g, " ")}</p>
                 {s.projectedRevenueImpact !== null && (
                   <p className={`text-sm font-bold ${s.projectedRevenueImpact >= 0 ? "text-green-400" : "text-red-400"}`}>
                     {s.projectedRevenueImpact >= 0 ? "+" : ""}${s.projectedRevenueImpact.toLocaleString()} revenue
                   </p>
                 )}
-                <span className={`self-start rounded px-2 py-0.5 text-xs ${riskBadge(s.riskLevel)}`}>{s.riskLevel} risk</span>
+                <Badge color={riskBadgeColor(s.riskLevel)}>{s.riskLevel} risk</Badge>
                 {s.kpiProjections.length > 0 && (
                   <div className="flex flex-col gap-1 mt-1">
                     {s.kpiProjections.slice(0, 3).map((k) => (
-                      <div key={k.kpiKey} className="text-xs text-neutral-400 flex justify-between">
+                      <div key={k.kpiKey} className="text-xs text-text-secondary flex justify-between">
                         <span>{k.label}</span>
-                        <span className="text-white">{fmt(k.projectedValue, k.unit)}</span>
+                        <span className="text-text-primary">{fmt(k.projectedValue, k.unit)}</span>
                       </div>
                     ))}
                   </div>
@@ -213,21 +209,21 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
       ) : (
         <div className="flex flex-col gap-3">
           {compareIds.length > 0 && compareIds.length < 2 && (
-            <p className="text-xs text-neutral-500">Select one more scenario to compare (up to 3).</p>
+            <p className="text-xs text-text-muted">Select one more scenario to compare (up to 3).</p>
           )}
           {scenarios.map((s) => (
-            <div key={s.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
+            <Card key={s.id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-medium text-white">{s.name}</h3>
-                    <span className={`rounded px-2 py-0.5 text-xs ${statusBadge(s.status)}`}>{s.status}</span>
-                    <span className={`rounded px-2 py-0.5 text-xs ${riskBadge(s.riskLevel)}`}>{s.riskLevel} risk</span>
+                    <h3 className="text-sm font-medium text-text-primary">{s.name}</h3>
+                    <Badge color={scenarioStatusColor(s.status)}>{s.status}</Badge>
+                    <Badge color={riskBadgeColor(s.riskLevel)}>{s.riskLevel} risk</Badge>
                   </div>
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-xs text-text-muted">
                     {s.timeHorizonMonths} months · Focus: {PRIORITY_OPTIONS.find((p) => p.value === s.priorityFocus)?.label ?? s.priorityFocus}
                   </p>
-                  {s.description && <p className="mt-1 text-xs text-neutral-400">{s.description}</p>}
+                  {s.description && <p className="mt-1 text-xs text-text-secondary">{s.description}</p>}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {s.projectedRevenueImpact !== null && (
@@ -235,35 +231,35 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
                       {s.projectedRevenueImpact >= 0 ? "+" : ""}${s.projectedRevenueImpact.toLocaleString()}
                     </span>
                   )}
-                  <span className="text-xs text-neutral-500">{Math.round(s.confidenceScore * 100)}% confidence</span>
+                  <span className="text-xs text-text-muted">{Math.round(s.confidenceScore * 100)}% confidence</span>
                 </div>
               </div>
 
               <div className="mt-3 flex items-center gap-2">
                 <button
                   onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}
-                  className="text-xs text-neutral-500 hover:text-white transition-colors"
+                  className="text-xs text-text-muted hover:text-text-primary transition-colors"
                 >
                   {expandedId === s.id ? "Hide details" : "Show details"}
                 </button>
-                <span className="text-neutral-700">·</span>
+                <span className="text-border">·</span>
                 <button
                   onClick={() => toggleCompare(s.id)}
-                  className={`text-xs transition-colors ${compareIds.includes(s.id) ? "text-blue-400 hover:text-blue-300" : "text-neutral-500 hover:text-white"}`}
+                  className={`text-xs transition-colors ${compareIds.includes(s.id) ? "text-blue-400 hover:text-blue-300" : "text-text-muted hover:text-text-primary"}`}
                 >
                   {compareIds.includes(s.id) ? "Remove from comparison" : "Compare"}
                 </button>
               </div>
 
               {expandedId === s.id && (
-                <div className="mt-4 grid gap-4 sm:grid-cols-2 border-t border-neutral-800 pt-4">
+                <div className="mt-4 grid gap-4 sm:grid-cols-2 border-t border-border pt-4">
                   {s.keyAssumptions.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">Key Assumptions</p>
+                      <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">Key Assumptions</p>
                       <ul className="flex flex-col gap-1">
                         {s.keyAssumptions.map((a, i) => (
-                          <li key={i} className="text-xs text-neutral-400 flex gap-2">
-                            <span className="text-neutral-600">·</span> {a}
+                          <li key={i} className="text-xs text-text-secondary flex gap-2">
+                            <span className="text-text-muted">·</span> {a}
                           </li>
                         ))}
                       </ul>
@@ -271,13 +267,13 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
                   )}
                   {s.kpiProjections.length > 0 && (
                     <div>
-                      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">KPI Projections</p>
+                      <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">KPI Projections</p>
                       <div className="flex flex-col gap-1">
                         {s.kpiProjections.map((k) => (
                           <div key={k.kpiKey} className="flex justify-between text-xs">
-                            <span className="text-neutral-400">{k.label}</span>
-                            <div className="flex gap-2 text-neutral-300">
-                              <span className="text-neutral-600">{fmt(k.currentValue, k.unit)}</span>
+                            <span className="text-text-secondary">{k.label}</span>
+                            <div className="flex gap-2 text-text-secondary">
+                              <span className="text-text-muted">{fmt(k.currentValue, k.unit)}</span>
                               <span>→</span>
                               <span className={k.projectedValue !== null && k.currentValue !== null && k.projectedValue > k.currentValue ? "text-green-400" : "text-red-400"}>
                                 {fmt(k.projectedValue, k.unit)}
@@ -290,7 +286,7 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
                   )}
                 </div>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}
