@@ -275,6 +275,24 @@ button {
   margin-top: 8px;
 }
 
+.auth-divider {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: .8rem;
+  gap: 12px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  background: var(--line);
+  content: "";
+  flex: 1;
+  height: 1px;
+}
+
 .app-header {
   background: var(--panel);
   border-bottom: 1px solid var(--line);

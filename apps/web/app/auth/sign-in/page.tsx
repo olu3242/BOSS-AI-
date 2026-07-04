@@ -1,4 +1,5 @@
 import { safeNextPath } from "../../../src/server/auth";
+import { GoogleSignInButton } from "../../../src/components/auth/GoogleSignInButton";
 
 interface SignInPageProps {
   readonly searchParams: Promise<{
@@ -23,12 +24,21 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <p className="eyebrow">Welcome back</p>
         <h1 id="sign-in-title">Sign in</h1>
         <p className="subtle">Continue managing your business in BOSS.</p>
+
         {query.reset ? (
           <p className="form-success" role="status">
             Your password was updated. Sign in with the new password.
           </p>
         ) : null}
         {error ? <p className="form-error" role="alert">{error}</p> : null}
+
+        {/* Google OAuth */}
+        <GoogleSignInButton next={next} />
+
+        <div className="auth-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
         <form action="/api/auth/sign-in" method="post">
           <input name="next" type="hidden" value={next} />
           <label>
