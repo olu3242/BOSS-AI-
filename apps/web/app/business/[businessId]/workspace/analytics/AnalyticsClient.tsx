@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { StatTile } from "../../../../../src/components/ui/StatTile";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 import { Button } from "../../../../../src/components/ui/Button";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Analytics = {
   revenue: { totalCents: number; paidCents: number; pendingCents: number; overdueCount: number; monthlyTrend: Array<{ month: string; amountCents: number }> };
@@ -134,82 +135,82 @@ export function AnalyticsClient({ orgId, businessId, analytics: initialAnalytics
 
       {/* Row 2 — Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5 space-y-3">
-          <p className="text-sm font-medium text-neutral-300">Revenue Breakdown</p>
+        <Card>
+          <p className="text-sm font-medium text-text-primary mb-3">Revenue Breakdown</p>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-green-400">Paid</span>
-              <span className="font-semibold text-neutral-100">{formatMoney(revenue.paidCents)}</span>
+              <span className="font-semibold text-text-primary">{formatMoney(revenue.paidCents)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-yellow-400">Pending</span>
-              <span className="font-semibold text-neutral-100">{formatMoney(revenue.pendingCents)}</span>
+              <span className="font-semibold text-text-primary">{formatMoney(revenue.pendingCents)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-red-400">Overdue ({revenue.overdueCount})</span>
               <span className="font-semibold text-red-400">{revenue.overdueCount > 0 ? "!" : "—"}</span>
             </div>
-            <div className="border-t border-neutral-800 pt-2 flex items-center justify-between">
-              <span className="text-sm text-neutral-500">Avg days to pay</span>
-              <span className="text-neutral-300">{payments.avgDaysToPay !== null ? `${payments.avgDaysToPay}d` : "—"}</span>
+            <div className="border-t border-border pt-2 flex items-center justify-between">
+              <span className="text-sm text-text-muted">Avg days to pay</span>
+              <span className="text-text-secondary">{payments.avgDaysToPay !== null ? `${payments.avgDaysToPay}d` : "—"}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5 space-y-3">
-          <p className="text-sm font-medium text-neutral-300">Jobs Breakdown</p>
+        <Card>
+          <p className="text-sm font-medium text-text-primary mb-3">Jobs Breakdown</p>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-green-400">Completed</span>
-              <span className="font-semibold text-neutral-100">{jobs.completed}</span>
+              <span className="font-semibold text-text-primary">{jobs.completed}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-400">In Progress</span>
-              <span className="font-semibold text-neutral-100">{jobs.inProgress}</span>
+              <span className="font-semibold text-text-primary">{jobs.inProgress}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-neutral-400">Total</span>
-              <span className="font-semibold text-neutral-100">{jobs.total}</span>
+              <span className="text-sm text-text-muted">Total</span>
+              <span className="font-semibold text-text-primary">{jobs.total}</span>
             </div>
-            <div className="border-t border-neutral-800 pt-2 flex items-center justify-between">
-              <span className="text-sm text-neutral-500">Avg duration</span>
-              <span className="text-neutral-300">{jobs.avgDurationMinutes !== null ? `${jobs.avgDurationMinutes}m` : "—"}</span>
+            <div className="border-t border-border pt-2 flex items-center justify-between">
+              <span className="text-sm text-text-muted">Avg duration</span>
+              <span className="text-text-secondary">{jobs.avgDurationMinutes !== null ? `${jobs.avgDurationMinutes}m` : "—"}</span>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5 space-y-3">
-          <p className="text-sm font-medium text-neutral-300">Appointments</p>
+        <Card>
+          <p className="text-sm font-medium text-text-primary mb-3">Appointments</p>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-blue-400">Upcoming</span>
-              <span className="font-semibold text-neutral-100">{appointments.upcoming}</span>
+              <span className="font-semibold text-text-primary">{appointments.upcoming}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-neutral-400">Total</span>
-              <span className="font-semibold text-neutral-100">{appointments.total}</span>
+              <span className="text-sm text-text-muted">Total</span>
+              <span className="font-semibold text-text-primary">{appointments.total}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-red-400">No-show rate</span>
-              <span className="font-semibold text-neutral-100">{pct(appointments.noShowRate)}</span>
+              <span className="font-semibold text-text-primary">{pct(appointments.noShowRate)}</span>
             </div>
-            <div className="border-t border-neutral-800 pt-2 flex items-center justify-between">
-              <span className="text-sm text-neutral-500">Open invoices</span>
-              <span className="text-neutral-300">{customers.withOpenInvoices} customers</span>
+            <div className="border-t border-border pt-2 flex items-center justify-between">
+              <span className="text-sm text-text-muted">Open invoices</span>
+              <span className="text-text-secondary">{customers.withOpenInvoices} customers</span>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Row 3 — Monthly Revenue Trend */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
-        <p className="text-sm font-medium text-neutral-300 mb-4">Monthly Revenue Trend (last 6 months)</p>
+      <Card>
+        <p className="text-sm font-medium text-text-primary mb-4">Monthly Revenue Trend (last 6 months)</p>
         <div className="flex items-end gap-2 h-32">
           {revenue.monthlyTrend.map((m) => {
             const heightPct = maxTrend > 0 ? (m.amountCents / maxTrend) * 100 : 0;
             return (
               <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-xs text-neutral-500">{formatMoney(m.amountCents)}</span>
+                <span className="text-xs text-text-muted">{formatMoney(m.amountCents)}</span>
                 <div className="w-full flex items-end" style={{ height: "80px" }}>
                   <div
                     className="w-full rounded-t bg-accent/70 hover:bg-accent transition-colors"
@@ -217,15 +218,15 @@ export function AnalyticsClient({ orgId, businessId, analytics: initialAnalytics
                     title={`${m.month}: ${formatMoney(m.amountCents)}`}
                   />
                 </div>
-                <span className="text-xs text-neutral-500">{monthLabel(m.month)}</span>
+                <span className="text-xs text-text-muted">{monthLabel(m.month)}</span>
               </div>
             );
           })}
         </div>
         {revenue.monthlyTrend.every((m) => m.amountCents === 0) && (
-          <p className="text-center text-sm text-neutral-500 mt-2">No paid invoices in the last 6 months</p>
+          <p className="text-center text-sm text-text-muted mt-2">No paid invoices in the last 6 months</p>
         )}
-      </div>
+      </Card>
 
       {/* Row 4 — Reviews & Payments Summary */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

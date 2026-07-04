@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { PageHeader } from "../../../../src/components/ui/PageHeader";
 import { Button } from "../../../../src/components/ui/Button";
+import { Card } from "../../../../src/components/ui/Card";
+import { Badge } from "../../../../src/components/ui/Badge";
+import { StatTile } from "../../../../src/components/ui/StatTile";
 
 interface KpiReading {
   kpiKey: string;
@@ -54,11 +57,10 @@ function healthTone(score: number) {
   return { label: "Critical", color: "text-red-400", bar: "bg-red-500", bg: "border-red-900/50 bg-red-950/20" };
 }
 
-function severityColor(severity: string) {
-  if (severity === "critical") return "text-red-400 bg-red-950/30 border-red-900/50";
-  if (severity === "high") return "text-orange-400 bg-orange-950/30 border-orange-900/50";
-  if (severity === "medium") return "text-yellow-400 bg-yellow-950/30 border-yellow-900/50";
-  return "text-neutral-400 bg-neutral-800 border-neutral-700";
+function severityBadgeColor(severity: string): "red" | "yellow" | "neutral" {
+  if (severity === "critical" || severity === "high") return "red";
+  if (severity === "medium") return "yellow";
+  return "neutral";
 }
 
 function formatKpiValue(value: number | null, unit: string): string {
@@ -158,55 +160,47 @@ export default function HealthClient({
         {/* Score Card */}
         {health && tone ? (
           <section className={`rounded border p-6 ${tone.bg}`}>
-            <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Health Score</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Health Score</p>
             <div className="mt-3 flex items-baseline gap-3">
               <span className={`font-display text-7xl font-black ${tone.color}`}>{health.overallScore}</span>
-              <span className="text-2xl text-neutral-500">/ 100</span>
+              <span className="text-2xl text-text-muted">/ 100</span>
             </div>
             <p className={`mt-1 text-sm font-medium ${tone.color}`}>{tone.label}</p>
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-elevated">
               <div
                 className={`h-full rounded-full ${tone.bar} transition-all`}
                 style={{ width: `${health.overallScore}%` }}
               />
             </div>
-            <p className="mt-3 text-xs text-neutral-500">
+            <p className="mt-3 text-xs text-text-muted">
               Last updated {new Date(health.generatedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-3 text-center">
-              <div className="rounded border border-neutral-700 bg-neutral-900/50 p-3">
-                <p className={`font-display text-2xl font-bold ${activeConstraints.length > 0 ? "text-red-400" : "text-neutral-400"}`}>
-                  {activeConstraints.length}
-                </p>
-                <p className="text-xs text-neutral-500 mt-0.5">Active Constraints</p>
-              </div>
-              <div className="rounded border border-neutral-700 bg-neutral-900/50 p-3">
-                <p className="font-display text-2xl font-bold text-blue-400">{topRecommendation ? "1+" : "0"}</p>
-                <p className="text-xs text-neutral-500 mt-0.5">Recommendations</p>
-              </div>
+              <StatTile label="Active Constraints" value={activeConstraints.length} trend={activeConstraints.length > 0 ? "down" : "neutral"} />
+              <StatTile label="Recommendations" value={topRecommendation ? "1+" : "0"} trend="neutral" />
             </div>
           </section>
         ) : (
-          <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
-            <p className="font-medium text-neutral-300">No health score yet</p>
-            <p className="mt-2 text-sm text-neutral-400">
+          <Card padding="lg">
+            <p className="font-medium text-text-primary">No health score yet</p>
+            <p className="mt-2 text-sm text-text-muted">
               Complete the Business MRI to generate your health score and unlock AI insights.
             </p>
             <Link
               href={`/business/${businessId}/mri`}
-              className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+              className="mt-4 inline-flex rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
             >
               Start Business MRI →
             </Link>
-          </section>
+          </Card>
         )}
 
         {/* Health History */}
-        <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
-          <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Score History</p>
+        <Card padding="lg">
+          <p className="text-xs font-medium uppercase tracking-widest text-text-muted">Score History</p>
           {healthHistory.length === 0 ? (
             <div className="mt-4 flex h-24 items-center justify-center">
-              <p className="text-sm text-neutral-500">No history available yet.</p>
+              <p className="text-sm text-text-muted">No history available yet.</p>
             </div>
           ) : (
             <div className="mt-4 flex flex-col gap-2">
@@ -214,10 +208,10 @@ export default function HealthClient({
                 const t = healthTone(h.score);
                 return (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 text-xs text-neutral-500">
+                    <span className="w-24 shrink-0 text-xs text-text-muted">
                       {new Date(h.generatedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
                     </span>
-                    <div className="flex-1 h-2 overflow-hidden rounded-full bg-neutral-800">
+                    <div className="flex-1 h-2 overflow-hidden rounded-full bg-elevated">
                       <div className={`h-full rounded-full ${t.bar}`} style={{ width: `${h.score}%` }} />
                     </div>
                     <span className={`w-8 shrink-0 text-right text-xs font-medium ${t.color}`}>{h.score}</span>
@@ -226,26 +220,21 @@ export default function HealthClient({
               })}
             </div>
           )}
-        </section>
+        </Card>
       </div>
 
       {/* KPI Tiles */}
       {kpis.length > 0 && (
         <section>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Key Metrics</h2>
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Key Metrics</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {kpis.slice(0, 8).map((kpi) => (
-              <div key={kpi.kpiKey} className="rounded border border-neutral-800 bg-neutral-900 p-4">
-                <p className="text-xs text-neutral-500 leading-tight">{kpi.label}</p>
-                <p className="mt-2 font-display text-2xl font-semibold leading-none">
-                  {formatKpiValue(kpi.value, kpi.unit)}
-                </p>
-                <div className="mt-2">
-                  {kpi.trend === "up" && <span className="text-green-400 text-xs">↑ Up</span>}
-                  {kpi.trend === "down" && <span className="text-red-400 text-xs">↓ Down</span>}
-                  {(!kpi.trend || kpi.trend === "stable") && <span className="text-neutral-500 text-xs">→ Stable</span>}
-                </div>
-              </div>
+              <StatTile
+                key={kpi.kpiKey}
+                label={kpi.label}
+                value={formatKpiValue(kpi.value, kpi.unit)}
+                trend={kpi.trend === "up" ? "up" : kpi.trend === "down" ? "down" : "neutral"}
+              />
             ))}
           </div>
         </section>
@@ -254,13 +243,13 @@ export default function HealthClient({
       {/* Top Recommendation */}
       {topRecommendation && (
         <section>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Top Recommendation</h2>
-          <div className="rounded border border-neutral-700 bg-neutral-900 p-5">
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Top Recommendation</h2>
+          <Card>
             <div className="flex items-start gap-4">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-neutral-100">{topRecommendation.title}</p>
-                <p className="mt-1 text-sm text-neutral-400">{topRecommendation.description}</p>
-                <div className="mt-3 flex items-center gap-4 text-xs text-neutral-500">
+                <p className="font-medium text-text-primary">{topRecommendation.title}</p>
+                <p className="mt-1 text-sm text-text-muted">{topRecommendation.description}</p>
+                <div className="mt-3 flex items-center gap-4 text-xs text-text-muted">
                   <span>ROI: <strong className="text-green-400">${topRecommendation.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</strong></span>
                   <span>Confidence: {Math.round(topRecommendation.confidence * 100)}%</span>
                 </div>
@@ -274,32 +263,30 @@ export default function HealthClient({
                 </Link>
                 <Link
                   href={`${base}/recommendations`}
-                  className="rounded border border-neutral-700 px-4 py-2 text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors text-center"
+                  className="rounded border border-border px-4 py-2 text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors text-center"
                 >
                   View All
                 </Link>
               </div>
             </div>
-          </div>
+          </Card>
         </section>
       )}
 
       {/* Constraint Breakdown */}
       {constraintGroups.length > 0 ? (
         <section>
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Constraint Breakdown</h2>
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Constraint Breakdown</h2>
           <div className="flex flex-col gap-6">
             {constraintGroups.map(([category, items]) => (
               <div key={category}>
-                <p className="mb-2 text-xs font-medium capitalize text-neutral-400">{category}</p>
+                <p className="mb-2 text-xs font-medium capitalize text-text-secondary">{category}</p>
                 <div className="flex flex-col gap-2">
                   {items.map((c) => (
-                    <div key={c.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
-                      <span className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-medium uppercase ${severityColor(c.severity)}`}>
-                        {c.severity}
-                      </span>
-                      <p className="flex-1 min-w-0 text-sm text-neutral-300">{c.description}</p>
-                    </div>
+                    <Card key={c.id} padding="sm" className="flex items-start gap-3">
+                      <Badge color={severityBadgeColor(c.severity)}>{c.severity}</Badge>
+                      <p className="flex-1 min-w-0 text-sm text-text-secondary">{c.description}</p>
+                    </Card>
                   ))}
                 </div>
               </div>
@@ -307,15 +294,15 @@ export default function HealthClient({
           </div>
         </section>
       ) : health ? (
-        <section className="rounded border border-neutral-800 bg-neutral-900 p-5 text-center">
+        <Card padding="md" className="text-center">
           <p className="text-sm font-medium text-green-400">No active constraints</p>
-          <p className="mt-1 text-xs text-neutral-500">Your business is operating without known blockers.</p>
-        </section>
+          <p className="mt-1 text-xs text-text-muted">Your business is operating without known blockers.</p>
+        </Card>
       ) : null}
 
       {/* Navigation shortcuts */}
       <section>
-        <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Quick Navigation</h2>
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Quick Navigation</h2>
         <div className="flex flex-wrap gap-2">
           {[
             { label: "Workspace", href: base },
@@ -327,7 +314,7 @@ export default function HealthClient({
             <Link
               key={link.href}
               href={link.href}
-              className="rounded border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
+              className="rounded border border-border px-3 py-1.5 text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
             >
               {link.label} →
             </Link>
@@ -337,4 +324,3 @@ export default function HealthClient({
     </div>
   );
 }
-
