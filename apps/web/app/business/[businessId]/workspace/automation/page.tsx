@@ -2,6 +2,8 @@ import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../../src/components/ui/Card";
+import { Badge } from "../../../../../src/components/ui/Badge";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -42,7 +44,7 @@ export default async function AutomationPage({ params }: Props) {
 
       {/* Integrations */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">
+        <h2 className="mb-3 font-display text-lg text-text-primary">
           Integrations ({connected.length} connected)
         </h2>
         {allIntegrations.length === 0 ? (
@@ -54,21 +56,12 @@ export default async function AutomationPage({ params }: Props) {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {allIntegrations.map((integration) => (
-              <div
-                key={integration.providerKey}
-                className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-4 py-3"
-              >
+              <Card key={integration.providerKey} padding="sm" className="flex items-center justify-between">
                 <span className="font-medium capitalize">{integration.providerKey.replace(/_/g, " ")}</span>
-                <span
-                  className={`rounded px-2 py-0.5 text-xs ${
-                    integration.status === "connected"
-                      ? "bg-green-900/50 text-green-400"
-                      : "bg-neutral-800 text-neutral-400"
-                  }`}
-                >
+                <Badge color={integration.status === "connected" ? "green" : "neutral"}>
                   {integration.status}
-                </span>
-              </div>
+                </Badge>
+              </Card>
             ))}
           </div>
         )}
@@ -76,7 +69,7 @@ export default async function AutomationPage({ params }: Props) {
 
       {/* Recent Tool Executions */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">
+        <h2 className="mb-3 font-display text-lg text-text-primary">
           Recent Executions ({allExecutions.length})
         </h2>
         {allExecutions.length === 0 ? (
@@ -88,30 +81,25 @@ export default async function AutomationPage({ params }: Props) {
         ) : (
           <div className="flex flex-col gap-2">
             {allExecutions.slice(0, 20).map((execution) => (
-              <div
-                key={execution.id}
-                className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-4 py-3"
-              >
+              <Card key={execution.id} padding="sm" className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-medium capitalize">
                     {execution.providerKey} — {execution.toolKey}
                   </span>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-text-muted">
                     {new Date(execution.startedAt).toLocaleString()}
                   </p>
                 </div>
-                <span
-                  className={`rounded px-2 py-0.5 text-xs ${
-                    execution.status === "succeeded"
-                      ? "bg-green-900/50 text-green-400"
-                      : execution.status === "failed"
-                        ? "bg-red-900/50 text-red-400"
-                        : "bg-neutral-800 text-neutral-400"
-                  }`}
+                <Badge
+                  color={
+                    execution.status === "succeeded" ? "green"
+                    : execution.status === "failed" ? "red"
+                    : "neutral"
+                  }
                 >
                   {execution.status}
-                </span>
-              </div>
+                </Badge>
+              </Card>
             ))}
           </div>
         )}
