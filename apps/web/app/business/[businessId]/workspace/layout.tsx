@@ -46,7 +46,7 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
   return (
     <div className="flex min-h-screen flex-col bg-neutral-950 text-white">
       {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-neutral-800 bg-neutral-950/95 px-4 backdrop-blur">
+      <header className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-neutral-950/95 px-4 backdrop-blur">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard"
@@ -54,16 +54,16 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
           >
             B<span className="text-accent">O</span>SS
           </Link>
-          <div className="hidden sm:flex items-center gap-1 border-l border-neutral-800 pl-4">
+          <div className="hidden sm:flex items-center gap-1 border-l border-border pl-4">
             <Link
               href="/dashboard"
-              className="rounded px-2.5 py-1 text-xs text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+              className="rounded px-2.5 py-1 text-xs text-text-muted transition-colors hover:bg-elevated hover:text-text-primary"
             >
               Dashboard
             </Link>
             <Link
               href="/businesses"
-              className="rounded px-2.5 py-1 text-xs text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+              className="rounded px-2.5 py-1 text-xs text-text-muted transition-colors hover:bg-elevated hover:text-text-primary"
             >
               Businesses
             </Link>
@@ -72,7 +72,7 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
         <div className="flex items-center gap-3">
           <Link
             href={`/business/${businessId}/health`}
-            className="hidden sm:inline-flex rounded px-2.5 py-1 text-xs text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-white"
+            className="hidden sm:inline-flex rounded px-2.5 py-1 text-xs text-text-muted transition-colors hover:bg-elevated hover:text-text-primary"
           >
             Health Score
           </Link>
@@ -82,11 +82,11 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
 
       <div className="flex flex-1 pt-14">
         {/* Sidebar */}
-        <aside className="hidden w-52 shrink-0 border-r border-neutral-800 bg-neutral-950 sm:block">
+        <aside className="hidden w-52 shrink-0 border-r border-border bg-neutral-950 sm:block">
           <nav className="sticky top-14 flex flex-col gap-6 overflow-y-auto p-4 pt-6" style={{ maxHeight: "calc(100vh - 56px)" }}>
             {SIDEBAR_SECTIONS.map((section) => (
               <div key={section.label}>
-                <p className="mb-1.5 px-2 text-2xs font-semibold uppercase tracking-widest text-neutral-600">
+                <p className="mb-1.5 px-2 text-2xs font-semibold uppercase tracking-widest text-text-muted">
                   {section.label}
                 </p>
                 <div className="flex flex-col gap-0.5">
@@ -94,7 +94,7 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
                     <Link
                       key={item.href}
                       href={`${base}${item.href}`}
-                      className="rounded px-2.5 py-1.5 text-sm text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+                      className="rounded px-2.5 py-1.5 text-sm text-text-secondary transition-colors hover:bg-elevated hover:text-text-primary"
                     >
                       {item.label}
                     </Link>
@@ -106,13 +106,13 @@ export default async function WorkspaceLayout({ children, params }: WorkspaceLay
         </aside>
 
         {/* Mobile nav strip */}
-        <div className="sm:hidden w-full border-b border-neutral-800 overflow-x-auto">
+        <div className="sm:hidden w-full border-b border-border overflow-x-auto">
           <div className="flex gap-1 px-3 py-2">
             {SIDEBAR_SECTIONS.flatMap((s) => s.items).map((item) => (
               <Link
                 key={item.href}
                 href={`${base}${item.href}`}
-                className="shrink-0 rounded px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+                className="shrink-0 rounded px-3 py-1.5 text-xs text-text-secondary transition-colors hover:bg-elevated hover:text-text-primary"
               >
                 {item.label}
               </Link>
