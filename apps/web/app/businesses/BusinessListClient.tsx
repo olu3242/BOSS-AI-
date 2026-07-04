@@ -5,6 +5,7 @@ import { PageHeader } from "../../src/components/ui/PageHeader";
 import { EmptyState } from "../../src/components/ui/EmptyState";
 import { Badge } from "../../src/components/ui/Badge";
 import { Button } from "../../src/components/ui/Button";
+import { Card } from "../../src/components/ui/Card";
 
 interface BusinessSummary {
   id: string;
@@ -75,10 +76,7 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
           {businesses.map((business) => {
             const tone = business.health ? healthLabel(business.health.overallScore) : null;
             return (
-              <div
-                key={business.id}
-                className="flex flex-col gap-4 rounded border border-neutral-800 bg-neutral-900 p-5 hover:border-neutral-700 transition-colors"
-              >
+              <Card key={business.id} hoverable className="flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -106,7 +104,7 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                 </div>
 
                 {/* Quick Links */}
-                <div className="flex gap-2 border-t border-neutral-800 pt-3">
+                <div className="flex gap-2 border-t border-border pt-3">
                   <Link
                     href={`/business/${business.id}/health`}
                     className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-center text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
@@ -126,7 +124,7 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                     Mission Control
                   </Link>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
