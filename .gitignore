@@ -5,6 +5,9 @@ dist
 coverage
 .env
 .env.local
+.env.*.local
+# Allow example/template files
+!.env.example
 *.log
 *.tsbuildinfo
 .DS_Store
