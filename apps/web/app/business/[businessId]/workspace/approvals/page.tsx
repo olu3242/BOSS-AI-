@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
@@ -40,10 +41,11 @@ export default async function ApprovalsPage({ params }: Props) {
       </div>
 
       {!hasWork ? (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-400">
-          <p className="text-lg font-medium">All caught up</p>
-          <p className="mt-1 text-sm">No decisions or recommendations awaiting your approval.</p>
-        </div>
+        <EmptyState
+          title="All caught up"
+          description="No decisions or recommendations awaiting your approval."
+          dashed={false}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {queue.pendingDecisions.length > 0 && (

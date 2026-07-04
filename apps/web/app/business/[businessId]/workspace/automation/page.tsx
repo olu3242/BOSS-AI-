@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -44,10 +45,11 @@ export default async function AutomationPage({ params }: Props) {
           Integrations ({connected.length} connected)
         </h2>
         {allIntegrations.length === 0 ? (
-          <div className="rounded border border-neutral-800 bg-neutral-900 p-6 text-neutral-400">
-            <p>No integrations configured.</p>
-            <p className="mt-1 text-sm">Connect your tools (Slack, email, CRM) to enable automation.</p>
-          </div>
+          <EmptyState
+            title="No integrations configured"
+            description="Connect your tools (Slack, email, CRM) to enable automation."
+            dashed={false}
+          />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {allIntegrations.map((integration) => (
@@ -77,10 +79,11 @@ export default async function AutomationPage({ params }: Props) {
           Recent Executions ({allExecutions.length})
         </h2>
         {allExecutions.length === 0 ? (
-          <div className="rounded border border-neutral-800 bg-neutral-900 p-6 text-neutral-400">
-            <p>No tool executions yet.</p>
-            <p className="mt-1 text-sm">Tool executions appear here when the operating loop runs automated actions.</p>
-          </div>
+          <EmptyState
+            title="No tool executions yet"
+            description="Tool executions appear here when the operating loop runs automated actions."
+            dashed={false}
+          />
         ) : (
           <div className="flex flex-col gap-2">
             {allExecutions.slice(0, 20).map((execution) => (

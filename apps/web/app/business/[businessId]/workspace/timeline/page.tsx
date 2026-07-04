@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -49,10 +50,11 @@ export default async function TimelinePage({ params }: Props) {
       <h1 className="font-display text-3xl">Business Timeline</h1>
 
       {timeline.length === 0 ? (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-400">
-          <p className="font-medium">No events yet</p>
-          <p className="mt-1 text-sm">Events appear here as your business progresses through BOSS.</p>
-        </div>
+        <EmptyState
+          title="No events yet"
+          description="Events appear here as your business progresses through BOSS."
+          dashed={false}
+        />
       ) : (
         <div className="relative flex flex-col">
           <div className="absolute left-4 top-0 h-full w-px bg-neutral-800" />

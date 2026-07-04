@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -47,9 +48,11 @@ export default async function IntelligencePage({ params }: Props) {
       <section>
         <h2 className="mb-3 font-display text-lg text-neutral-300">KPI Readings</h2>
         {kpis.readings.length === 0 ? (
-          <div className="rounded border border-neutral-800 bg-neutral-900 p-6 text-neutral-400">
-            <p>No KPI data yet. Run a health assessment to generate KPI readings.</p>
-          </div>
+          <EmptyState
+            title="No KPI data yet"
+            description="Run a health assessment to generate KPI readings."
+            dashed={false}
+          />
         ) : (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
             {kpis.readings.map((kpi) => (

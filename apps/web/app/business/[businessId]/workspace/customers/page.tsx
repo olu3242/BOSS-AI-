@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -114,24 +115,25 @@ export default async function CustomersPage({ params, searchParams }: Props) {
 
       {/* ── Empty state ───────────────────────────────────── */}
       {!error && customers.length === 0 && !q && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="font-display text-lg text-neutral-300">No customers yet</p>
-          <p className="mt-2 text-sm text-neutral-500">
-            Start adding customers to track relationships, revenue, and communication history.
-          </p>
-          <Link
-            href={`${base}/customers/new`}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Add your first customer
-          </Link>
-        </div>
+        <EmptyState
+          title="No customers yet"
+          description="Start adding customers to track relationships, revenue, and communication history."
+          action={
+            <Link
+              href={`${base}/customers/new`}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Add your first customer
+            </Link>
+          }
+        />
       )}
 
       {!error && customers.length === 0 && q && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-sm text-neutral-500">
-          No customers match &ldquo;{q}&rdquo;
-        </div>
+        <EmptyState
+          title={`No customers match "${q}"`}
+          dashed={false}
+        />
       )}
 
       {/* ── Customer list ─────────────────────────────────── */}

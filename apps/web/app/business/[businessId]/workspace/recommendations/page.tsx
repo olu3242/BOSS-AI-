@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { RecommendationActions } from "../approvals/ApprovalActions";
 
 interface Props {
@@ -88,16 +89,18 @@ export default async function RecommendationsPage({ params }: Props) {
       </div>
 
       {recommendations.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-400">
-          <p className="font-medium">No recommendations yet</p>
-          <p className="mt-1 text-sm">Complete the Business MRI to generate AI-powered recommendations.</p>
-          <Link
-            href={`/business/${businessId}/mri`}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Start Business MRI
-          </Link>
-        </div>
+        <EmptyState
+          title="No recommendations yet"
+          description="Complete the Business MRI to generate AI-powered recommendations."
+          action={
+            <Link
+              href={`/business/${businessId}/mri`}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Start Business MRI
+            </Link>
+          }
+        />
       )}
 
       {/* ── PROPOSED (awaiting action) ────────────────────────── */}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../../src/server/auth";
 import { AddInteractionForm } from "./AddInteractionForm";
+import { EmptyState } from "../../../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string; customerId: string }>;
@@ -156,9 +157,11 @@ export default async function CustomerProfilePage({ params }: Props) {
         <AddInteractionForm businessId={businessId} customerId={customerId} orgId={orgId} />
 
         {interactions.length === 0 ? (
-          <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-sm text-neutral-500">
-            No interactions recorded yet. Log the first one above.
-          </div>
+          <EmptyState
+            title="No interactions yet"
+            description="Log the first one using the form above."
+            dashed={false}
+          />
         ) : (
           <div className="relative flex flex-col gap-0">
             <div className="absolute left-[17px] top-0 bottom-0 w-px bg-neutral-800" />
