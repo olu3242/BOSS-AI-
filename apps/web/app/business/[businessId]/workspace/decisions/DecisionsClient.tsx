@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 interface Decision {
   id: string;
@@ -231,21 +233,23 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
               <div className="flex flex-col gap-2 pt-2 border-t border-neutral-800">
                 {confirmAction?.type === "reject" && confirmAction.id === selected.id ? (
                   <div className="flex flex-col gap-2">
-                    <textarea
-                      className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-600"
+                    <Textarea
                       placeholder="Reason for rejection (optional)"
                       rows={3}
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
                     />
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => handleReject(selected.id)}
                         disabled={actionLoading === selected.id}
-                        className="flex-1 rounded bg-red-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+                        loading={actionLoading === selected.id}
+                        className="flex-1"
                       >
                         {actionLoading === selected.id ? "Rejecting…" : "Confirm Reject"}
-                      </button>
+                      </Button>
                       <button
                         onClick={() => setConfirmAction(null)}
                         className="flex-1 rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"

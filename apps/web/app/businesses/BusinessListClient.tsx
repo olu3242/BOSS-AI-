@@ -46,10 +46,10 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   if (!businesses) {
     return (
       <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-10 w-48 rounded bg-neutral-800" />
+        <div className="h-10 w-48 rounded bg-elevated" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-48 rounded border border-neutral-800 bg-neutral-900" />
+            <div key={i} className="h-48 rounded border border-border bg-surface" />
           ))}
         </div>
       </div>

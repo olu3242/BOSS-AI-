@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "../../../../../../src/lib/apiClient";
+import { Textarea } from "../../../../../../src/components/ui/Input";
+import { Button } from "../../../../../../src/components/ui/Button";
 
 const TYPES = [
   { value: "note", label: "Note" },
@@ -72,23 +74,18 @@ export function AddInteractionForm({
           </button>
         ))}
       </div>
-      <textarea
+      <Textarea
         value={summary}
         onChange={(e) => setSummary(e.target.value)}
         placeholder="What happened? Add a note, log a call, record an email…"
         rows={3}
         autoFocus
-        className="w-full resize-none rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
       />
-      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
       <div className="mt-3 flex gap-2">
-        <button
-          type="submit"
-          disabled={isPending || !summary.trim()}
-          className="rounded bg-red-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-        >
+        <Button type="submit" size="sm" disabled={isPending || !summary.trim()} loading={isPending}>
           {isPending ? "Saving…" : "Log"}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={() => { setOpen(false); setSummary(""); }}

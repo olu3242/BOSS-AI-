@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Select } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Payment = {
   id: string; customerId: string; invoiceId: string;
@@ -134,57 +136,30 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
           <h2 className="font-semibold text-neutral-100">Record Payment</h2>
           {formError && <p className="text-sm text-red-400">{formError}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Invoice *</label>
-              <select value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100">
-                <option value="">Select invoice…</option>
-                {unpaidInvoices.map((inv) => (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.invoiceNumber} — {formatMoney(inv.totalCents, inv.currency)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Amount *</label>
-              <input type="number" step="0.01" min="0.01" value={amountCents}
-                onChange={(e) => setAmountCents(e.target.value)} placeholder="0.00"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Payment Method *</label>
-              <select value={method} onChange={(e) => setMethod(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100">
-                <option value="cash">Cash</option>
-                <option value="card">Card</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="check">Check</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Paid Date</label>
-              <input type="datetime-local" value={paidAt} onChange={(e) => setPaidAt(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Reference / Transaction ID</label>
-              <input type="text" value={reference} onChange={(e) => setReference(e.target.value)}
-                placeholder="txn_xxx"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Notes</label>
-              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
+            <Select label="Invoice *" value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)}>
+              <option value="">Select invoice…</option>
+              {unpaidInvoices.map((inv) => (
+                <option key={inv.id} value={inv.id}>
+                  {inv.invoiceNumber} — {formatMoney(inv.totalCents, inv.currency)}
+                </option>
+              ))}
+            </Select>
+            <Input label="Amount *" type="number" step="0.01" min="0.01" value={amountCents} onChange={(e) => setAmountCents(e.target.value)} placeholder="0.00" />
+            <Select label="Payment Method *" value={method} onChange={(e) => setMethod(e.target.value)}>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="check">Check</option>
+              <option value="other">Other</option>
+            </Select>
+            <Input label="Paid Date" type="datetime-local" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} />
+            <Input label="Reference / Transaction ID" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="txn_xxx" />
+            <Input label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50">
+            <Button type="submit" disabled={loading} loading={loading}>
               {loading ? "Saving…" : "Record Payment"}
-            </button>
+            </Button>
             <button type="button" onClick={() => { setShowForm(false); setFormError(null); }}
               className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white">
               Cancel

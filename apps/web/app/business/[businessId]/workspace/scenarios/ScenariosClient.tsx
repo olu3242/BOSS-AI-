@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Select } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
 
 interface KpiProjection {
   kpiKey: string;
@@ -140,48 +142,18 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
         <div className="rounded border border-neutral-700 bg-neutral-900 p-5 flex flex-col gap-4">
           <h3 className="text-sm font-medium text-white">New Scenario</h3>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">Scenario Name</label>
-              <input
-                className="rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
-                placeholder="e.g. Expand to second location"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">Time Horizon</label>
-              <select
-                className="rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-500"
-                value={form.timeHorizonMonths}
-                onChange={(e) => setForm((f) => ({ ...f, timeHorizonMonths: Number(e.target.value) }))}
-              >
-                {HORIZON_OPTIONS.map((h) => (
-                  <option key={h.value} value={h.value}>{h.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">Priority Focus</label>
-              <select
-                className="rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-500"
-                value={form.priorityFocus}
-                onChange={(e) => setForm((f) => ({ ...f, priorityFocus: e.target.value }))}
-              >
-                {PRIORITY_OPTIONS.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-neutral-500">Description (optional)</label>
-              <input
-                className="rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
-                placeholder="Brief context for this scenario"
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              />
-            </div>
+            <Input label="Scenario Name" placeholder="e.g. Expand to second location" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+            <Select label="Time Horizon" value={form.timeHorizonMonths} onChange={(e) => setForm((f) => ({ ...f, timeHorizonMonths: Number(e.target.value) }))}>
+              {HORIZON_OPTIONS.map((h) => (
+                <option key={h.value} value={h.value}>{h.label}</option>
+              ))}
+            </Select>
+            <Select label="Priority Focus" value={form.priorityFocus} onChange={(e) => setForm((f) => ({ ...f, priorityFocus: e.target.value }))}>
+              {PRIORITY_OPTIONS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </Select>
+            <Input label="Description (optional)" placeholder="Brief context for this scenario" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           </div>
           <div className="flex gap-2 justify-end">
             <button
@@ -190,13 +162,9 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
             >
               Cancel
             </button>
-            <button
-              onClick={handleCreate}
-              disabled={creating || !form.name.trim()}
-              className="rounded bg-[#C8102E] px-4 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-            >
+            <Button onClick={handleCreate} disabled={creating || !form.name.trim()} loading={creating}>
               {creating ? "Generating…" : "Generate Scenario"}
-            </button>
+            </Button>
           </div>
         </div>
       )}

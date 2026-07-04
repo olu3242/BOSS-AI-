@@ -2,6 +2,7 @@ import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input } from "../../../../../src/components/ui/Input";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -84,12 +85,13 @@ export default async function CustomersPage({ params, searchParams }: Props) {
 
       {/* ── Search ────────────────────────────────────────── */}
       <form method="GET" className="flex gap-2">
-        <input
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder="Search by name, email, or phone…"
-          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-        />
+        <div className="flex-1">
+          <Input
+            name="q"
+            defaultValue={q ?? ""}
+            placeholder="Search by name, email, or phone…"
+          />
+        </div>
         <button
           type="submit"
           className="rounded border border-neutral-700 bg-neutral-800 px-4 py-2 text-sm text-neutral-300 hover:bg-neutral-700 transition-colors"
