@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../src/server/auth";
+import { StatTile } from "../../../../src/components/ui/StatTile";
+import { EmptyState } from "../../../../src/components/ui/EmptyState";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -54,11 +56,6 @@ function formatKpiValue(value: number | null, unit: string): string {
   return String(value);
 }
 
-function TrendBadge({ trend }: { trend: string | null }) {
-  if (trend === "up")   return <span className="text-green-400 text-xs">↑ Up</span>;
-  if (trend === "down") return <span className="text-red-400 text-xs">↓ Down</span>;
-  return <span className="text-neutral-500 text-xs">→ Stable</span>;
-}
 
 function dailyFocus(pendingRecs: number, pendingApprovals: number): string {
   if (pendingApprovals > 0) return `You have ${pendingApprovals} decision${pendingApprovals > 1 ? "s" : ""} awaiting approval.`;
@@ -187,12 +184,17 @@ export default async function CommandCenterPage({ params }: Props) {
             </div>
           </section>
         ) : (
-          <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
-            <p className="font-medium text-neutral-300">No health score yet</p>
-            <p className="mt-1 text-sm text-neutral-500">Complete the Business MRI to generate your health score.</p>
-            <Link href={`/business/${businessId}/mri`} className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors">
-              Start Business MRI →
-            </Link>
+          <section>
+            <EmptyState
+              title="No health score yet"
+              description="Complete the Business MRI to generate your health score."
+              dashed={false}
+              action={
+                <Link href={`/business/${businessId}/mri`} className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+                  Start Business MRI →
+                </Link>
+              }
+            />
           </section>
         )}
 
@@ -210,9 +212,11 @@ export default async function CommandCenterPage({ params }: Props) {
             </Link>
           </div>
           {decisions.pending.length === 0 && proposedRecs.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-sm text-neutral-400">
-              No actions required. Your operating loop is clean.
-            </div>
+            <EmptyState
+              title="No actions required"
+              description="Your operating loop is clean."
+              dashed={false}
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {decisions.pending.slice(0, 3).map((d) => (
@@ -274,17 +278,18 @@ export default async function CommandCenterPage({ params }: Props) {
         <section>
           <h2 className="mb-4 font-display text-lg text-neutral-300">Key Metrics</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {kpis.readings.map((kpi) => (
-              <div key={kpi.kpiKey} className="rounded border border-neutral-800 bg-neutral-900 p-4">
-                <p className="text-xs text-neutral-500 leading-tight">{kpi.label}</p>
-                <p className="mt-2 text-2xl font-semibold leading-none">
-                  {formatKpiValue(kpi.value, kpi.unit)}
-                </p>
-                <div className="mt-2">
-                  <TrendBadge trend={"trend" in kpi ? (kpi as { trend: string | null }).trend : null} />
-                </div>
-              </div>
-            ))}
+            {kpis.readings.map((kpi) => {
+              const rawTrend = "trend" in kpi ? (kpi as { trend: string | null }).trend : null;
+              const trend = rawTrend === "up" ? "up" : rawTrend === "down" ? "down" : "neutral";
+              return (
+                <StatTile
+                  key={kpi.kpiKey}
+                  label={kpi.label}
+                  value={formatKpiValue(kpi.value, kpi.unit)}
+                  trend={trend}
+                />
+              );
+            })}
           </div>
         </section>
       )}
