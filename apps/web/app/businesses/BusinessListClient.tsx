@@ -80,10 +80,10 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-display font-semibold text-neutral-100 leading-tight truncate">
+                    <p className="font-display font-semibold text-text-primary leading-tight truncate">
                       {business.businessName}
                     </p>
-                    <p className="text-xs text-neutral-500 mt-0.5 capitalize">
+                    <p className="text-xs text-text-muted mt-0.5 capitalize">
                       {business.businessType.replace(/_/g, " ")}
                     </p>
                   </div>
@@ -97,7 +97,7 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                 </div>
 
                 {/* Meta */}
-                <div className="flex gap-4 text-xs text-neutral-500">
+                <div className="flex gap-4 text-xs text-text-muted">
                   <span>{business.employeeCount} employees</span>
                   <span>{business.locationCount} location{business.locationCount !== 1 ? "s" : ""}</span>
                   <span>{business.yearsOperating}yr{business.yearsOperating !== 1 ? "s" : ""}</span>
@@ -107,13 +107,13 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                 <div className="flex gap-2 border-t border-border pt-3">
                   <Link
                     href={`/business/${business.id}/health`}
-                    className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-center text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
+                    className="flex-1 rounded border border-border px-3 py-1.5 text-center text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
                   >
                     Health
                   </Link>
                   <Link
                     href={`/business/${business.id}/workspace`}
-                    className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-center text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
+                    className="flex-1 rounded border border-border px-3 py-1.5 text-center text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
                   >
                     Workspace
                   </Link>

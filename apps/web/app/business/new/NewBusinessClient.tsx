@@ -76,13 +76,13 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-neutral-300">{label}</span>
+      <span className="text-text-secondary">{label}</span>
       <input
         name={name}
         type={type}
         required={required}
         defaultValue={defaultValue}
-        className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-white"
+        className="rounded border border-border bg-surface px-3 py-2 text-text-primary"
       />
     </label>
   );

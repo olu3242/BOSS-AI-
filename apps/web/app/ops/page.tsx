@@ -56,10 +56,10 @@ async function getFlags(): Promise<Record<string, boolean> | null> {
 
 function Stat({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded border border-neutral-800 bg-neutral-900 p-4">
-      <p className="text-xs text-neutral-500 uppercase tracking-wide">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-white">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-neutral-500">{sub}</p>}
+    <div className="rounded border border-border bg-surface p-4">
+      <p className="text-xs text-text-muted uppercase tracking-wide">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-text-primary">{value}</p>
+      {sub && <p className="mt-0.5 text-xs text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -80,7 +80,7 @@ export default async function OpsPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-12">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-neutral-500">Internal Operations Dashboard</p>
+          <p className="text-sm text-text-muted">Internal Operations Dashboard</p>
           <h1 className="mt-1 font-display text-3xl">BOSS Platform Status</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -96,15 +96,15 @@ export default async function OpsPage() {
       </div>
 
       {/* Platform info */}
-      <div className="flex gap-4 text-xs text-neutral-500">
-        <span>Version: <span className="text-neutral-300">{health?.version ?? "—"}</span></span>
-        <span>Uptime: <span className="text-neutral-300">{uptime}</span></span>
-        <span>Captured: <span className="text-neutral-300">{health ? new Date(health.capturedAt).toLocaleString() : "—"}</span></span>
+      <div className="flex gap-4 text-xs text-text-muted">
+        <span>Version: <span className="text-text-secondary">{health?.version ?? "—"}</span></span>
+        <span>Uptime: <span className="text-text-secondary">{uptime}</span></span>
+        <span>Captured: <span className="text-text-secondary">{health ? new Date(health.capturedAt).toLocaleString() : "—"}</span></span>
       </div>
 
       {/* API health */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">API Health</h2>
+        <h2 className="mb-3 font-display text-lg text-text-secondary">API Health</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Error Rate" value={health?.checks.errorRate ?? "—"} />
           <Stat label="P50 Latency" value={health ? `${health.latency.httpRequestsP50Ms}ms` : "—"} />
@@ -115,7 +115,7 @@ export default async function OpsPage() {
 
       {/* Counters */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">Platform Counters</h2>
+        <h2 className="mb-3 font-display text-lg text-text-secondary">Platform Counters</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="HTTP Requests" value={health?.counters.httpRequests ?? "—"} />
           <Stat label="HTTP Errors" value={health?.counters.httpErrors ?? "—"} />
@@ -129,7 +129,7 @@ export default async function OpsPage() {
 
       {/* Memory */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">Memory</h2>
+        <h2 className="mb-3 font-display text-lg text-text-secondary">Memory</h2>
         <div className="grid grid-cols-3 gap-3">
           <Stat label="RSS" value={health ? `${health.memoryMb.rss}MB` : "—"} />
           <Stat label="Heap Used" value={health ? `${health.memoryMb.heapUsed}MB` : "—"} />
@@ -139,20 +139,20 @@ export default async function OpsPage() {
 
       {/* Feature flags */}
       <section>
-        <h2 className="mb-3 font-display text-lg text-neutral-300">Feature Flags</h2>
+        <h2 className="mb-3 font-display text-lg text-text-secondary">Feature Flags</h2>
         {flags ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {Object.entries(flags).map(([flag, enabled]) => (
-              <div key={flag} className="flex items-center justify-between rounded border border-neutral-800 bg-neutral-900 px-3 py-2">
-                <span className="text-sm font-mono text-neutral-300">{flag}</span>
-                <span className={`rounded px-2 py-0.5 text-xs font-medium ${enabled ? "bg-green-900/50 text-green-400" : "bg-neutral-800 text-neutral-500"}`}>
+              <div key={flag} className="flex items-center justify-between rounded border border-border bg-surface px-3 py-2">
+                <span className="text-sm font-mono text-text-secondary">{flag}</span>
+                <span className={`rounded px-2 py-0.5 text-xs font-medium ${enabled ? "bg-green-900/50 text-green-400" : "bg-elevated text-text-muted"}`}>
                   {enabled ? "on" : "off"}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-neutral-500">Could not load feature flags.</p>
+          <p className="text-sm text-text-muted">Could not load feature flags.</p>
         )}
       </section>
 

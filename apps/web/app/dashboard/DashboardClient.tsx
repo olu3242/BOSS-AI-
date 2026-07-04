@@ -175,7 +175,7 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
                 <Link
                   key={alert.businessId}
                   href={`/business/${alert.businessId}/health`}
-                  className={`flex items-center gap-4 rounded border px-4 py-3 transition-colors hover:bg-neutral-800/60 ${healthScoreBg(alert.healthScore)}`}
+                  className={`flex items-center gap-4 rounded border px-4 py-3 transition-colors hover:bg-elevated/60 ${healthScoreBg(alert.healthScore)}`}
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-text-primary truncate">{alert.businessName}</p>
