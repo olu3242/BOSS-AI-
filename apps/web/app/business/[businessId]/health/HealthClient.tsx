@@ -145,7 +145,12 @@ export default function HealthClient({
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader businessName={businessName} businessId={businessId} />
+      <PageHeader
+          title="Business Health"
+          description="Real-time health score, constraints, and AI recommendations."
+          back={<Link href={`/business/${businessId}/workspace`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← {businessName}</Link>}
+          action={<Link href={`/business/${businessId}/mri`}><Button variant="secondary" size="sm">Re-run MRI</Button></Link>}
+        />
 
       {/* Health Score + Trend */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

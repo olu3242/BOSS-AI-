@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { PageHeader } from "../src/components/ui/PageHeader";
-import { EmptyState } from "../src/components/ui/EmptyState";
-import { Badge } from "../src/components/ui/Badge";
-import { Button } from "../src/components/ui/Button";
+import { PageHeader } from "../../src/components/ui/PageHeader";
+import { EmptyState } from "../../src/components/ui/EmptyState";
+import { Badge } from "../../src/components/ui/Badge";
+import { Button } from "../../src/components/ui/Button";
 
 interface BusinessSummary {
   id: string;
