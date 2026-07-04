@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
 import { StatTile } from "../../../../../src/components/ui/StatTile";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Button } from "../../../../../src/components/ui/Button";
 
 type Analytics = {
   revenue: { totalCents: number; paidCents: number; pendingCents: number; overdueCount: number; monthlyTrend: Array<{ month: string; amountCents: number }> };
@@ -50,7 +52,7 @@ export function AnalyticsClient({ orgId, businessId, analytics: initialAnalytics
   if (error && !analytics) {
     return (
       <div className="space-y-4">
-        <h1 className="font-display text-2xl font-bold">Analytics</h1>
+        <PageHeader title="Analytics" />
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-6 text-center">
           <p className="text-red-400">{error}</p>
           <button onClick={handleRefresh} className="mt-4 text-sm text-accent hover:underline">Try again</button>
@@ -86,16 +88,15 @@ export function AnalyticsClient({ orgId, businessId, analytics: initialAnalytics
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Analytics</h1>
-          <p className="mt-1 text-sm text-neutral-400">Business performance dashboard</p>
-        </div>
-        <button onClick={handleRefresh} disabled={refreshing}
-          className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white disabled:opacity-50 transition-colors">
-          {refreshing ? "Refreshing…" : "Refresh"}
-        </button>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description="Business performance dashboard"
+        action={
+          <Button variant="secondary" onClick={handleRefresh} disabled={refreshing} loading={refreshing}>
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </Button>
+        }
+      />
 
       {error && (
         <div className="rounded-lg border border-yellow-800 bg-yellow-950/30 p-3 text-sm text-yellow-400">

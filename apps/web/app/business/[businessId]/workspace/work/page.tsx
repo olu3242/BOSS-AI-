@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -10,11 +11,7 @@ export default async function WorkPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Domain</p>
-        <h1 className="mt-1 font-display text-3xl">Work</h1>
-        <p className="mt-2 text-sm text-neutral-400">Jobs, appointments, scheduling, and service delivery.</p>
-      </div>
+      <PageHeader title="Work" description="Jobs, appointments, scheduling, and service delivery." />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {[

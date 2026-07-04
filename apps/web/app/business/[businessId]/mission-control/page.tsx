@@ -1,5 +1,6 @@
 import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../src/server/auth";
+import { PageHeader } from "../../../../src/components/ui/PageHeader";
 
 export default async function MissionControlPage({
   params,
@@ -16,7 +17,7 @@ export default async function MissionControlPage({
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load Mission Control.";
     return (
       <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="font-display text-3xl">Mission Control</h1>
+        <PageHeader title="Mission Control" />
         <p className="mt-4 text-red-400">{message}</p>
       </main>
     );
@@ -26,7 +27,7 @@ export default async function MissionControlPage({
 
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-16">
-      <h1 className="font-display text-3xl">Mission Control</h1>
+      <PageHeader title="Mission Control" />
 
       {!hasActivity ? (
         <p className="text-neutral-400">

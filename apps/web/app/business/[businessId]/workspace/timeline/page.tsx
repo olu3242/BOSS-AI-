@@ -48,7 +48,7 @@ export default async function TimelinePage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-3xl">Business Timeline</h1>
+      <PageHeader title="Business Timeline" description="A chronological log of key events across your business." />
 
       {timeline.length === 0 ? (
         <EmptyState

@@ -1,6 +1,7 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
@@ -18,7 +19,7 @@ export default async function ApprovalsPage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load approvals.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">Approval Center</h1>
+        <PageHeader title="Approval Center" />
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load approvals</p>
           <p className="mt-1 text-sm">{message}</p>
@@ -32,7 +33,7 @@ export default async function ApprovalsPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl">Approval Center</h1>
+        <PageHeader title="Approval Center" />
         {hasWork && (
           <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-medium text-white">
             {queue.totalPending} pending

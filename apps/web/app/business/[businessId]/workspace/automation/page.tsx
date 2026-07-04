@@ -38,7 +38,7 @@ export default async function AutomationPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="font-display text-3xl">Automation Center</h1>
+      <PageHeader title="Automation Center" description="Connect your tools and monitor automated workflow executions." />
 
       {/* Integrations */}
       <section>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../../src/lib/apiClient";
 import { Input, Select, Textarea } from "../../../../../../src/components/ui/Input";
 import { Button } from "../../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../../src/components/ui/PageHeader";
 
 const SOURCES = [
   { value: "", label: "— Select source —" },
@@ -50,13 +51,11 @@ export function NewCustomerClient({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-8 max-w-xl">
-      <div>
-        <Link href={`${base}/customers`} className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
-          ← Customers
-        </Link>
-        <h1 className="mt-3 font-display text-3xl">Add customer</h1>
-        <p className="mt-1 text-sm text-neutral-500">Create a customer record and start tracking their history.</p>
-      </div>
+      <PageHeader
+        title="Add customer"
+        description="Create a customer record and start tracking their history."
+        back={<Link href={`${base}/customers`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← Customers</Link>}
+      />
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-4">

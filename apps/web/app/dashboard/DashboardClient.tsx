@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { StatTile } from "../../src/components/ui/StatTile";
 import { EmptyState } from "../../src/components/ui/EmptyState";
+import { PageHeader } from "../../src/components/ui/PageHeader";
+import { Button } from "../../src/components/ui/Button";
 
 interface HealthDistribution {
   excellent: number;
@@ -64,12 +66,7 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-6">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Executive Dashboard</p>
-            <h1 className="mt-1 font-display text-3xl">Dashboard</h1>
-          </div>
-        </div>
+        <PageHeader title="Dashboard" />
         <div className="rounded border border-red-800 bg-red-950/30 p-5 text-red-400">
           <p className="font-medium">Dashboard unavailable</p>
           <p className="mt-1 text-sm">{error}</p>
@@ -105,24 +102,17 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
   return (
     <div className="flex flex-col gap-8">
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-6">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Executive Overview</p>
-          <h1 className="mt-1 font-display text-3xl">Dashboard</h1>
-          <p className="mt-2 text-sm text-neutral-400">
-            {businessCount === 0
-              ? "No businesses yet. Add your first business to get started."
-              : `Monitoring ${businessCount} business${businessCount === 1 ? "" : "es"} across your organization.`}
-          </p>
-        </div>
-        <Link
-          href="/businesses/new"
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + Add Business
-        </Link>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description={businessCount === 0
+          ? "No businesses yet. Add your first business to get started."
+          : `Monitoring ${businessCount} business${businessCount === 1 ? "" : "es"} across your organization.`}
+        action={
+          <Link href="/businesses/new">
+            <Button>+ Add Business</Button>
+          </Link>
+        }
+      />
 
       {/* KPI Tiles */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

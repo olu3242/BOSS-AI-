@@ -2,6 +2,7 @@ import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 import { RecommendationActions } from "../approvals/ApprovalActions";
 
 interface Props {
@@ -49,7 +50,7 @@ export default async function RecommendationsPage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load recommendations.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">AI Recommendations</h1>
+        <PageHeader title="AI Recommendations" />
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load recommendations</p>
           <p className="mt-1 text-sm">{message}</p>
@@ -73,20 +74,11 @@ export default async function RecommendationsPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-8">
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl">AI Recommendations</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {recommendations.length} total · {proposed.length} pending your review
-          </p>
-        </div>
-        <Link
-          href={base}
-          className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-        >
-          ← Command Center
-        </Link>
-      </div>
+      <PageHeader
+        title="AI Recommendations"
+        description={`${recommendations.length} total · ${proposed.length} pending your review`}
+        back={<Link href={base} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← Command Center</Link>}
+      />
 
       {recommendations.length === 0 && (
         <EmptyState
