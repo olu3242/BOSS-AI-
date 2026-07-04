@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { StatTile } from "../src/components/ui/StatTile";
+import { EmptyState } from "../src/components/ui/EmptyState";
 
 interface HealthDistribution {
   excellent: number;
@@ -85,14 +87,14 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
   if (!data) {
     return (
       <div className="flex flex-col gap-8 animate-pulse">
-        <div className="h-10 w-48 rounded bg-neutral-800" />
+        <div className="h-10 w-48 rounded bg-elevated" />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 rounded border border-neutral-800 bg-neutral-900" />
+            <StatTile key={i} label="" value="" loading />
           ))}
         </div>
-        <div className="h-40 rounded border border-neutral-800 bg-neutral-900" />
-        <div className="h-40 rounded border border-neutral-800 bg-neutral-900" />
+        <div className="h-40 rounded border border-border bg-surface" />
+        <div className="h-40 rounded border border-border bg-surface" />
       </div>
     );
   }
@@ -124,30 +126,29 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
 
       {/* KPI Tiles */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile
-          label="Total Businesses"
-          value={businessCount}
-          linkHref="/businesses"
-          linkLabel="View all →"
-        />
-        <StatTile
-          label="Pending Approvals"
-          value={pendingApprovalsCount}
-          accent={pendingApprovalsCount > 0 ? "text-yellow-400" : undefined}
-          linkHref="/businesses"
-          linkLabel="Review →"
-        />
-        <StatTile
-          label="Critical Alerts"
-          value={healthDistribution.critical}
-          accent={healthDistribution.critical > 0 ? "text-red-400" : undefined}
-          linkHref="/businesses"
-          linkLabel="View →"
-        />
+        <Link href="/businesses">
+          <StatTile label="Total Businesses" value={businessCount} delta="View all →" trend="neutral" />
+        </Link>
+        <Link href="/businesses">
+          <StatTile
+            label="Pending Approvals"
+            value={pendingApprovalsCount}
+            delta="Review →"
+            trend={pendingApprovalsCount > 0 ? "down" : "neutral"}
+          />
+        </Link>
+        <Link href="/businesses">
+          <StatTile
+            label="Critical Alerts"
+            value={healthDistribution.critical}
+            delta="View →"
+            trend={healthDistribution.critical > 0 ? "down" : "neutral"}
+          />
+        </Link>
         <StatTile
           label="Revenue at Risk"
           value={`$${revenueAtRisk.toLocaleString()}`}
-          accent={revenueAtRisk > 0 ? "text-red-400" : undefined}
+          trend={revenueAtRisk > 0 ? "down" : "neutral"}
         />
       </div>
 
@@ -175,10 +176,7 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
             </Link>
           </div>
           {topAlerts.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5">
-              <p className="text-sm font-medium text-neutral-300">No critical alerts</p>
-              <p className="mt-1 text-xs text-neutral-500">All businesses are healthy.</p>
-            </div>
+            <EmptyState title="No critical alerts" description="All businesses are healthy." dashed={false} />
           ) : (
             <div className="flex flex-col gap-2">
               {topAlerts.map((alert) => (
@@ -206,10 +204,7 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
             <h2 className="font-display text-base text-neutral-300">Recent Decisions</h2>
           </div>
           {recentDecisions.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5">
-              <p className="text-sm font-medium text-neutral-300">No decisions yet</p>
-              <p className="mt-1 text-xs text-neutral-500">Decisions will appear here as BOSS analyzes your businesses.</p>
-            </div>
+            <EmptyState title="No decisions yet" description="Decisions will appear here as BOSS analyzes your businesses." dashed={false} />
           ) : (
             <div className="flex flex-col gap-2">
               {recentDecisions.slice(0, 5).map((decision) => (
@@ -233,48 +228,20 @@ export default function DashboardClient({ orgId: _orgId, data, error }: Props) {
 
       {/* Empty state for new orgs */}
       {businessCount === 0 && (
-        <div className="rounded border border-neutral-700 bg-neutral-900 p-8 text-center">
-          <p className="text-lg font-medium text-neutral-200">Welcome to BOSS</p>
-          <p className="mt-2 text-sm text-neutral-400 max-w-md mx-auto">
-            Add your first business to unlock AI-powered insights, health tracking, and automated recommendations.
-          </p>
-          <Link
-            href="/business/new"
-            className="mt-5 inline-flex rounded bg-red-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Add Your First Business →
-          </Link>
-        </div>
+        <EmptyState
+          title="Welcome to BOSS"
+          description="Add your first business to unlock AI-powered insights, health tracking, and automated recommendations."
+          action={
+            <Link href="/business/new" className="rounded bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+              Add Your First Business →
+            </Link>
+          }
+        />
       )}
     </div>
   );
 }
 
-function StatTile({
-  label,
-  value,
-  accent,
-  linkHref,
-  linkLabel,
-}: {
-  label: string;
-  value: number | string;
-  accent?: string;
-  linkHref?: string;
-  linkLabel?: string;
-}) {
-  return (
-    <div className="rounded border border-neutral-800 bg-neutral-900 p-4">
-      <p className="text-xs text-neutral-500 leading-tight">{label}</p>
-      <p className={`mt-2 font-display text-3xl font-black leading-none ${accent ?? "text-white"}`}>{value}</p>
-      {linkHref && linkLabel && (
-        <Link href={linkHref} className="mt-3 block text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
-          {linkLabel}
-        </Link>
-      )}
-    </div>
-  );
-}
 
 function HealthBucket({
   label,
