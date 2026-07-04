@@ -12,13 +12,13 @@ interface Props {
   params: Promise<{ businessId: string; customerId: string }>;
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  prospect: "bg-yellow-900/40 text-yellow-400 border-yellow-900",
-  active:   "bg-green-900/40 text-green-400 border-green-900",
-  inactive: "bg-neutral-800 text-neutral-500 border-neutral-700",
-  vip:      "bg-purple-900/40 text-purple-300 border-purple-900",
-  churned:  "bg-red-900/40 text-red-400 border-red-900",
-};
+function statusBadgeColor(status: string): "green" | "yellow" | "blue" | "red" | "neutral" {
+  if (status === "active") return "green";
+  if (status === "vip") return "yellow";
+  if (status === "prospect") return "blue";
+  if (status === "churned") return "red";
+  return "neutral";
+}
 
 const INTERACTION_ICON: Record<string, string> = {
   call: "📞", email: "📧", sms: "💬", appointment: "📅",
@@ -79,7 +79,7 @@ export default async function CustomerProfilePage({ params }: Props) {
         title={fullName}
         back={<Link href={`${base}/customers`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← Customers</Link>}
         action={
-          <Badge color={customer.status === "active" ? "green" : customer.status === "vip" ? "yellow" : customer.status === "prospect" ? "blue" : "neutral"}>
+          <Badge color={statusBadgeColor(customer.status)}>
             {customer.status}
           </Badge>
         }
