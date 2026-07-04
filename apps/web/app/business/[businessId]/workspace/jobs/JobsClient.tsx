@@ -6,6 +6,8 @@ import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Job = {
   id: string; title: string; description: string | null;
@@ -16,21 +18,18 @@ type Job = {
   tags: string[]; createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  draft:       "bg-neutral-800 text-neutral-400",
-  scheduled:   "bg-blue-900/40 text-blue-400",
-  in_progress: "bg-yellow-900/40 text-yellow-400",
-  on_hold:     "bg-orange-900/40 text-orange-400",
-  completed:   "bg-green-900/40 text-green-400",
-  cancelled:   "bg-neutral-800 text-neutral-500",
-};
+function jobStatusColor(status: string): "blue" | "yellow" | "green" | "neutral" {
+  if (status === "scheduled") return "blue";
+  if (status === "in_progress") return "yellow";
+  if (status === "completed") return "green";
+  return "neutral";
+}
 
-const PRIORITY_STYLE: Record<string, string> = {
-  low:    "text-neutral-500",
-  normal: "text-neutral-400",
-  high:   "text-orange-400",
-  urgent: "text-red-400",
-};
+function priorityColor(priority: string): string {
+  if (priority === "high") return "text-orange-400";
+  if (priority === "urgent") return "text-red-400";
+  return "text-text-muted";
+}
 
 const STATUS_TABS = ["all", "scheduled", "in_progress", "on_hold", "completed", "cancelled"];
 
@@ -132,12 +131,12 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
       {showForm && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={() => setShowForm(false)}>
           <div
-            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-neutral-800"
+            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl">New Job</h2>
-              <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
+              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <Input label="Title *" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. HVAC maintenance" required />
@@ -161,7 +160,7 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
                 </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
-                  className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"
+                  className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:bg-elevated transition-colors"
                 >
                   Cancel
                 </button>
@@ -172,15 +171,15 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
       )}
 
       {/* Status tabs */}
-      <div className="flex gap-1 overflow-x-auto border-b border-neutral-800 pb-0">
+      <div className="flex gap-1 overflow-x-auto border-b border-border pb-0">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-3 py-2 text-sm capitalize whitespace-nowrap border-b-2 transition-colors ${
               activeTab === tab
-                ? "border-red-600 text-white"
-                : "border-transparent text-neutral-500 hover:text-neutral-300"
+                ? "border-red-600 text-text-primary"
+                : "border-transparent text-text-muted hover:text-text-secondary"
             }`}
           >
             {tab.replace("_", " ")}
@@ -211,30 +210,28 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
 
       {/* Job list */}
       {filtered.length > 0 && (
-        <div className="flex flex-col divide-y divide-neutral-800 rounded border border-neutral-800">
+        <Card className="flex flex-col divide-y divide-border overflow-hidden">
           {filtered.map((job) => (
             <div key={job.id} className="flex flex-col gap-2 px-5 py-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-white truncate">{job.title}</p>
-                    <span className={`shrink-0 text-xs font-medium uppercase ${PRIORITY_STYLE[job.priority] ?? ""}`}>
+                    <p className="font-medium text-text-primary truncate">{job.title}</p>
+                    <span className={`shrink-0 text-xs font-medium uppercase ${priorityColor(job.priority)}`}>
                       {job.priority}
                     </span>
                   </div>
                   {job.description && (
-                    <p className="mt-0.5 text-xs text-neutral-500 truncate">{job.description}</p>
+                    <p className="mt-0.5 text-xs text-text-muted truncate">{job.description}</p>
                   )}
-                  <div className="mt-1 flex gap-3 text-xs text-neutral-600">
+                  <div className="mt-1 flex gap-3 text-xs text-text-muted">
                     {job.scheduledAt && <span>Scheduled: {formatDate(job.scheduledAt)}</span>}
                     {job.location && <span>📍 {job.location}</span>}
                     {job.assignedTo && <span>👤 {job.assignedTo}</span>}
                     {job.estimatedDurationMinutes && <span>⏱ {job.estimatedDurationMinutes}min</span>}
                   </div>
                 </div>
-                <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLE[job.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                  {job.status.replace("_", " ")}
-                </span>
+                <Badge color={jobStatusColor(job.status)}>{job.status.replace("_", " ")}</Badge>
               </div>
               {/* Actions */}
               <div className="flex gap-2">
@@ -273,7 +270,7 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
                 {(job.status === "scheduled" || job.status === "in_progress" || job.status === "on_hold") && (
                   <button
                     onClick={() => handleStatusAction(job.id, "cancel")}
-                    className="rounded bg-neutral-800 px-3 py-1 text-xs text-neutral-500 hover:bg-neutral-700 transition-colors"
+                    className="rounded bg-elevated px-3 py-1 text-xs text-text-muted hover:bg-border transition-colors"
                   >
                     Cancel
                   </button>
@@ -281,7 +278,7 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
               </div>
             </div>
           ))}
-        </div>
+        </Card>
       )}
     </div>
   );
