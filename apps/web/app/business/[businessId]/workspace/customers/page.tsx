@@ -3,6 +3,7 @@ import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input } from "../../../../../src/components/ui/Input";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -51,21 +52,15 @@ export default async function CustomersPage({ params, searchParams }: Props) {
   return (
     <div className="flex flex-col gap-8">
 
-      {/* ── Header ────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Customers</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {customers.length} total · {activeCount} active · {vipCount} VIP
-          </p>
-        </div>
-        <Link
-          href={`${base}/customers/new`}
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + Add customer
-        </Link>
-      </div>
+      <PageHeader
+        title="Customers"
+        description={`${customers.length} total · ${activeCount} active · ${vipCount} VIP`}
+        action={
+          <Link href={`${base}/customers/new`} className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+            + Add customer
+          </Link>
+        }
+      />
 
       {/* ── Stats strip ───────────────────────────────────── */}
       {customers.length > 0 && (

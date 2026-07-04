@@ -1,6 +1,7 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -34,7 +35,7 @@ export default async function TimelinePage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load timeline.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">Business Timeline</h1>
+        <PageHeader title="Business Timeline" />
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load timeline</p>
           <p className="mt-1 text-sm">{message}</p>

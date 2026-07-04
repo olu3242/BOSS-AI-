@@ -5,6 +5,7 @@ import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface Decision {
   id: string;
@@ -112,13 +113,10 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">AI Command</p>
-        <h1 className="mt-1 font-display text-3xl">Decision Center</h1>
-        <p className="mt-2 text-sm text-neutral-400">
-          AI-generated decisions from your business health analysis. Review, approve, or reject each decision.
-        </p>
-      </div>
+      <PageHeader
+        title="Decision Center"
+        description="AI-generated decisions from your business health analysis. Review, approve, or reject each decision."
+      />
 
       {error && (
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400 text-sm">

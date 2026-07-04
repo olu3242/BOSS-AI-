@@ -5,6 +5,7 @@ import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface KpiProjection {
   kpiKey: string;
@@ -119,19 +120,11 @@ export function ScenariosClient({ orgId, businessId, initialScenarios, initialEr
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Strategic Planning</p>
-          <h1 className="mt-1 font-display text-3xl">Scenario Planning</h1>
-          <p className="mt-2 text-sm text-neutral-400">Model strategic scenarios and compare projected outcomes before committing resources.</p>
-        </div>
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="shrink-0 rounded bg-[#C8102E] px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + Generate Scenario
-        </button>
-      </div>
+      <PageHeader
+        title="Scenario Planning"
+        description="Model strategic scenarios and compare projected outcomes before committing resources."
+        action={<Button onClick={() => setShowForm((v) => !v)}>+ Generate Scenario</Button>}
+      />
 
       {error && (
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400 text-sm">{error}</div>

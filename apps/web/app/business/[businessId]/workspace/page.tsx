@@ -3,6 +3,7 @@ import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../src/server/auth";
 import { StatTile } from "../../../../src/components/ui/StatTile";
 import { EmptyState } from "../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../src/components/ui/PageHeader";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -329,16 +330,16 @@ function DailyBriefHeader({ date, stage, focus }: { date: Date; stage: string; f
   const dayName = date.toLocaleDateString([], { weekday: "long" });
   const dateStr = date.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
   return (
-    <div className="flex items-start justify-between gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">{dayName} · {dateStr}</p>
-        <h1 className="mt-1 font-display text-3xl">Command Center</h1>
-        <p className="mt-2 text-sm text-neutral-400">{focus}</p>
-      </div>
-      <div className="shrink-0 rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs text-neutral-400 capitalize hidden sm:block">
-        Loop: <span className="text-neutral-200 font-medium">{stage}</span>
-      </div>
-    </div>
+    <PageHeader
+      title="Command Center"
+      description={focus}
+      back={<span className="text-xs text-text-muted">{dayName} · {dateStr}</span>}
+      action={
+        <div className="shrink-0 rounded border border-border bg-surface px-3 py-1.5 text-xs text-text-muted capitalize hidden sm:block">
+          Loop: <span className="text-text-primary font-medium">{stage}</span>
+        </div>
+      }
+    />
   );
 }
 
