@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 type Invoice = {
   id: string; invoiceNumber: string; customerId: string; jobId: string | null;
@@ -141,21 +142,11 @@ export function InvoicesClient({ orgId, businessId, invoices: initialInvoices, e
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Invoices</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {invoices.length} total · {formatMoney(totalOwed)} outstanding · {formatMoney(totalPaid)} paid
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + Create Invoice
-        </button>
-      </div>
+      <PageHeader
+        title="Invoices"
+        description={`${invoices.length} total · ${formatMoney(totalOwed)} outstanding · ${formatMoney(totalPaid)} paid`}
+        action={<Button onClick={() => setShowForm(true)}>+ Create Invoice</Button>}
+      />
 
       {/* Create Invoice panel */}
       {showForm && (

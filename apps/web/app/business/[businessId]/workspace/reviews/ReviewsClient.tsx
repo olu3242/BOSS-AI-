@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 type Review = {
   id: string; customerId: string; jobId: string | null; rating: number;
@@ -118,20 +119,13 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Reviews</h1>
-          <p className="mt-1 text-sm text-neutral-400">
-            {publishedReviews.length > 0
-              ? `${avgRating.toFixed(1)} ★ average — ${publishedReviews.length} published review${publishedReviews.length !== 1 ? "s" : ""}`
-              : "No published reviews yet"}
-          </p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors">
-          Add Review
-        </button>
-      </div>
+      <PageHeader
+        title="Reviews"
+        description={publishedReviews.length > 0
+          ? `${avgRating.toFixed(1)} ★ average — ${publishedReviews.length} published review${publishedReviews.length !== 1 ? "s" : ""}`
+          : "No published reviews yet"}
+        action={<Button onClick={() => setShowForm(!showForm)}>Add Review</Button>}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">

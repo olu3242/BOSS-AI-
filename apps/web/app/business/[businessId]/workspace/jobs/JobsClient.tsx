@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 type Job = {
   id: string; title: string; description: string | null;
@@ -119,21 +120,13 @@ export function JobsClient({ orgId, businessId, jobs: initialJobs, error: initia
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Jobs</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {jobs.length} total · {jobs.filter((j) => j.status === "in_progress").length} in progress
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + New Job
-        </button>
-      </div>
+      <PageHeader
+        title="Jobs"
+        description={`${jobs.length} total · ${jobs.filter((j) => j.status === "in_progress").length} in progress`}
+        action={
+          <Button onClick={() => setShowForm(true)}>+ New Job</Button>
+        }
+      />
 
       {/* New Job slide-in panel */}
       {showForm && (

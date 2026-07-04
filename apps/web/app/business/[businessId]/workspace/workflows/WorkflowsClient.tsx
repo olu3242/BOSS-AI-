@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 interface WorkflowExecution {
   id: string;
@@ -138,11 +139,10 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Loop Runtime</p>
-        <h1 className="mt-1 font-display text-3xl">Workflow Executions</h1>
-        <p className="mt-2 text-sm text-neutral-400">Live and historical Loop runtime executions for this business.</p>
-      </div>
+      <PageHeader
+        title="Workflow Executions"
+        description="Live and historical Loop runtime executions for this business."
+      />
 
       {error && (
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400 text-sm">{error}</div>
@@ -216,7 +216,7 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
                   {detailLoading ? (
                     <div className="flex flex-col gap-2">
                       {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-8 rounded bg-neutral-800 animate-pulse" />
+                        <div key={i} className="h-8 rounded bg-elevated animate-pulse" />
                       ))}
                     </div>
                   ) : detail ? (

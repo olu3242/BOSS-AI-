@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 type Appointment = {
   id: string; title: string; notes: string | null;
@@ -111,21 +112,11 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Appointments</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {appointments.length} total · {appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed").length} upcoming
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + New Appointment
-        </button>
-      </div>
+      <PageHeader
+        title="Appointments"
+        description={`${appointments.length} total · ${appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed").length} upcoming`}
+        action={<Button onClick={() => setShowForm(true)}>+ New Appointment</Button>}
+      />
 
       {/* Form panel */}
       {showForm && (

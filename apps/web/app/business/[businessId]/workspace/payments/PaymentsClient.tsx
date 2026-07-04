@@ -5,6 +5,7 @@ import { apiClient } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
 
 type Payment = {
   id: string; customerId: string; invoiceId: string;
@@ -111,18 +112,11 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Payments</h1>
-          <p className="mt-1 text-sm text-neutral-400">{payments.length} total payment{payments.length !== 1 ? "s" : ""}</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
-        >
-          Record Payment
-        </button>
-      </div>
+      <PageHeader
+        title="Payments"
+        description={`${payments.length} total payment${payments.length !== 1 ? "s" : ""}`}
+        action={<Button onClick={() => setShowForm(!showForm)}>Record Payment</Button>}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
