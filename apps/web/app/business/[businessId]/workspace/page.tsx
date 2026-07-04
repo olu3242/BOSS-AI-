@@ -4,6 +4,8 @@ import { requireActiveTenant } from "../../../../src/server/auth";
 import { StatTile } from "../../../../src/components/ui/StatTile";
 import { EmptyState } from "../../../../src/components/ui/EmptyState";
 import { PageHeader } from "../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../src/components/ui/Card";
+import { Badge } from "../../../../src/components/ui/Badge";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -33,18 +35,6 @@ function healthTone(score: number) {
   if (score >= 70) return { label: "Healthy",          color: "text-green-400",  bar: "bg-green-500",  bg: "bg-green-950/30 border-green-900/50" };
   if (score >= 40) return { label: "Needs Attention",  color: "text-yellow-400", bar: "bg-yellow-500", bg: "bg-yellow-950/30 border-yellow-900/50" };
   return               { label: "At Risk",             color: "text-red-400",    bar: "bg-red-500",    bg: "bg-red-950/30 border-red-900/50" };
-}
-
-function categoryColor(category: string) {
-  const map: Record<string, string> = {
-    revenue_growth:         "text-green-400 bg-green-950/40 border-green-900/50",
-    cost_reduction:         "text-blue-400 bg-blue-950/40 border-blue-900/50",
-    customer_retention:     "text-purple-400 bg-purple-950/40 border-purple-900/50",
-    operational_efficiency: "text-yellow-400 bg-yellow-950/40 border-yellow-900/50",
-    lead_generation:        "text-orange-400 bg-orange-950/40 border-orange-900/50",
-    reputation:             "text-pink-400 bg-pink-950/40 border-pink-900/50",
-  };
-  return map[category] ?? "text-neutral-400 bg-neutral-800 border-neutral-700";
 }
 
 function formatKpiValue(value: number | null, unit: string): string {
@@ -169,13 +159,13 @@ export default async function CommandCenterPage({ params }: Props) {
         {/* Health Score */}
         {health ? (
           <section className={`rounded border p-6 ${tone?.bg ?? "border-neutral-800 bg-neutral-900"}`}>
-            <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Health</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Health</p>
             <div className="mt-2 flex items-baseline gap-3">
               <span className={`font-display text-5xl font-black ${tone?.color ?? "text-white"}`}>{health.overallScore}</span>
               <span className="text-lg text-neutral-500">/ 100</span>
               <span className={`text-sm font-medium ${tone?.color}`}>{tone?.label}</span>
             </div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-elevated">
               <div className={`h-full rounded-full ${tone?.bar} transition-all`} style={{ width: `${health.overallScore}%` }} />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
@@ -202,8 +192,8 @@ export default async function CommandCenterPage({ params }: Props) {
         {/* Priority Actions */}
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-base text-neutral-300">Priority Actions</h2>
-            <Link href={`${base}/approvals`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-base text-text-primary">Priority Actions</h2>
+            <Link href={`${base}/approvals`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               {approvalQueue.totalPending > 0 && (
                 <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
                   {approvalQueue.totalPending}
@@ -228,11 +218,11 @@ export default async function CommandCenterPage({ params }: Props) {
                 </div>
               ))}
               {proposedRecs.slice(0, 3 - Math.min(decisions.pending.length, 3)).map((r) => (
-                <div key={r.id} className="flex items-center gap-3 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+                <Card key={r.id} padding="sm" className="flex items-center gap-3">
                   <span className="text-blue-400 text-xs font-bold uppercase">Rec</span>
                   <span className="flex-1 min-w-0 truncate text-sm">{r.title}</span>
                   <span className="shrink-0 text-xs text-green-400">${r.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</span>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -243,24 +233,22 @@ export default async function CommandCenterPage({ params }: Props) {
       {proposedRecs.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-neutral-300">AI Recommendations</h2>
-            <Link href={`${base}/recommendations`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-lg text-text-primary">AI Recommendations</h2>
+            <Link href={`${base}/recommendations`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               View all ({recommendations.length}) →
             </Link>
           </div>
           <div className="flex flex-col gap-3">
             {proposedRecs.map((rec) => (
-              <div key={rec.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
+              <Card key={rec.id}>
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{rec.title}</span>
-                      <span className={`rounded border px-2 py-0.5 text-[11px] font-medium capitalize ${categoryColor(rec.category)}`}>
-                        {rec.category.replace(/_/g, " ")}
-                      </span>
+                      <Badge color="neutral">{rec.category.replace(/_/g, " ")}</Badge>
                     </div>
-                    <p className="mt-1 text-xs text-neutral-400 line-clamp-2">{rec.description}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-text-muted line-clamp-2">{rec.description}</p>
+                    <div className="mt-2 flex items-center gap-4 text-xs text-text-muted">
                       <span>ROI: <strong className="text-green-400">${rec.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</strong></span>
                       <span>Effort: {rec.estimatedEffortHours}h</span>
                       <span>Confidence: {Math.round(rec.confidence * 100)}%</span>
@@ -268,7 +256,7 @@ export default async function CommandCenterPage({ params }: Props) {
                   </div>
                   <RecommendationInlineActions recommendationId={rec.id} businessId={businessId} />
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -277,7 +265,7 @@ export default async function CommandCenterPage({ params }: Props) {
       {/* ── KEY METRICS ──────────────────────────────────────── */}
       {kpis.readings.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-lg text-neutral-300">Key Metrics</h2>
+          <h2 className="mb-4 font-display text-lg text-text-primary">Key Metrics</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {kpis.readings.map((kpi) => {
               const rawTrend = "trend" in kpi ? (kpi as { trend: string | null }).trend : null;
@@ -299,22 +287,22 @@ export default async function CommandCenterPage({ params }: Props) {
       {recentActivity.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-neutral-300">Recent Activity</h2>
-            <Link href={`${base}/timeline`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-lg text-text-primary">Recent Activity</h2>
+            <Link href={`${base}/timeline`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               Full timeline →
             </Link>
           </div>
           <div className="flex flex-col gap-1.5">
             {recentActivity.map((entry) => (
-              <div key={entry.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-3 py-2.5">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-600" />
+              <Card key={entry.id} padding="sm" className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm leading-snug text-neutral-300 truncate">{entry.description}</p>
-                  <time className="text-xs text-neutral-600">
+                  <p className="text-sm leading-snug text-text-secondary truncate">{entry.description}</p>
+                  <time className="text-xs text-text-muted">
                     {new Date(entry.occurredAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </time>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </section>

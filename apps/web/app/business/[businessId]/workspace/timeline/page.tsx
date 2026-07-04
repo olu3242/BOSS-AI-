@@ -2,6 +2,7 @@ import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../../src/components/ui/Card";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -58,23 +59,23 @@ export default async function TimelinePage({ params }: Props) {
         />
       ) : (
         <div className="relative flex flex-col">
-          <div className="absolute left-4 top-0 h-full w-px bg-neutral-800" />
+          <div className="absolute left-4 top-0 h-full w-px bg-border" />
           {timeline.map((entry) => (
             <div key={entry.id} className="relative flex gap-4 pb-6 pl-10">
-              <div className="absolute left-3 top-1 h-2.5 w-2.5 rounded-full border border-neutral-700 bg-neutral-900" />
-              <div className="flex-1 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+              <div className="absolute left-3 top-1 h-2.5 w-2.5 rounded-full border border-border bg-surface" />
+              <Card className="flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium">
                       {EVENT_TYPE_LABELS[entry.type] ?? entry.type}
                     </p>
-                    <p className="mt-0.5 text-sm text-neutral-400">{entry.description}</p>
+                    <p className="mt-0.5 text-sm text-text-muted">{entry.description}</p>
                   </div>
-                  <time className="shrink-0 text-xs text-neutral-500">
+                  <time className="shrink-0 text-xs text-text-muted">
                     {new Date(entry.occurredAt).toLocaleString()}
                   </time>
                 </div>
-              </div>
+              </Card>
             </div>
           ))}
         </div>
