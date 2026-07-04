@@ -6,6 +6,8 @@ import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Select } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Payment = {
   id: string; customerId: string; invoiceId: string;
@@ -18,20 +20,17 @@ type Invoice = {
   totalCents: number; currency: string; createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  pending:   "bg-yellow-900/40 text-yellow-400",
-  completed: "bg-green-900/40 text-green-400",
-  failed:    "bg-red-900/40 text-red-400",
-  refunded:  "bg-purple-900/40 text-purple-400",
-};
+function paymentStatusColor(status: string): "yellow" | "green" | "red" | "neutral" {
+  if (status === "pending") return "yellow";
+  if (status === "completed") return "green";
+  if (status === "failed") return "red";
+  return "neutral";
+}
 
-const METHOD_STYLE: Record<string, string> = {
-  cash:          "bg-neutral-800 text-neutral-300",
-  card:          "bg-blue-900/40 text-blue-300",
-  bank_transfer: "bg-cyan-900/40 text-cyan-300",
-  check:         "bg-neutral-700 text-neutral-300",
-  other:         "bg-neutral-800 text-neutral-400",
-};
+function paymentMethodColor(method: string): "blue" | "neutral" {
+  if (method === "card") return "blue";
+  return "neutral";
+}
 
 const STATUS_TABS = ["all", "pending", "completed", "refunded"];
 
@@ -126,8 +125,9 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
       )}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 space-y-4">
-          <h2 className="font-semibold text-neutral-100">Record Payment</h2>
+        <Card padding="lg">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <h2 className="font-semibold text-text-primary">Record Payment</h2>
           {formError && <p className="text-sm text-red-400">{formError}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Select label="Invoice *" value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)}>
@@ -155,19 +155,20 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
               {loading ? "Saving…" : "Record Payment"}
             </Button>
             <button type="button" onClick={() => { setShowForm(false); setFormError(null); }}
-              className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white">
+              className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:text-text-primary transition-colors">
               Cancel
             </button>
           </div>
         </form>
+        </Card>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-neutral-800 pb-0">
+      <div className="flex gap-1 border-b border-border pb-0">
         {STATUS_TABS.map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-              activeTab === tab ? "border-accent text-accent" : "border-transparent text-neutral-400 hover:text-white"
+              activeTab === tab ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
             }`}>
             {tab}
           </button>
@@ -188,25 +189,21 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
       ) : (
         <div className="space-y-3">
           {filtered.map((payment) => (
-            <div key={payment.id} className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
+            <Card key={payment.id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-semibold text-neutral-100">{formatMoney(payment.amountCents, payment.currency)}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[payment.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {payment.status}
-                    </span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${METHOD_STYLE[payment.method] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {payment.method.replace("_", " ")}
-                    </span>
+                    <span className="font-semibold text-text-primary">{formatMoney(payment.amountCents, payment.currency)}</span>
+                    <Badge color={paymentStatusColor(payment.status)}>{payment.status}</Badge>
+                    <Badge color={paymentMethodColor(payment.method)}>{payment.method.replace("_", " ")}</Badge>
                   </div>
-                  <div className="mt-1 text-xs text-neutral-500 space-x-3">
-                    <span>Invoice: <span className="text-neutral-400 font-mono">{payment.invoiceId.slice(0, 8)}…</span></span>
-                    {payment.reference && <span>Ref: <span className="text-neutral-400">{payment.reference}</span></span>}
+                  <div className="mt-1 text-xs text-text-muted space-x-3">
+                    <span>Invoice: <span className="text-text-secondary font-mono">{payment.invoiceId.slice(0, 8)}…</span></span>
+                    {payment.reference && <span>Ref: <span className="text-text-secondary">{payment.reference}</span></span>}
                     <span>Paid: {formatDate(payment.paidAt)}</span>
                     <span>Created: {formatDate(payment.createdAt)}</span>
                   </div>
-                  {payment.notes && <p className="mt-1 text-sm text-neutral-400">{payment.notes}</p>}
+                  {payment.notes && <p className="mt-1 text-sm text-text-secondary">{payment.notes}</p>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   {payment.status === "pending" && (
@@ -223,7 +220,7 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

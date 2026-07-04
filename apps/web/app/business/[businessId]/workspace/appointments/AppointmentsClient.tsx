@@ -6,6 +6,8 @@ import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Input, Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Appointment = {
   id: string; title: string; notes: string | null;
@@ -15,14 +17,12 @@ type Appointment = {
   createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  scheduled:   "bg-blue-900/40 text-blue-400",
-  confirmed:   "bg-green-900/40 text-green-400",
-  in_progress: "bg-yellow-900/40 text-yellow-400",
-  completed:   "bg-green-900/60 text-green-300",
-  cancelled:   "bg-neutral-800 text-neutral-500",
-  no_show:     "bg-neutral-800 text-neutral-400",
-};
+function apptStatusColor(status: string): "blue" | "green" | "yellow" | "neutral" {
+  if (status === "scheduled") return "blue";
+  if (status === "confirmed" || status === "completed") return "green";
+  if (status === "in_progress") return "yellow";
+  return "neutral";
+}
 
 
 function groupByDay(appts: Appointment[]) {
@@ -122,12 +122,12 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
       {showForm && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={() => setShowForm(false)}>
           <div
-            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-neutral-800"
+            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl">New Appointment</h2>
-              <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
+              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
               <Input label="Title *" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Initial consultation" required />
@@ -145,7 +145,7 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
                 </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
-                  className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"
+                  className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:bg-elevated transition-colors"
                 >
                   Cancel
                 </button>
@@ -181,28 +181,26 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
         <div className="flex flex-col gap-6">
           {[...grouped.entries()].map(([day, appts]) => (
             <div key={day}>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-500">{day}</p>
-              <div className="flex flex-col divide-y divide-neutral-800 rounded border border-neutral-800">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">{day}</p>
+              <Card className="flex flex-col divide-y divide-border overflow-hidden">
                 {appts.map((a) => (
                   <div key={a.id} className="flex items-center gap-4 px-5 py-4">
                     <div className="shrink-0 text-center w-12">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-text-primary">
                         {new Date(a.startAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
-                      <p className="text-[10px] text-neutral-600">
+                      <p className="text-[10px] text-text-muted">
                         {new Date(a.endAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white truncate">{a.title}</p>
-                      <div className="flex gap-3 text-xs text-neutral-600 mt-0.5">
+                      <p className="font-medium text-text-primary truncate">{a.title}</p>
+                      <div className="flex gap-3 text-xs text-text-muted mt-0.5">
                         {a.location && <span>📍 {a.location}</span>}
                         {a.assignedTo && <span>👤 {a.assignedTo}</span>}
                       </div>
                     </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLE[a.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {a.status.replace("_", " ")}
-                    </span>
+                    <Badge color={apptStatusColor(a.status)}>{a.status.replace("_", " ")}</Badge>
                     <div className="flex gap-2 shrink-0">
                       {a.status === "scheduled" && (
                         <button
@@ -215,7 +213,7 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
                       {(a.status === "scheduled" || a.status === "confirmed") && (
                         <button
                           onClick={() => handleCancel(a.id)}
-                          className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-700 transition-colors"
+                          className="rounded bg-elevated px-2 py-1 text-xs text-text-muted hover:bg-elevated/80 transition-colors"
                         >
                           Cancel
                         </button>
@@ -223,7 +221,7 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
                     </div>
                   </div>
                 ))}
-              </div>
+              </Card>
             </div>
           ))}
         </div>

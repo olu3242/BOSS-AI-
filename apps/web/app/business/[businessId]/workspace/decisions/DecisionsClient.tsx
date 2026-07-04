@@ -6,6 +6,8 @@ import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { Textarea } from "../../../../../src/components/ui/Input";
 import { Button } from "../../../../../src/components/ui/Button";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 interface Decision {
   id: string;
@@ -24,22 +26,12 @@ interface Props {
 
 type Tab = "all" | "pending" | "approved" | "executed";
 
-function statusBadge(status: string) {
-  switch (status) {
-    case "pending":
-    case "generated":
-    case "reviewed":
-      return "bg-yellow-900/40 text-yellow-400 border border-yellow-800/50";
-    case "approved":
-      return "bg-green-900/40 text-green-400 border border-green-800/50";
-    case "rejected":
-      return "bg-red-900/40 text-red-400 border border-red-800/50";
-    case "executed":
-    case "completed":
-      return "bg-blue-900/40 text-blue-400 border border-blue-800/50";
-    default:
-      return "bg-neutral-800 text-neutral-400 border border-neutral-700";
-  }
+function decisionBadgeColor(status: string): "yellow" | "green" | "red" | "blue" | "neutral" {
+  if (status === "pending" || status === "generated" || status === "reviewed") return "yellow";
+  if (status === "approved") return "green";
+  if (status === "rejected") return "red";
+  if (status === "executed" || status === "completed") return "blue";
+  return "neutral";
 }
 
 function normalizeStatus(status: string): string {
@@ -125,7 +117,7 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-neutral-800 pb-0">
+      <div className="flex gap-1 border-b border-border pb-0">
         {tabs.map((t) => {
           const count = t.key === "all"
             ? decisions.length
@@ -136,13 +128,13 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
               onClick={() => { setTab(t.key); setSelectedId(null); }}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 tab === t.key
-                  ? "border-[#C8102E] text-white"
-                  : "border-transparent text-neutral-500 hover:text-neutral-300"
+                  ? "border-[#C8102E] text-text-primary"
+                  : "border-transparent text-text-muted hover:text-text-secondary"
               }`}
             >
               {t.label}
               {count > 0 && (
-                <span className="ml-1.5 rounded-full bg-neutral-800 px-1.5 py-0.5 text-xs text-neutral-400">
+                <span className="ml-1.5 rounded-full bg-elevated px-1.5 py-0.5 text-xs text-text-muted">
                   {count}
                 </span>
               )}
@@ -167,22 +159,20 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
                 onClick={() => setSelectedId(selectedId === d.id ? null : d.id)}
                 className={`w-full text-left rounded border p-4 transition-colors ${
                   selectedId === d.id
-                    ? "border-[#C8102E]/50 bg-neutral-900"
-                    : "border-neutral-800 bg-neutral-900 hover:border-neutral-700"
+                    ? "border-[#C8102E]/50 bg-surface"
+                    : "border-border bg-surface hover:border-border-strong"
                 }`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{d.objective}</p>
-                    <p className="mt-0.5 text-xs text-neutral-500 capitalize">{d.decisionType.replace(/_/g, " ")}</p>
+                    <p className="text-sm font-medium text-text-primary truncate">{d.objective}</p>
+                    <p className="mt-0.5 text-xs text-text-muted capitalize">{d.decisionType.replace(/_/g, " ")}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-xs text-text-muted">
                       {Math.round(d.confidenceScore * 100)}% confidence
                     </span>
-                    <span className={`rounded px-2 py-0.5 text-xs ${statusBadge(d.status)}`}>
-                      {normalizeStatus(d.status)}
-                    </span>
+                    <Badge color={decisionBadgeColor(d.status)}>{normalizeStatus(d.status)}</Badge>
                   </div>
                 </div>
               </button>
@@ -192,43 +182,41 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
 
         {/* Detail panel */}
         {selected && (
-          <div className="w-80 shrink-0 rounded border border-neutral-800 bg-neutral-900 p-5 flex flex-col gap-4">
+          <Card className="w-80 shrink-0 flex flex-col gap-4">
             <div>
-              <p className="text-xs text-neutral-500 uppercase tracking-wide">Decision Detail</p>
-              <h3 className="mt-1 text-sm font-medium text-white">{selected.objective}</h3>
+              <p className="text-xs text-text-muted uppercase tracking-wide">Decision Detail</p>
+              <h3 className="mt-1 text-sm font-medium text-text-primary">{selected.objective}</h3>
             </div>
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Status</span>
-                <span className={`rounded px-2 py-0.5 text-xs ${statusBadge(selected.status)}`}>
-                  {normalizeStatus(selected.status)}
-                </span>
+                <span className="text-text-muted">Status</span>
+                <Badge color={decisionBadgeColor(selected.status)}>{normalizeStatus(selected.status)}</Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Type</span>
-                <span className="text-neutral-300 capitalize">{selected.decisionType.replace(/_/g, " ")}</span>
+                <span className="text-text-muted">Type</span>
+                <span className="text-text-secondary capitalize">{selected.decisionType.replace(/_/g, " ")}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Confidence</span>
-                <span className="text-neutral-300">{Math.round(selected.confidenceScore * 100)}%</span>
+                <span className="text-text-muted">Confidence</span>
+                <span className="text-text-secondary">{Math.round(selected.confidenceScore * 100)}%</span>
               </div>
             </div>
 
             {/* Confidence bar */}
             <div>
-              <div className="h-1.5 rounded-full bg-neutral-800 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-elevated overflow-hidden">
                 <div
                   className={`h-full rounded-full ${selected.confidenceScore >= 0.75 ? "bg-green-500" : selected.confidenceScore >= 0.5 ? "bg-yellow-500" : "bg-red-500"}`}
                   style={{ width: `${selected.confidenceScore * 100}%` }}
                 />
               </div>
-              <p className="mt-1 text-xs text-neutral-600">
+              <p className="mt-1 text-xs text-text-muted">
                 {selected.confidenceScore >= 0.75 ? "High confidence — safe to approve" : selected.confidenceScore >= 0.5 ? "Medium confidence — review evidence" : "Low confidence — review carefully"}
               </p>
             </div>
 
             {isPending(selected) && (
-              <div className="flex flex-col gap-2 pt-2 border-t border-neutral-800">
+              <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 {confirmAction?.type === "reject" && confirmAction.id === selected.id ? (
                   <div className="flex flex-col gap-2">
                     <Textarea
@@ -250,7 +238,7 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
                       </Button>
                       <button
                         onClick={() => setConfirmAction(null)}
-                        className="flex-1 rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
+                        className="flex-1 rounded bg-elevated px-3 py-1.5 text-xs font-medium text-text-secondary hover:bg-border transition-colors"
                       >
                         Cancel
                       </button>
@@ -258,7 +246,7 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
                   </div>
                 ) : confirmAction?.type === "approve" && confirmAction.id === selected.id ? (
                   <div className="flex flex-col gap-2">
-                    <p className="text-xs text-neutral-400">Approve this decision? This will queue the recommended workflow for execution.</p>
+                    <p className="text-xs text-text-muted">Approve this decision? This will queue the recommended workflow for execution.</p>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleApprove(selected.id)}
@@ -269,7 +257,7 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
                       </button>
                       <button
                         onClick={() => setConfirmAction(null)}
-                        className="flex-1 rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:bg-neutral-700 transition-colors"
+                        className="flex-1 rounded bg-elevated px-3 py-1.5 text-xs font-medium text-text-secondary hover:bg-border transition-colors"
                       >
                         Cancel
                       </button>
@@ -293,7 +281,7 @@ export function DecisionsClient({ orgId, businessId: _businessId, initialDecisio
                 )}
               </div>
             )}
-          </div>
+          </Card>
         )}
       </div>
     </div>
