@@ -128,7 +128,7 @@ import {
 } from "@boss/db";
 import { createInMemoryEventBus, createDurableEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
-import { createEnvSecretStore, type SecretStore } from "./services/secretVault/index.js";
+import { createEnvSecretStore, createDbSecretStore, type SecretStore } from "./services/secretVault/index.js";
 
 export interface RepositoryContainer {
   eventBus: EventBus;
@@ -183,7 +183,7 @@ export function createPostgresContainer(): RepositoryContainer {
   return {
     eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
     eventLog,
-    secretStore: createEnvSecretStore(),
+    secretStore: process.env.BOSS_SECRET_VAULT_KEY ? createDbSecretStore() : createEnvSecretStore(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
     businessMri: createPostgresBusinessMriRepository(),
