@@ -13,7 +13,14 @@ export type AnalyticsEventType =
   | "analytics.workflow.executed"
   | "analytics.feedback.submitted"
   | "analytics.nps.submitted"
-  | "analytics.integration.connected";
+  | "analytics.integration.connected"
+  | "analytics.job.completed"
+  | "analytics.customer.created"
+  | "analytics.payment.received"
+  | "analytics.lead.created"
+  | "analytics.lead.converted"
+  | "analytics.appointment.no_show"
+  | "analytics.review.received";
 
 export interface AnalyticsEvent {
   type: AnalyticsEventType;

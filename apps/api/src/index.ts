@@ -82,6 +82,8 @@ import { createReviewService } from "./services/reviewService.js";
 import { createReviewController } from "./controllers/reviewController.js";
 import { createLeadService } from "./services/leadService.js";
 import { createLeadController } from "./controllers/leadController.js";
+import { createNotificationService } from "./services/notificationService.js";
+import { createPlatformSdk } from "./services/platformSdk.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
 import { createAnalyticsController } from "./controllers/analyticsController.js";
 
@@ -214,7 +216,98 @@ export function createApiFromContainer(
 
   graphRuntime.start();
 
-  graphRuntime.start();
+  // ── Event Bus → Workflow triggers (Phase 3 — Event Bus Completion) ──────────
+  // job.completed → WF-003 (Review Request) + WF-005 (Invoice Follow-Up)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; jobId: string; customerId: string }>(
+    "job.completed",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.job.completed",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { jobId: e.payload.jobId },
+      });
+    },
+  );
+
+  // customer.created → WF-012 (Customer Onboarding)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; customerId: string }>(
+    "customer.created",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.customer.created",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { customerId: e.payload.customerId },
+      });
+    },
+  );
+
+  // payment.received → WF-007 (Receipt Confirmation)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; paymentId: string }>(
+    "payment.received",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.payment.received",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { paymentId: e.payload.paymentId },
+      });
+    },
+  );
+
+  // lead.created → WF-001 (Lead Follow-Up Recovery)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; leadId: string; source: string }>(
+    "lead.created",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.lead.created",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { leadId: e.payload.leadId, source: e.payload.source },
+      });
+    },
+  );
+
+  // lead.converted → analytics + KPI
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; leadId: string }>(
+    "lead.converted",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.lead.converted",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { leadId: e.payload.leadId },
+      });
+    },
+  );
+
+  // appointment.no_show → WF-013 (No-Show Recovery)
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; appointmentId: string }>(
+    "appointment.no_show",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.appointment.no_show",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { appointmentId: e.payload.appointmentId },
+      });
+    },
+  );
+
+  // review.received → analytics
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; reviewId: string; rating: number }>(
+    "review.received",
+    (e) => {
+      void productAnalytics.track({
+        type: "analytics.review.received",
+        orgId: e.payload.orgId,
+        businessId: e.payload.businessId,
+        properties: { reviewId: e.payload.reviewId, rating: e.payload.rating },
+      });
+    },
+  );
+
   return {
     business: createBusinessController(createBusinessProfileService(repos)),
     businessMri: createBusinessMriController(createBusinessMriService(repos)),
@@ -258,6 +351,8 @@ export function createApiFromContainer(
     payment: createPaymentController(createPaymentService(repos)),
     review: createReviewController(createReviewService(repos)),
     lead: createLeadController(createLeadService(repos)),
+    notification: createNotificationService(repos),
+    platformSdk: createPlatformSdk(repos, loopRuntime),
     analytics: createAnalyticsController(createAnalyticsService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
@@ -387,6 +482,8 @@ export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
 export * from "./services/customerService.js";
 export * from "./services/leadService.js";
+export * from "./services/notificationService.js";
+export * from "./services/platformSdk.js";
 export * from "./services/jobService.js";
 export * from "./services/appointmentService.js";
 export * from "./services/invoiceService.js";
