@@ -1,4 +1,4 @@
-import type { Estimate, EstimateStatus } from "@boss/types";
+import type { Estimate } from "@boss/types";
 import { createBossEvent } from "@boss/events";
 import type { RepositoryContainer } from "../container.js";
 import { ApiError } from "../http/apiError.js";
@@ -106,7 +106,7 @@ export function createEstimateService(repos: RepositoryContainer): EstimateServi
       return repos.estimates.listByBusinessId(orgId, businessId);
     },
 
-    async update(orgId, id, patch, actorId) {
+    async update(orgId, id, patch, _actorId) {
       const existing = await repos.estimates.findById(orgId, id);
       if (!existing) throw new ApiError(404, "ESTIMATE_NOT_FOUND", `Estimate ${id} not found`);
       if (existing.status !== "draft") throw new ApiError(409, "ESTIMATE_NOT_EDITABLE", "Only draft estimates can be edited");
