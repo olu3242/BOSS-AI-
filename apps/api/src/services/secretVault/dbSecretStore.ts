@@ -7,7 +7,7 @@
  * Suitable for multi-process deployments and production use.
  */
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { query, firstRow } from "@boss/db";
+import { query } from "@boss/db";
 import type { SecretStore, SecretRef, SecretAuditEntry, SecretVersion } from "./types.js";
 
 const ALGORITHM = "aes-256-gcm";
