@@ -608,3 +608,75 @@ export interface LeadRepository {
   listByStatus(orgId: string, businessId: string, status: import('@boss/types').LeadStatus): Promise<import('@boss/types').Lead[]>;
   search(orgId: string, businessId: string, query: string): Promise<import('@boss/types').Lead[]>;
 }
+
+// ─── RC3 Batch 1 Repository Interfaces ───────────────────────────────────────
+
+import type {
+  StaffMember,
+  StaffStatus,
+  Opportunity,
+  OpportunityStage,
+  Conversation,
+  StandaloneTask,
+  StandaloneTaskStatus,
+  Document,
+  DocumentType,
+  DocumentStatus,
+  Estimate,
+  EstimateStatus,
+} from "@boss/types";
+
+export interface StaffRepository {
+  create(input: Omit<StaffMember, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<StaffMember>;
+  findById(orgId: string, id: string): Promise<StaffMember | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<StaffMember, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<StaffMember>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<StaffMember[]>;
+  findByUserId(orgId: string, userId: string): Promise<StaffMember | null>;
+}
+
+export interface OpportunityRepository {
+  create(input: Omit<Opportunity, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Opportunity>;
+  findById(orgId: string, id: string): Promise<Opportunity | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Opportunity, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Opportunity>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Opportunity[]>;
+  listByStage(orgId: string, businessId: string, stage: OpportunityStage): Promise<Opportunity[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Opportunity[]>;
+}
+
+export interface ConversationRepository {
+  create(input: Omit<Conversation, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Conversation>;
+  findById(orgId: string, id: string): Promise<Conversation | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Conversation, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Conversation>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<Conversation[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Conversation[]>;
+}
+
+export interface TaskRepository {
+  create(input: Omit<StandaloneTask, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<StandaloneTask>;
+  findById(orgId: string, id: string): Promise<StandaloneTask | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<StandaloneTask, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<StandaloneTask>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<StandaloneTask[]>;
+  listChildren(orgId: string, parentTaskId: string): Promise<StandaloneTask[]>;
+}
+
+export interface DocumentRepository {
+  create(input: Omit<Document, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Document>;
+  findById(orgId: string, id: string): Promise<Document | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Document, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Document>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Document[]>;
+}
+
+export interface EstimateRepository {
+  create(input: Omit<Estimate, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Estimate>;
+  findById(orgId: string, id: string): Promise<Estimate | null>;
+  findByNumber(orgId: string, estimateNumber: string): Promise<Estimate | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Estimate, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Estimate>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Estimate[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Estimate[]>;
+}

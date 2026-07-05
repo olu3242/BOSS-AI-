@@ -47,6 +47,24 @@ import {
   createPostgresLeadRepository,
   createInMemoryLeadRepository,
   type LeadRepository,
+  createPostgresStaffRepository,
+  createInMemoryStaffRepository,
+  type StaffRepository,
+  createPostgresOpportunityRepository,
+  createInMemoryOpportunityRepository,
+  type OpportunityRepository,
+  createPostgresConversationRepository,
+  createInMemoryConversationRepository,
+  type ConversationRepository,
+  createPostgresTaskRepository,
+  createInMemoryTaskRepository,
+  type TaskRepository,
+  createPostgresDocumentRepository,
+  createInMemoryDocumentRepository,
+  type DocumentRepository,
+  createPostgresEstimateRepository,
+  createInMemoryEstimateRepository,
+  type EstimateRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -175,6 +193,12 @@ export interface RepositoryContainer {
   payments: PaymentRepository;
   reviews: ReviewRepository;
   leads: LeadRepository;
+  staff: StaffRepository;
+  opportunities: OpportunityRepository;
+  conversations: ConversationRepository;
+  tasks: TaskRepository;
+  documents: DocumentRepository;
+  estimates: EstimateRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -225,6 +249,12 @@ export function createPostgresContainer(): RepositoryContainer {
     payments: createPostgresPaymentRepository(),
     reviews: createPostgresReviewRepository(),
     leads: createPostgresLeadRepository(),
+    staff: createPostgresStaffRepository(),
+    opportunities: createPostgresOpportunityRepository(),
+    conversations: createPostgresConversationRepository(),
+    tasks: createPostgresTaskRepository(),
+    documents: createPostgresDocumentRepository(),
+    estimates: createPostgresEstimateRepository(),
   };
 }
 
@@ -278,5 +308,11 @@ export function createInMemoryContainer(): RepositoryContainer {
     payments: createInMemoryPaymentRepository(),
     reviews: createInMemoryReviewRepository(),
     leads: createInMemoryLeadRepository(),
+    staff: createInMemoryStaffRepository(),
+    opportunities: createInMemoryOpportunityRepository(),
+    conversations: createInMemoryConversationRepository(),
+    tasks: createInMemoryTaskRepository(),
+    documents: createInMemoryDocumentRepository(),
+    estimates: createInMemoryEstimateRepository(),
   };
 }

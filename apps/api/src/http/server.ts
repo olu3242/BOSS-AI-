@@ -1083,6 +1083,256 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.lead.markLost(await requireOrgId(req), param(req, "leadId")))
   );
 
+  // ── Staff routes ─────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/staff",
+    wrap(async (req) => api.staff.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/staff",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.staff.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.staff.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => api.staff.get(await requireOrgId(req), param(req, "staffId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.staff.update(orgId, param(req, "staffId"), req.body as Parameters<typeof api.staff.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.staff.delete(orgId, param(req, "staffId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Opportunity routes ────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/opportunities",
+    wrap(async (req) => api.opportunity.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/opportunities",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.opportunity.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.opportunity.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => api.opportunity.get(await requireOrgId(req), param(req, "opportunityId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.opportunity.update(orgId, param(req, "opportunityId"), req.body as Parameters<typeof api.opportunity.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.opportunity.delete(orgId, param(req, "opportunityId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Conversation routes ───────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/conversations",
+    wrap(async (req) => {
+      const limit = req.query.limit ? Number(req.query.limit) : undefined;
+      return api.conversation.list(await requireOrgId(req), param(req, "businessId"), limit);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/conversations",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.conversation.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.conversation.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => api.conversation.get(await requireOrgId(req), param(req, "conversationId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.conversation.update(orgId, param(req, "conversationId"), req.body as Parameters<typeof api.conversation.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.conversation.delete(orgId, param(req, "conversationId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Task routes ───────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/tasks",
+    wrap(async (req) => api.task.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/tasks",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.task.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.task.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => api.task.get(await requireOrgId(req), param(req, "taskId")))
+  );
+  v1.get(
+    "/businesses/:businessId/tasks/:taskId/children",
+    wrap(async (req) => api.task.listChildren(await requireOrgId(req), param(req, "taskId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.task.update(orgId, param(req, "taskId"), req.body as Parameters<typeof api.task.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.task.delete(orgId, param(req, "taskId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Document routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/documents",
+    wrap(async (req) => api.document.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/documents",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.document.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.document.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => api.document.get(await requireOrgId(req), param(req, "documentId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.document.update(orgId, param(req, "documentId"), req.body as Parameters<typeof api.document.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.document.delete(orgId, param(req, "documentId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Estimate routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/estimates",
+    wrap(async (req) => api.estimate.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/estimates",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.estimate.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => api.estimate.get(await requireOrgId(req), param(req, "estimateId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.update(orgId, param(req, "estimateId"), req.body as Parameters<typeof api.estimate.update>[2], actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/send",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.send(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/accept",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.accept(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/decline",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.decline(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/convert",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      const { invoiceId } = req.body as { invoiceId: string };
+      return api.estimate.convert(orgId, param(req, "estimateId"), invoiceId, actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.estimate.delete(orgId, param(req, "estimateId"), actorId);
+      return { deleted: true };
+    })
+  );
+
   // ── Analytics routes ──────────────────────────────────────────────────────
   v1.get(
     "/businesses/:businessId/analytics",

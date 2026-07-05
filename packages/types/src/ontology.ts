@@ -1143,3 +1143,141 @@ export interface ExecutiveBriefingRecord extends TenantScoped, Timestamped {
   periodEnd: string;
   generatedAt: string;
 }
+
+// ─── Staff ────────────────────────────────────────────────────────────────────
+
+export type StaffStatus = 'active' | 'inactive' | 'on_leave';
+
+export interface StaffMember extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  role: string;
+  department: string | null;
+  status: StaffStatus;
+  hireDate: string | null;
+  tags: string[];
+  notes: string | null;
+}
+
+// ─── Opportunities ────────────────────────────────────────────────────────────
+
+export type OpportunityStage =
+  | 'prospecting'
+  | 'qualification'
+  | 'proposal'
+  | 'negotiation'
+  | 'closed_won'
+  | 'closed_lost';
+
+export interface Opportunity extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  leadId: ID | null;
+  title: string;
+  stage: OpportunityStage;
+  valueCents: number;
+  currency: string;
+  probability: number;
+  expectedCloseDate: string | null;
+  assignedTo: string | null;
+  source: string | null;
+  notes: string | null;
+  tags: string[];
+}
+
+// ─── Conversations ────────────────────────────────────────────────────────────
+
+export type ConversationChannel = 'email' | 'sms' | 'phone' | 'chat' | 'in_person' | 'other';
+export type ConversationDirection = 'inbound' | 'outbound';
+export type ConversationStatus = 'open' | 'resolved' | 'archived';
+export type ConversationSentiment = 'positive' | 'neutral' | 'negative';
+
+export interface Conversation extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  channel: ConversationChannel;
+  direction: ConversationDirection;
+  subject: string | null;
+  body: string;
+  status: ConversationStatus;
+  assignedTo: string | null;
+  sentiment: ConversationSentiment | null;
+  occurredAt: string;
+}
+
+// ─── Tasks (Standalone, enriched) ────────────────────────────────────────────
+
+export type StandaloneTaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done' | 'cancelled';
+export type StandaloneTaskPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export interface StandaloneTask extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  description: string | null;
+  status: StandaloneTaskStatus;
+  priority: StandaloneTaskPriority;
+  assignedTo: string | null;
+  dueAt: string | null;
+  completedAt: string | null;
+  parentTaskId: ID | null;
+  tags: string[];
+}
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+export type DocumentType = 'contract' | 'proposal' | 'report' | 'template' | 'other';
+export type DocumentStatus = 'draft' | 'review' | 'approved' | 'signed' | 'archived';
+
+export interface Document extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  documentType: DocumentType;
+  status: DocumentStatus;
+  storagePath: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  version: number;
+  tags: string[];
+}
+
+// ─── Estimates ────────────────────────────────────────────────────────────────
+
+export type EstimateStatus =
+  | 'draft'
+  | 'sent'
+  | 'viewed'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'converted';
+
+export interface Estimate extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  estimateNumber: string;
+  status: EstimateStatus;
+  lineItems: Array<{
+    description: string;
+    quantity: number;
+    unitPriceCents: number;
+    totalCents: number;
+  }>;
+  subtotalCents: number;
+  taxCents: number;
+  discountCents: number;
+  totalCents: number;
+  currency: string;
+  validUntil: string | null;
+  convertedInvoiceId: ID | null;
+  notes: string | null;
+}

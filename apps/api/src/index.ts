@@ -82,6 +82,18 @@ import { createReviewService } from "./services/reviewService.js";
 import { createReviewController } from "./controllers/reviewController.js";
 import { createLeadService } from "./services/leadService.js";
 import { createLeadController } from "./controllers/leadController.js";
+import { createStaffService } from "./services/staffService.js";
+import { createStaffController } from "./controllers/staffController.js";
+import { createOpportunityService } from "./services/opportunityService.js";
+import { createOpportunityController } from "./controllers/opportunityController.js";
+import { createConversationService } from "./services/conversationService.js";
+import { createConversationController } from "./controllers/conversationController.js";
+import { createTaskService } from "./services/taskService.js";
+import { createTaskController } from "./controllers/taskController.js";
+import { createDocumentService } from "./services/documentService.js";
+import { createDocumentController } from "./controllers/documentController.js";
+import { createEstimateService } from "./services/estimateService.js";
+import { createEstimateController } from "./controllers/estimateController.js";
 import { createNotificationService } from "./services/notificationService.js";
 import { createPlatformSdk } from "./services/platformSdk.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
@@ -351,6 +363,12 @@ export function createApiFromContainer(
     payment: createPaymentController(createPaymentService(repos)),
     review: createReviewController(createReviewService(repos)),
     lead: createLeadController(createLeadService(repos)),
+    staff: createStaffController(createStaffService(repos)),
+    opportunity: createOpportunityController(createOpportunityService(repos)),
+    conversation: createConversationController(createConversationService(repos)),
+    task: createTaskController(createTaskService(repos)),
+    document: createDocumentController(createDocumentService(repos)),
+    estimate: createEstimateController(createEstimateService(repos)),
     notification: createNotificationService(repos),
     platformSdk: createPlatformSdk(repos, loopRuntime),
     analytics: createAnalyticsController(createAnalyticsService(repos)),
@@ -503,3 +521,9 @@ export * from "./services/businessGraphRuntime.js";
 export * from "./services/businessSemanticLayer.js";
 export * from "./services/businessQueryService.js";
 export * from "./businessContextRuntime.js";
+export * from "./services/staffService.js";
+export * from "./services/opportunityService.js";
+export * from "./services/conversationService.js";
+export * from "./services/taskService.js";
+export * from "./services/documentService.js";
+export * from "./services/estimateService.js";
