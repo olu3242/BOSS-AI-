@@ -5,6 +5,7 @@ import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 import type { ToolFabricService } from "./toolFabricService.js";
+import { createNotificationService } from "./notificationService.js";
 
 export interface LoopRuntimeService {
   execute(orgId: string, businessId: string, workflowKey: string, steps: StepEntry[]): Promise<WorkflowExecution>;
@@ -120,6 +121,58 @@ export function createLoopRuntimeService(
 
   handlers.register("manual", notImplementedHandler("manual"));
   handlers.register("scheduled", notImplementedHandler("scheduled"));
+
+  // ── Notification action handlers ──────────────────────────────────────────
+  const notifications = createNotificationService(repos);
+
+  handlers.register("notification.send_sms", async (input) => {
+    const { orgId, businessId, recipient, body, templateKey } = input as {
+      orgId: string; businessId?: string; recipient: string; body: string; templateKey?: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "sms", recipient, body, templateKey });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: result.status === "failed" ? result.errorMessage : null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  handlers.register("notification.send_email", async (input) => {
+    const { orgId, businessId, recipient, subject, body, templateKey } = input as {
+      orgId: string; businessId?: string; recipient: string; subject?: string; body: string; templateKey?: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "email", recipient, subject, body, templateKey });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: result.status === "failed" ? result.errorMessage : null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  handlers.register("notification.send_internal", async (input) => {
+    const { orgId, businessId, recipient, body } = input as {
+      orgId: string; businessId?: string; recipient: string; body: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "internal", recipient, body });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  // ── Audit/measurement handlers ────────────────────────────────────────────
+  handlers.register("audit.record", async (input) => {
+    const { orgId, businessId, action, actor, resourceType, resourceId } = input as {
+      orgId: string; businessId?: string; action: string; actor: string; resourceType: string; resourceId: string;
+    };
+    await repos.eventBus.publish({
+      type: "platform.audit.recorded",
+      payload: { orgId, businessId, action, actor, resourceType, resourceId, occurredAt: nowIso() },
+      occurredAt: nowIso(),
+    });
+    return { output: { recorded: true }, errorMessage: null };
+  });
 
   const runtime: LoopRuntime = createLoopRuntime(
     {

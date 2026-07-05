@@ -705,7 +705,15 @@ export type ExecutionState =
   | "rolled_back"
   | "timed_out";
 
-export type TaskType = "ai" | "manual" | "scheduled" | "tool";
+export type TaskType =
+  | "ai"
+  | "manual"
+  | "scheduled"
+  | "tool"
+  | "notification.send_sms"
+  | "notification.send_email"
+  | "notification.send_internal"
+  | "audit.record";
 
 export interface WorkflowExecution extends TenantScoped, Timestamped {
   id: ID;
