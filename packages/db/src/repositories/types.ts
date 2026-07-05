@@ -613,17 +613,12 @@ export interface LeadRepository {
 
 import type {
   StaffMember,
-  StaffStatus,
   Opportunity,
   OpportunityStage,
   Conversation,
   StandaloneTask,
-  StandaloneTaskStatus,
   Document,
-  DocumentType,
-  DocumentStatus,
   Estimate,
-  EstimateStatus,
 } from "@boss/types";
 
 export interface StaffRepository {
