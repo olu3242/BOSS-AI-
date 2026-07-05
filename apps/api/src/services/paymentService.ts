@@ -69,7 +69,7 @@ export function createPaymentService(repos: RepositoryContainer): PaymentService
         });
 
         await repos.eventBus.publish({
-          type: "payment.completed",
+          type: "payment.received",
           payload: { orgId, paymentId: payment.id, invoiceId: payment.invoiceId, amountCents: payment.amountCents },
           occurredAt: now,
         });

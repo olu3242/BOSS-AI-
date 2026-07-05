@@ -1014,6 +1014,75 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── Sales OS — Leads routes ───────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/leads",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const q = (req.query as Record<string, string>).q;
+      if (q?.trim()) return api.lead.search(orgId, param(req, "businessId"), q);
+      return api.lead.list(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.lead.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.lead.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => api.lead.get(await requireOrgId(req), param(req, "leadId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => api.lead.update(await requireOrgId(req), param(req, "leadId"), req.body as Parameters<typeof api.lead.update>[2]))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => {
+      await api.lead.delete(await requireOrgId(req), param(req, "leadId"));
+      return { deleted: true };
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/qualify",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actor = (req.body as { actor?: string }).actor ?? "system";
+      return api.lead.qualify(orgId, param(req, "leadId"), actor);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/assign",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { assignedTo } = req.body as { assignedTo: string };
+      return api.lead.assign(orgId, param(req, "leadId"), assignedTo);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/convert",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { convertedCustomerId } = req.body as { convertedCustomerId: string };
+      return api.lead.convert(orgId, param(req, "leadId"), convertedCustomerId);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/lost",
+    wrap(async (req) => api.lead.markLost(await requireOrgId(req), param(req, "leadId")))
+  );
+
   // ── Analytics routes ──────────────────────────────────────────────────────
   v1.get(
     "/businesses/:businessId/analytics",

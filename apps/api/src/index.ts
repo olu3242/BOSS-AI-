@@ -80,6 +80,8 @@ import { createPaymentService } from "./services/paymentService.js";
 import { createPaymentController } from "./controllers/paymentController.js";
 import { createReviewService } from "./services/reviewService.js";
 import { createReviewController } from "./controllers/reviewController.js";
+import { createLeadService } from "./services/leadService.js";
+import { createLeadController } from "./controllers/leadController.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
 import { createAnalyticsController } from "./controllers/analyticsController.js";
 
@@ -255,6 +257,7 @@ export function createApiFromContainer(
     invoice: createInvoiceController(createInvoiceService(repos)),
     payment: createPaymentController(createPaymentService(repos)),
     review: createReviewController(createReviewService(repos)),
+    lead: createLeadController(createLeadService(repos)),
     analytics: createAnalyticsController(createAnalyticsService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
     businessContext,
@@ -383,6 +386,7 @@ export * from "./services/aiWorkforceService.js";
 export * from "./services/orgHealthService.js";
 export * from "./services/insightService.js";
 export * from "./services/customerService.js";
+export * from "./services/leadService.js";
 export * from "./services/jobService.js";
 export * from "./services/appointmentService.js";
 export * from "./services/invoiceService.js";

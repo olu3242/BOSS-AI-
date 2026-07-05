@@ -597,3 +597,14 @@ export interface EventLogRepository {
   listByCorrelationId(correlationId: string): Promise<EventLogEntry[]>;
   listSince(since: string, limit?: number): Promise<EventLogEntry[]>;
 }
+
+export interface LeadRepository {
+  create(input: Omit<import('@boss/types').Lead, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<import('@boss/types').Lead>;
+  findById(orgId: string, id: string): Promise<import('@boss/types').Lead | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<import('@boss/types').Lead, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt' | 'deletedAt'>>): Promise<import('@boss/types').Lead>;
+  updateStatus(orgId: string, id: string, status: import('@boss/types').LeadStatus): Promise<import('@boss/types').Lead>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<import('@boss/types').Lead[]>;
+  listByStatus(orgId: string, businessId: string, status: import('@boss/types').LeadStatus): Promise<import('@boss/types').Lead[]>;
+  search(orgId: string, businessId: string, query: string): Promise<import('@boss/types').Lead[]>;
+}

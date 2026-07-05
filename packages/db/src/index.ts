@@ -49,3 +49,5 @@ export * from "./repositories/postgres/paymentRepository.js";
 export * from "./repositories/inMemory/paymentRepository.js";
 export * from "./repositories/postgres/reviewRepository.js";
 export * from "./repositories/inMemory/reviewRepository.js";
+export * from "./repositories/postgres/leadRepository.js";
+export * from "./repositories/inMemory/leadRepository.js";

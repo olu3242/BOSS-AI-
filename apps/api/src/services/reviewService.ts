@@ -41,7 +41,7 @@ export function createReviewService(repos: RepositoryContainer): ReviewService {
       });
 
       await repos.eventBus.publish({
-        type: "review.created",
+        type: "review.received",
         payload: { orgId, businessId, reviewId: review.id, rating: review.rating },
         occurredAt: new Date().toISOString(),
       });

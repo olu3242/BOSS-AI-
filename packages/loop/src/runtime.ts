@@ -1,3 +1,11 @@
+/**
+ * createLoopRuntime — low-level step execution engine.
+ * @layer    execution (sequential + parallel steps, TaskHandlerRegistry, compensation)
+ * @relation WorkflowRuntime (workflowRuntime.ts) is the orchestration layer above this.
+ *           loopRuntimeService in apps/api uses this directly for handler wiring.
+ *           Do not use this directly in new automations — use WorkflowRuntime instead.
+ * @owner    @boss/loop
+ */
 import type { EventBus } from "@boss/events";
 import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";

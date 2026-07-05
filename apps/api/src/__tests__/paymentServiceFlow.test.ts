@@ -99,9 +99,9 @@ describe("Phase B — Payment Service Flow", () => {
     expect(updatedInvoice.paidAt).toBeDefined();
   });
 
-  it("emits payment.completed event", async () => {
+  it("emits payment.received event", async () => {
     const seen: BossEvent[] = [];
-    c.eventBus.subscribe("payment.completed", (e) => seen.push(e as BossEvent));
+    c.eventBus.subscribe("payment.received", (e) => seen.push(e as BossEvent));
 
     const invoice = await createTestInvoice(c);
     const svc = createPaymentService(c);

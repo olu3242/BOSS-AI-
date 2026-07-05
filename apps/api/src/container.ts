@@ -44,6 +44,9 @@ import {
   createPostgresReviewRepository,
   createInMemoryReviewRepository,
   type ReviewRepository,
+  createPostgresLeadRepository,
+  createInMemoryLeadRepository,
+  type LeadRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -171,6 +174,7 @@ export interface RepositoryContainer {
   invoices: InvoiceRepository;
   payments: PaymentRepository;
   reviews: ReviewRepository;
+  leads: LeadRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -220,6 +224,7 @@ export function createPostgresContainer(): RepositoryContainer {
     invoices: createPostgresInvoiceRepository(),
     payments: createPostgresPaymentRepository(),
     reviews: createPostgresReviewRepository(),
+    leads: createPostgresLeadRepository(),
   };
 }
 
@@ -272,5 +277,6 @@ export function createInMemoryContainer(): RepositoryContainer {
     invoices: createInMemoryInvoiceRepository(),
     payments: createInMemoryPaymentRepository(),
     reviews: createInMemoryReviewRepository(),
+    leads: createInMemoryLeadRepository(),
   };
 }

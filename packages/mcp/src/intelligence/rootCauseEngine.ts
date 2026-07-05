@@ -1,3 +1,10 @@
+/**
+ * @owner   BTE / Operating Loop (automated causal analysis)
+ * @trigger Automated — BTE Analyze phase only
+ * @output  RootCauseChain for decision engine input
+ * @note    Distinct from diagnosticEngine: produces causal chain, not a full diagnostic report.
+ *          diagnosticEngine is for user-initiated structured sessions.
+ */
 import type { BusinessConstraint, BusinessHealth, BusinessRecommendation } from "@boss/types";
 
 export interface CausalLink {

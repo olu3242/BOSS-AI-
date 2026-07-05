@@ -131,8 +131,19 @@ export type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "lost
 export interface Lead extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
   source: string;
   status: LeadStatus;
+  assignedTo: string | null;
+  notes: string | null;
+  tags: string[];
+  estimatedValue: number | null;
+  convertedCustomerId: string | null;
+  qualifiedAt: string | null;
+  convertedAt: string | null;
 }
 
 export interface Vendor extends TenantScoped, Timestamped {

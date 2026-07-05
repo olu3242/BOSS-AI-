@@ -166,7 +166,7 @@ describe("RC1.3 Launch Simulation", () => {
       try {
         const { createFeatureFlagService } = await import("../services/featureFlagService.js");
         const svc = createFeatureFlagService();
-        expect(svc.isEnabled("ai_workforce")).toBe(true);
+        expect(svc.isEnabledSync("ai_workforce")).toBe(true);
       } finally {
         delete process.env.BOSS_FLAG_AI_WORKFORCE;
       }
