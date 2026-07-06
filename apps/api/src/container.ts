@@ -14,6 +14,9 @@ import {
   createPostgresEventLogRepository,
   createInMemoryEventLogRepository,
   type EventLogRepository,
+  createPostgresExecutionMetricsRepository,
+  createInMemoryExecutionMetricsRepository,
+  type ExecutionMetricsRepository,
   createPostgresKpiReadingRepository,
   createInMemoryKpiReadingRepository,
   type KpiReadingRepository,
@@ -160,6 +163,7 @@ import { createEnvSecretStore, createDbSecretStore, type SecretStore } from "./s
 export interface RepositoryContainer {
   eventBus: EventBus;
   eventLog: EventLogRepository;
+  executionMetrics: ExecutionMetricsRepository;
   secretStore: SecretStore;
   businesses: BusinessRepository;
   businessProfiles: BusinessProfileRepository;
@@ -219,6 +223,7 @@ export function createPostgresContainer(): RepositoryContainer {
   return {
     eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
     eventLog,
+    executionMetrics: createPostgresExecutionMetricsRepository(),
     secretStore: process.env.BOSS_SECRET_VAULT_KEY ? createDbSecretStore() : createEnvSecretStore(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
@@ -281,6 +286,7 @@ export function createInMemoryContainer(): RepositoryContainer {
   return {
     eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
     eventLog,
+    executionMetrics: createInMemoryExecutionMetricsRepository(),
     secretStore: createEnvSecretStore(),
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),

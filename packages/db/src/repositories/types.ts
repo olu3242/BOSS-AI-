@@ -600,6 +600,34 @@ export interface EventLogRepository {
   compact(retentionDays?: number, orgId?: string): Promise<number>;
 }
 
+export interface ExecutionMetricsEntry {
+  id: string;
+  orgId: string;
+  workflowId: string;
+  windowStart: string;
+  windowEnd: string;
+  runCount: number;
+  successCount: number;
+  failureCount: number;
+  p50Ms: number | null;
+  p95Ms: number | null;
+  p99Ms: number | null;
+  minMs: number | null;
+  maxMs: number | null;
+  computedAt: string;
+}
+
+export interface ExecutionMetricsRepository {
+  /** Return the latest metrics snapshot for a workflow within the given org. */
+  latestForWorkflow(orgId: string, workflowId: string): Promise<ExecutionMetricsEntry | null>;
+  /** Return all metrics entries for an org ordered by window_start desc. */
+  listByOrg(orgId: string, limit?: number): Promise<ExecutionMetricsEntry[]>;
+  /** Upsert a metrics entry (used by in-memory and test helpers). */
+  upsert(entry: Omit<ExecutionMetricsEntry, "id" | "computedAt">): Promise<ExecutionMetricsEntry>;
+  /** Call the DB refresh function; returns number of rows upserted. */
+  refresh(windowHours?: number): Promise<number>;
+}
+
 export interface LeadRepository {
   create(input: Omit<import('@boss/types').Lead, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<import('@boss/types').Lead>;
   findById(orgId: string, id: string): Promise<import('@boss/types').Lead | null>;

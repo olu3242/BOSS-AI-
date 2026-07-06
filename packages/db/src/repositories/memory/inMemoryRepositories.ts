@@ -92,6 +92,8 @@ import {
   type KpiReadingRepository,
   type BusinessGoalRepository,
   type ExecutiveBriefingRepository,
+  type ExecutionMetricsRepository,
+  type ExecutionMetricsEntry,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -1501,6 +1503,45 @@ export function createInMemoryExecutiveBriefingRepository(): ExecutiveBriefingRe
         .filter((r) => r.orgId === orgId && r.businessId === businessId && !r.deletedAt)
         .sort((a, b) => b.generatedAt.localeCompare(a.generatedAt))
         .slice(0, limit);
+    },
+  };
+}
+
+export function createInMemoryExecutionMetricsRepository(): ExecutionMetricsRepository {
+  const store = new Map<string, ExecutionMetricsEntry>();
+
+  function key(orgId: string, workflowId: string, windowStart: string, windowEnd: string) {
+    return `${orgId}:${workflowId}:${windowStart}:${windowEnd}`;
+  }
+
+  return {
+    async latestForWorkflow(orgId, workflowId) {
+      return Array.from(store.values())
+        .filter((e) => e.orgId === orgId && e.workflowId === workflowId)
+        .sort((a, b) => b.windowStart.localeCompare(a.windowStart))[0] ?? null;
+    },
+
+    async listByOrg(orgId, limit = 100) {
+      return Array.from(store.values())
+        .filter((e) => e.orgId === orgId)
+        .sort((a, b) => b.windowStart.localeCompare(a.windowStart))
+        .slice(0, limit);
+    },
+
+    async upsert(entry) {
+      const existing = store.get(key(entry.orgId, entry.workflowId, entry.windowStart, entry.windowEnd));
+      const record: ExecutionMetricsEntry = {
+        id: existing?.id ?? randomUUID(),
+        ...entry,
+        computedAt: new Date().toISOString(),
+      };
+      store.set(key(entry.orgId, entry.workflowId, entry.windowStart, entry.windowEnd), record);
+      return record;
+    },
+
+    async refresh(_windowHours = 24) {
+      // In-memory: no workflow_runs source to aggregate from — return 0 (noop)
+      return 0;
     },
   };
 }

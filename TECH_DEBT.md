@@ -19,7 +19,7 @@ Last updated: 2026-07-03
 **Owner:** RC2 hardening sprint
 
 ### TD-020 — No Dedicated Execution Metrics Table
-**Status:** Open  
+**Status:** Closed  
 **Context:** `scheduler_jobs` partially tracks execution metadata. No `execution_metrics` table for P50/P95 per workflow.  
 **Risk:** Low — observability gap only  
 **Owner:** RC2
