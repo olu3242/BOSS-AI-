@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../src/server/auth";
+import { StatTile } from "../../../../src/components/ui/StatTile";
+import { EmptyState } from "../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../src/components/ui/Card";
+import { Badge } from "../../../../src/components/ui/Badge";
 
 interface Props {
   params: Promise<{ businessId: string }>;
@@ -32,18 +37,6 @@ function healthTone(score: number) {
   return               { label: "At Risk",             color: "text-red-400",    bar: "bg-red-500",    bg: "bg-red-950/30 border-red-900/50" };
 }
 
-function categoryColor(category: string) {
-  const map: Record<string, string> = {
-    revenue_growth:         "text-green-400 bg-green-950/40 border-green-900/50",
-    cost_reduction:         "text-blue-400 bg-blue-950/40 border-blue-900/50",
-    customer_retention:     "text-purple-400 bg-purple-950/40 border-purple-900/50",
-    operational_efficiency: "text-yellow-400 bg-yellow-950/40 border-yellow-900/50",
-    lead_generation:        "text-orange-400 bg-orange-950/40 border-orange-900/50",
-    reputation:             "text-pink-400 bg-pink-950/40 border-pink-900/50",
-  };
-  return map[category] ?? "text-neutral-400 bg-neutral-800 border-neutral-700";
-}
-
 function formatKpiValue(value: number | null, unit: string): string {
   if (value === null) return "—";
   if (unit === "%") return `${value.toFixed(1)}%`;
@@ -54,11 +47,6 @@ function formatKpiValue(value: number | null, unit: string): string {
   return String(value);
 }
 
-function TrendBadge({ trend }: { trend: string | null }) {
-  if (trend === "up")   return <span className="text-green-400 text-xs">↑ Up</span>;
-  if (trend === "down") return <span className="text-red-400 text-xs">↓ Down</span>;
-  return <span className="text-neutral-500 text-xs">→ Stable</span>;
-}
 
 function dailyFocus(pendingRecs: number, pendingApprovals: number): string {
   if (pendingApprovals > 0) return `You have ${pendingApprovals} decision${pendingApprovals > 1 ? "s" : ""} awaiting approval.`;
@@ -126,9 +114,9 @@ export default async function CommandCenterPage({ params }: Props) {
       {/* ── OPERATING LOOP ──────────────────────────────────── */}
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Operating Loop</h2>
+          <h2 className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Operating Loop</h2>
           {loopStatus.lastRunAt && (
-            <span className="text-xs text-neutral-600">
+            <span className="text-xs text-text-muted">
               Last run {new Date(loopStatus.lastRunAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -144,17 +132,17 @@ export default async function CommandCenterPage({ params }: Props) {
                 key={stage.key}
                 className={`flex min-w-[80px] flex-1 flex-col items-center gap-1 rounded border py-2 px-1 text-center transition-colors ${
                   isActive  ? "border-red-800 bg-red-950/40" :
-                  isPast    ? "border-neutral-700 bg-neutral-900/60" :
-                              "border-neutral-800 bg-neutral-900/20"
+                  isPast    ? "border-border bg-elevated/60" :
+                              "border-border bg-surface/20"
                 }`}
               >
                 <span className={`text-[10px] font-medium leading-tight ${
-                  isActive ? "text-red-300" : isPast ? "text-neutral-400" : "text-neutral-600"
+                  isActive ? "text-red-300" : isPast ? "text-text-secondary" : "text-text-muted"
                 }`}>
                   {stage.label}
                 </span>
                 <span className={`h-1 w-1 rounded-full ${
-                  isActive ? "bg-red-500" : isPast ? "bg-neutral-500" : "bg-neutral-700"
+                  isActive ? "bg-red-500" : isPast ? "bg-border" : "bg-elevated"
                 }`} />
               </div>
             );
@@ -170,37 +158,42 @@ export default async function CommandCenterPage({ params }: Props) {
 
         {/* Health Score */}
         {health ? (
-          <section className={`rounded border p-6 ${tone?.bg ?? "border-neutral-800 bg-neutral-900"}`}>
-            <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Business Health</p>
+          <section className={`rounded border p-6 ${tone?.bg ?? "border-border bg-surface"}`}>
+            <p className="text-xs font-medium uppercase tracking-widest text-text-muted">Business Health</p>
             <div className="mt-2 flex items-baseline gap-3">
-              <span className={`font-display text-5xl font-black ${tone?.color ?? "text-white"}`}>{health.overallScore}</span>
-              <span className="text-lg text-neutral-500">/ 100</span>
+              <span className={`font-display text-5xl font-black ${tone?.color ?? "text-text-primary"}`}>{health.overallScore}</span>
+              <span className="text-lg text-text-muted">/ 100</span>
               <span className={`text-sm font-medium ${tone?.color}`}>{tone?.label}</span>
             </div>
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-elevated">
               <div className={`h-full rounded-full ${tone?.bar} transition-all`} style={{ width: `${health.overallScore}%` }} />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <StatBubble value={loopStatus.activeConstraints} label="Constraints" color={loopStatus.activeConstraints > 0 ? "text-red-400" : "text-neutral-400"} />
-              <StatBubble value={proposedRecs.length} label="Recommendations" color={proposedRecs.length > 0 ? "text-yellow-400" : "text-neutral-400"} />
-              <StatBubble value={approvalQueue.totalPending} label="Approvals" color={approvalQueue.totalPending > 0 ? "text-blue-400" : "text-neutral-400"} />
+              <StatBubble value={loopStatus.activeConstraints} label="Constraints" color={loopStatus.activeConstraints > 0 ? "text-red-400" : "text-text-muted"} />
+              <StatBubble value={proposedRecs.length} label="Recommendations" color={proposedRecs.length > 0 ? "text-yellow-400" : "text-text-muted"} />
+              <StatBubble value={approvalQueue.totalPending} label="Approvals" color={approvalQueue.totalPending > 0 ? "text-blue-400" : "text-text-muted"} />
             </div>
           </section>
         ) : (
-          <section className="rounded border border-neutral-800 bg-neutral-900 p-6">
-            <p className="font-medium text-neutral-300">No health score yet</p>
-            <p className="mt-1 text-sm text-neutral-500">Complete the Business MRI to generate your health score.</p>
-            <Link href={`/business/${businessId}/mri`} className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors">
-              Start Business MRI →
-            </Link>
+          <section>
+            <EmptyState
+              title="No health score yet"
+              description="Complete the Business MRI to generate your health score."
+              dashed={false}
+              action={
+                <Link href={`/business/${businessId}/mri`} className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+                  Start Business MRI →
+                </Link>
+              }
+            />
           </section>
         )}
 
         {/* Priority Actions */}
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-base text-neutral-300">Priority Actions</h2>
-            <Link href={`${base}/approvals`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-base text-text-primary">Priority Actions</h2>
+            <Link href={`${base}/approvals`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               {approvalQueue.totalPending > 0 && (
                 <span className="mr-1 inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white">
                   {approvalQueue.totalPending}
@@ -210,24 +203,26 @@ export default async function CommandCenterPage({ params }: Props) {
             </Link>
           </div>
           {decisions.pending.length === 0 && proposedRecs.length === 0 ? (
-            <div className="rounded border border-neutral-800 bg-neutral-900 p-5 text-sm text-neutral-400">
-              No actions required. Your operating loop is clean.
-            </div>
+            <EmptyState
+              title="No actions required"
+              description="Your operating loop is clean."
+              dashed={false}
+            />
           ) : (
             <div className="flex flex-col gap-2">
               {decisions.pending.slice(0, 3).map((d) => (
                 <div key={d.id} className="flex items-center gap-3 rounded border border-yellow-900/40 bg-yellow-950/20 px-4 py-3">
                   <span className="text-yellow-400 text-xs font-bold uppercase">Decision</span>
                   <span className="flex-1 min-w-0 truncate text-sm">{d.objective}</span>
-                  <span className="shrink-0 text-xs text-neutral-500">{Math.round(d.confidenceScore * 100)}%</span>
+                  <span className="shrink-0 text-xs text-text-muted">{Math.round(d.confidenceScore * 100)}%</span>
                 </div>
               ))}
               {proposedRecs.slice(0, 3 - Math.min(decisions.pending.length, 3)).map((r) => (
-                <div key={r.id} className="flex items-center gap-3 rounded border border-neutral-800 bg-neutral-900 px-4 py-3">
+                <Card key={r.id} padding="sm" className="flex items-center gap-3">
                   <span className="text-blue-400 text-xs font-bold uppercase">Rec</span>
                   <span className="flex-1 min-w-0 truncate text-sm">{r.title}</span>
                   <span className="shrink-0 text-xs text-green-400">${r.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</span>
-                </div>
+                </Card>
               ))}
             </div>
           )}
@@ -238,24 +233,22 @@ export default async function CommandCenterPage({ params }: Props) {
       {proposedRecs.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-neutral-300">AI Recommendations</h2>
-            <Link href={`${base}/recommendations`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-lg text-text-primary">AI Recommendations</h2>
+            <Link href={`${base}/recommendations`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               View all ({recommendations.length}) →
             </Link>
           </div>
           <div className="flex flex-col gap-3">
             {proposedRecs.map((rec) => (
-              <div key={rec.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
+              <Card key={rec.id}>
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm">{rec.title}</span>
-                      <span className={`rounded border px-2 py-0.5 text-[11px] font-medium capitalize ${categoryColor(rec.category)}`}>
-                        {rec.category.replace(/_/g, " ")}
-                      </span>
+                      <Badge color="neutral">{rec.category.replace(/_/g, " ")}</Badge>
                     </div>
-                    <p className="mt-1 text-xs text-neutral-400 line-clamp-2">{rec.description}</p>
-                    <div className="mt-2 flex items-center gap-4 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-text-muted line-clamp-2">{rec.description}</p>
+                    <div className="mt-2 flex items-center gap-4 text-xs text-text-muted">
                       <span>ROI: <strong className="text-green-400">${rec.estimatedRoi.profitImpactAnnual.toLocaleString()}/yr</strong></span>
                       <span>Effort: {rec.estimatedEffortHours}h</span>
                       <span>Confidence: {Math.round(rec.confidence * 100)}%</span>
@@ -263,7 +256,7 @@ export default async function CommandCenterPage({ params }: Props) {
                   </div>
                   <RecommendationInlineActions recommendationId={rec.id} businessId={businessId} />
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -272,19 +265,20 @@ export default async function CommandCenterPage({ params }: Props) {
       {/* ── KEY METRICS ──────────────────────────────────────── */}
       {kpis.readings.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-lg text-neutral-300">Key Metrics</h2>
+          <h2 className="mb-4 font-display text-lg text-text-primary">Key Metrics</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {kpis.readings.map((kpi) => (
-              <div key={kpi.kpiKey} className="rounded border border-neutral-800 bg-neutral-900 p-4">
-                <p className="text-xs text-neutral-500 leading-tight">{kpi.label}</p>
-                <p className="mt-2 text-2xl font-semibold leading-none">
-                  {formatKpiValue(kpi.value, kpi.unit)}
-                </p>
-                <div className="mt-2">
-                  <TrendBadge trend={"trend" in kpi ? (kpi as { trend: string | null }).trend : null} />
-                </div>
-              </div>
-            ))}
+            {kpis.readings.map((kpi) => {
+              const rawTrend = "trend" in kpi ? (kpi as { trend: string | null }).trend : null;
+              const trend = rawTrend === "up" ? "up" : rawTrend === "down" ? "down" : "neutral";
+              return (
+                <StatTile
+                  key={kpi.kpiKey}
+                  label={kpi.label}
+                  value={formatKpiValue(kpi.value, kpi.unit)}
+                  trend={trend}
+                />
+              );
+            })}
           </div>
         </section>
       )}
@@ -293,22 +287,22 @@ export default async function CommandCenterPage({ params }: Props) {
       {recentActivity.length > 0 && (
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display text-lg text-neutral-300">Recent Activity</h2>
-            <Link href={`${base}/timeline`} className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors">
+            <h2 className="font-display text-lg text-text-primary">Recent Activity</h2>
+            <Link href={`${base}/timeline`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">
               Full timeline →
             </Link>
           </div>
           <div className="flex flex-col gap-1.5">
             {recentActivity.map((entry) => (
-              <div key={entry.id} className="flex items-start gap-3 rounded border border-neutral-800 bg-neutral-900 px-3 py-2.5">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-600" />
+              <Card key={entry.id} padding="sm" className="flex items-start gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm leading-snug text-neutral-300 truncate">{entry.description}</p>
-                  <time className="text-xs text-neutral-600">
+                  <p className="text-sm leading-snug text-text-secondary truncate">{entry.description}</p>
+                  <time className="text-xs text-text-muted">
                     {new Date(entry.occurredAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </time>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         </section>
@@ -324,16 +318,16 @@ function DailyBriefHeader({ date, stage, focus }: { date: Date; stage: string; f
   const dayName = date.toLocaleDateString([], { weekday: "long" });
   const dateStr = date.toLocaleDateString([], { month: "long", day: "numeric", year: "numeric" });
   return (
-    <div className="flex items-start justify-between gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">{dayName} · {dateStr}</p>
-        <h1 className="mt-1 font-display text-3xl">Command Center</h1>
-        <p className="mt-2 text-sm text-neutral-400">{focus}</p>
-      </div>
-      <div className="shrink-0 rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-xs text-neutral-400 capitalize hidden sm:block">
-        Loop: <span className="text-neutral-200 font-medium">{stage}</span>
-      </div>
-    </div>
+    <PageHeader
+      title="Command Center"
+      description={focus}
+      back={<span className="text-xs text-text-muted">{dayName} · {dateStr}</span>}
+      action={
+        <div className="shrink-0 rounded border border-border bg-surface px-3 py-1.5 text-xs text-text-muted capitalize hidden sm:block">
+          Loop: <span className="text-text-primary font-medium">{stage}</span>
+        </div>
+      }
+    />
   );
 }
 
@@ -344,18 +338,18 @@ function DomainTiles({ base, customerCount }: { base: string; customerCount: num
   };
   return (
     <section>
-      <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Business Domains</h2>
+      <h2 className="mb-3 text-xs font-medium uppercase tracking-widest text-text-muted">Business Domains</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {DOMAIN_TILES.map((d) => (
           <Link
             key={d.key}
             href={`${base}/${d.key}`}
-            className="flex flex-col gap-2 rounded border border-neutral-800 bg-neutral-900 p-4 transition-colors hover:border-neutral-700 hover:bg-neutral-800/60"
+            className="flex flex-col gap-2 rounded border border-border bg-surface p-4 transition-colors hover:border-border-strong hover:bg-elevated/60"
           >
             <span className="text-2xl">{d.icon}</span>
             <div>
-              <p className="text-sm font-medium text-neutral-200">{d.label}</p>
-              <p className="text-xs text-neutral-500">
+              <p className="text-sm font-medium text-text-primary">{d.label}</p>
+              <p className="text-xs text-text-muted">
                 {counts[d.key] !== null ? `${counts[d.key]} records` : d.desc}
               </p>
             </div>
@@ -370,7 +364,7 @@ function StatBubble({ value, label, color }: { value: number; label: string; col
   return (
     <div>
       <p className={`text-xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-neutral-500 mt-0.5">{label}</p>
+      <p className="text-xs text-text-muted mt-0.5">{label}</p>
     </div>
   );
 }
@@ -386,7 +380,7 @@ function RecommendationInlineActions({ recommendationId, businessId }: { recomme
       </form>
       <form action={`/api/recommendations/${recommendationId}/dismiss`} method="POST">
         <input type="hidden" name="businessId" value={businessId} />
-        <button type="submit" className="rounded bg-neutral-800 px-3 py-1.5 text-xs font-medium text-neutral-400 hover:bg-neutral-700 transition-colors w-full">
+        <button type="submit" className="rounded bg-elevated px-3 py-1.5 text-xs font-medium text-text-muted hover:bg-border transition-colors w-full">
           Dismiss
         </button>
       </form>

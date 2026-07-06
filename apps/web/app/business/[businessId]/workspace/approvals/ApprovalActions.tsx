@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { Button } from "../../../../../src/components/ui/Button";
 
 interface DecisionActionsProps {
   decisionId: string;
@@ -39,26 +40,16 @@ export function DecisionActions({ decisionId, orgId }: DecisionActionsProps) {
   }
 
   return (
-    <div className="mt-3 border-t border-neutral-800 pt-3">
+    <div className="mt-3 border-t border-border pt-3">
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={approve}
-          disabled={pending !== null}
-          className="rounded bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {pending === "approve" ? "Approving…" : "Approve"}
-        </button>
-        <button
-          type="button"
-          onClick={reject}
-          disabled={pending !== null}
-          className="rounded bg-neutral-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {pending === "reject" ? "Rejecting…" : "Reject"}
-        </button>
+        <Button size="sm" onClick={approve} disabled={pending !== null} loading={pending === "approve"}>
+          Approve
+        </Button>
+        <Button size="sm" variant="secondary" onClick={reject} disabled={pending !== null} loading={pending === "reject"}>
+          Reject
+        </Button>
       </div>
-      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
     </div>
   );
 }
@@ -70,7 +61,7 @@ interface RecommendationActionsProps {
 
 export function RecommendationActions({ recommendationId, orgId }: RecommendationActionsProps) {
   const router = useRouter();
-  const [pending, setPending] = useState<"approve" | "dismiss" | null>(null);
+  const [pending, setPending] = useState<"approve" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function approve() {
@@ -86,18 +77,13 @@ export function RecommendationActions({ recommendationId, orgId }: Recommendatio
   }
 
   return (
-    <div className="mt-3 border-t border-neutral-800 pt-3">
+    <div className="mt-3 border-t border-border pt-3">
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={approve}
-          disabled={pending !== null}
-          className="rounded bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {pending === "approve" ? "Approving…" : "Approve"}
-        </button>
+        <Button size="sm" onClick={approve} disabled={pending !== null} loading={pending === "approve"}>
+          Approve
+        </Button>
       </div>
-      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
     </div>
   );
 }

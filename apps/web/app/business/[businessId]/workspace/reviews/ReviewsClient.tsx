@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Review = {
   id: string; customerId: string; jobId: string | null; rating: number;
@@ -9,19 +15,18 @@ type Review = {
   response: string | null; respondedAt: string | null; createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  pending:   "bg-yellow-900/40 text-yellow-400",
-  published: "bg-green-900/40 text-green-400",
-  flagged:   "bg-red-900/40 text-red-400",
-  hidden:    "bg-neutral-800 text-neutral-500",
-};
+function reviewStatusColor(status: string): "yellow" | "green" | "red" | "neutral" {
+  if (status === "pending") return "yellow";
+  if (status === "published") return "green";
+  if (status === "flagged") return "red";
+  return "neutral";
+}
 
-const SOURCE_STYLE: Record<string, string> = {
-  internal: "bg-neutral-800 text-neutral-300",
-  google:   "bg-blue-900/40 text-blue-300",
-  yelp:     "bg-red-900/40 text-red-300",
-  facebook: "bg-blue-900/40 text-blue-400",
-};
+function reviewSourceColor(source: string): "blue" | "red" | "neutral" {
+  if (source === "google" || source === "facebook") return "blue";
+  if (source === "yelp") return "red";
+  return "neutral";
+}
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -115,20 +120,13 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Reviews</h1>
-          <p className="mt-1 text-sm text-neutral-400">
-            {publishedReviews.length > 0
-              ? `${avgRating.toFixed(1)} ★ average — ${publishedReviews.length} published review${publishedReviews.length !== 1 ? "s" : ""}`
-              : "No published reviews yet"}
-          </p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors">
-          Add Review
-        </button>
-      </div>
+      <PageHeader
+        title="Reviews"
+        description={publishedReviews.length > 0
+          ? `${avgRating.toFixed(1)} ★ average — ${publishedReviews.length} published review${publishedReviews.length !== 1 ? "s" : ""}`
+          : "No published reviews yet"}
+        action={<Button onClick={() => setShowForm(!showForm)}>Add Review</Button>}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
@@ -139,81 +137,71 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
 
       {/* Rating distribution */}
       {publishedReviews.length > 0 && (
-        <div className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
+        <Card>
           <div className="flex items-center gap-6">
             <div className="text-center shrink-0">
-              <div className="text-4xl font-bold text-neutral-100">{avgRating.toFixed(1)}</div>
+              <div className="text-4xl font-bold text-text-primary">{avgRating.toFixed(1)}</div>
               <div className="text-yellow-400 text-lg">{"★".repeat(Math.round(avgRating))}{"☆".repeat(5 - Math.round(avgRating))}</div>
-              <div className="text-xs text-neutral-500 mt-1">{publishedReviews.length} reviews</div>
+              <div className="text-xs text-text-muted mt-1">{publishedReviews.length} reviews</div>
             </div>
             <div className="flex-1 space-y-1">
               {[5, 4, 3, 2, 1].map((star) => (
                 <button key={star} onClick={() => setRatingFilter(ratingFilter === star ? null : star)}
-                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-xs transition-colors ${ratingFilter === star ? "bg-neutral-800" : "hover:bg-neutral-900"}`}>
+                  className={`flex w-full items-center gap-2 rounded px-2 py-1 text-xs transition-colors ${ratingFilter === star ? "bg-elevated" : "hover:bg-elevated/60"}`}>
                   <span className="text-yellow-400 w-8">{star}★</span>
-                  <div className="flex-1 h-1.5 rounded-full bg-neutral-800">
+                  <div className="flex-1 h-1.5 rounded-full bg-elevated">
                     <div className="h-full rounded-full bg-yellow-400" style={{ width: `${publishedReviews.length > 0 ? ((ratingCounts[star] ?? 0) / publishedReviews.length) * 100 : 0}%` }} />
                   </div>
-                  <span className="text-neutral-500 w-6 text-right">{ratingCounts[star] ?? 0}</span>
+                  <span className="text-text-muted w-6 text-right">{ratingCounts[star] ?? 0}</span>
                 </button>
               ))}
             </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 space-y-4">
-          <h2 className="font-semibold text-neutral-100">Add Review</h2>
+        <Card padding="lg">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <h2 className="font-semibold text-text-primary">Add Review</h2>
           {formError && <p className="text-sm text-red-400">{formError}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Input label="Customer ID *" value={customerId} onChange={(e) => setCustomerId(e.target.value)} placeholder="Customer ID" />
             <div>
-              <label className="block text-xs text-neutral-400 mb-1">Customer ID *</label>
-              <input type="text" value={customerId} onChange={(e) => setCustomerId(e.target.value)}
-                placeholder="Customer ID"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Rating *</label>
+              <label className="block text-xs text-text-secondary mb-1">Rating *</label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button key={s} type="button" onClick={() => setRating(s)}
-                    className={`text-2xl transition-colors ${s <= rating ? "text-yellow-400" : "text-neutral-700"}`}>
+                    className={`text-2xl transition-colors ${s <= rating ? "text-yellow-400" : "text-text-muted"}`}>
                     ★
                   </button>
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Title</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
+            <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
             <div className="sm:col-span-2">
-              <label className="block text-xs text-neutral-400 mb-1">Review</label>
-              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
+              <Textarea label="Review" value={body} onChange={(e) => setBody(e.target.value)} rows={3} />
             </div>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50">
+            <Button type="submit" disabled={loading} loading={loading}>
               {loading ? "Saving…" : "Add Review"}
-            </button>
+            </Button>
             <button type="button" onClick={() => { setShowForm(false); setFormError(null); }}
-              className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white">
+              className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:text-text-primary transition-colors">
               Cancel
             </button>
           </div>
         </form>
+        </Card>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-neutral-800">
+      <div className="flex gap-1 border-b border-border">
         {["all", "pending", "published", "flagged", "hidden"].map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-              activeTab === tab ? "border-accent text-accent" : "border-transparent text-neutral-400 hover:text-white"
+              activeTab === tab ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
             }`}>
             {tab}
           </button>
@@ -221,29 +209,30 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-neutral-800 p-12 text-center">
-          <p className="text-neutral-400">No reviews found.</p>
-          <button onClick={() => setShowForm(true)}
-            className="mt-4 text-sm text-accent hover:underline">Add first review</button>
-        </div>
+        <EmptyState
+          title="No reviews found"
+          description="Collect and manage customer reviews to build your reputation."
+          action={
+            <button onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+              Add first review
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-4">
           {filtered.map((review) => (
-            <div key={review.id} className="rounded-xl border border-neutral-800 bg-neutral-950 p-5 space-y-3">
+            <Card key={review.id} className="space-y-3">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
                     <Stars rating={review.rating} />
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[review.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {review.status}
-                    </span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${SOURCE_STYLE[review.source] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {review.source}
-                    </span>
+                    <Badge color={reviewStatusColor(review.status)}>{review.status}</Badge>
+                    <Badge color={reviewSourceColor(review.source)}>{review.source}</Badge>
                   </div>
-                  {review.title && <p className="mt-1 font-medium text-neutral-100">{review.title}</p>}
-                  {review.body && <p className="mt-1 text-sm text-neutral-400">{review.body}</p>}
-                  <p className="mt-2 text-xs text-neutral-500">{formatDate(review.createdAt)}</p>
+                  {review.title && <p className="mt-1 font-medium text-text-primary">{review.title}</p>}
+                  {review.body && <p className="mt-1 text-sm text-text-secondary">{review.body}</p>}
+                  <p className="mt-2 text-xs text-text-muted">{formatDate(review.createdAt)}</p>
                 </div>
                 <div className="flex flex-col gap-1.5 shrink-0">
                   {review.status === "pending" && (
@@ -260,7 +249,7 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
                   )}
                   {review.status !== "hidden" && (
                     <button onClick={() => handleStatus(review, "hidden")}
-                      className="rounded px-2 py-1 text-xs bg-neutral-800 text-neutral-400 hover:bg-neutral-700">
+                      className="rounded px-2 py-1 text-xs bg-elevated text-text-muted hover:bg-border transition-colors">
                       Hide
                     </button>
                   )}
@@ -268,24 +257,22 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
               </div>
 
               {review.response && (
-                <div className="rounded-lg border border-neutral-700 bg-neutral-900 p-3">
-                  <p className="text-xs text-neutral-500 mb-1">Your response · {formatDate(review.respondedAt)}</p>
-                  <p className="text-sm text-neutral-300">{review.response}</p>
+                <div className="rounded border border-border bg-elevated p-3">
+                  <p className="text-xs text-text-muted mb-1">Your response · {formatDate(review.respondedAt)}</p>
+                  <p className="text-sm text-text-secondary">{review.response}</p>
                 </div>
               )}
 
               {respondingId === review.id ? (
                 <div className="space-y-2">
-                  <textarea value={responseText} onChange={(e) => setResponseText(e.target.value)}
-                    rows={3} placeholder="Write your response…"
-                    className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
+                  <Textarea value={responseText} onChange={(e) => setResponseText(e.target.value)}
+                    rows={3} placeholder="Write your response…" />
                   <div className="flex gap-2">
-                    <button onClick={() => handleRespond(review.id)}
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs text-white hover:bg-accent/90">
+                    <Button size="sm" onClick={() => handleRespond(review.id)}>
                       Save Response
-                    </button>
+                    </Button>
                     <button onClick={() => { setRespondingId(null); setResponseText(""); }}
-                      className="rounded-lg border border-neutral-700 px-3 py-1.5 text-xs text-neutral-400 hover:text-white">
+                      className="rounded border border-border px-3 py-1.5 text-xs text-text-muted hover:text-text-primary transition-colors">
                       Cancel
                     </button>
                   </div>
@@ -296,7 +283,7 @@ export function ReviewsClient({ orgId, businessId, reviews: initialReviews, erro
                   {review.response ? "Edit response" : "Respond"}
                 </button>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}

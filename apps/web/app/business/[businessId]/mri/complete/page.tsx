@@ -17,8 +17,8 @@ export default async function MriCompletePage({ params }: Props) {
       </div>
 
       <div className="text-center">
-        <h1 className="font-display text-3xl text-white">Business MRI complete</h1>
-        <p className="mt-3 text-neutral-400">
+        <h1 className="font-display text-3xl text-text-primary">Business MRI complete</h1>
+        <p className="mt-3 text-text-muted">
           BOSS has everything it needs to generate your health score, identify constraints, and create your first
           recommendations.
         </p>
@@ -31,7 +31,7 @@ export default async function MriCompletePage({ params }: Props) {
         >
           View your workspace →
         </Link>
-        <p className="text-xs text-neutral-600">
+        <p className="text-xs text-text-muted">
           Your health score and first recommendations are being generated.
         </p>
       </div>

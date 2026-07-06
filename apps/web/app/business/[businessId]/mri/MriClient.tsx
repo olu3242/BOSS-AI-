@@ -107,17 +107,17 @@ export function MriClient({ businessId, orgId }: { businessId: string; orgId: st
       <div>
         <p className="text-sm font-medium text-accent uppercase tracking-wide">Business MRI</p>
         <h1 className="mt-2 font-display text-3xl">Let&apos;s understand your business</h1>
-        <p className="mt-2 text-neutral-400">
+        <p className="mt-2 text-text-muted">
           Answer {QUESTIONS.length} quick questions so BOSS can generate your health score and first recommendations.
         </p>
       </div>
 
       <div>
-        <div className="flex items-center justify-between text-xs text-neutral-500 mb-2">
+        <div className="flex items-center justify-between text-xs text-text-muted mb-2">
           <span>Question {step + 1} of {QUESTIONS.length}</span>
           <span>{progress}% complete</span>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-neutral-800">
+        <div className="h-1.5 w-full rounded-full bg-elevated">
           <div
             className="h-1.5 rounded-full bg-accent transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -128,7 +128,7 @@ export function MriClient({ businessId, orgId }: { businessId: string; orgId: st
       <form onSubmit={onSubmit} className="flex flex-col gap-6">
         <div>
           <label className="flex flex-col gap-3 text-sm">
-            <span className="text-lg text-white font-medium">{question.label}</span>
+            <span className="text-lg text-text-primary font-medium">{question.label}</span>
             <input
               key={step}
               name="answer"
@@ -137,7 +137,7 @@ export function MriClient({ businessId, orgId }: { businessId: string; orgId: st
               required
               min={question.type === "number" ? 0 : undefined}
               autoFocus
-              className="rounded border border-neutral-700 bg-neutral-900 px-4 py-3 text-white placeholder:text-neutral-600 focus:border-accent focus:outline-none"
+              className="rounded border border-border bg-surface px-4 py-3 text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
             />
           </label>
         </div>
@@ -149,7 +149,7 @@ export function MriClient({ businessId, orgId }: { businessId: string; orgId: st
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-500"
+              className="rounded border border-border px-4 py-2 text-sm text-text-secondary hover:border-border-strong"
             >
               Back
             </button>
@@ -173,7 +173,7 @@ export function MriClient({ businessId, orgId }: { businessId: string; orgId: st
                 ? "bg-green-900/40 text-green-400"
                 : i === step
                   ? "bg-accent/20 text-accent"
-                  : "bg-neutral-800 text-neutral-600"
+                  : "bg-elevated text-text-muted"
             }`}
           >
             {q.sectionKey}

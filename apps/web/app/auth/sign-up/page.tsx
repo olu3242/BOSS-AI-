@@ -1,3 +1,5 @@
+import { GoogleSignInButton } from "../../../src/components/auth/GoogleSignInButton";
+
 interface SignUpPageProps {
   readonly searchParams: Promise<{ readonly error?: string }>;
 }
@@ -11,7 +13,16 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         <p className="eyebrow">Create your workspace</p>
         <h1 id="sign-up-title">Get started</h1>
         <p className="subtle">Your business data stays isolated to your organization.</p>
+
         {query.error ? <p className="form-error" role="alert">{query.error}</p> : null}
+
+        {/* Google OAuth */}
+        <GoogleSignInButton />
+
+        <div className="auth-divider" aria-hidden="true">
+          <span>or</span>
+        </div>
+
         <form action="/api/auth/sign-up" method="post">
           <label>
             Work email

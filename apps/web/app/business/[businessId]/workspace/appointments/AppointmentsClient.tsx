@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Textarea } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Appointment = {
   id: string; title: string; notes: string | null;
@@ -11,14 +17,12 @@ type Appointment = {
   createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  scheduled:   "bg-blue-900/40 text-blue-400",
-  confirmed:   "bg-green-900/40 text-green-400",
-  in_progress: "bg-yellow-900/40 text-yellow-400",
-  completed:   "bg-green-900/60 text-green-300",
-  cancelled:   "bg-neutral-800 text-neutral-500",
-  no_show:     "bg-neutral-800 text-neutral-400",
-};
+function apptStatusColor(status: string): "blue" | "green" | "yellow" | "neutral" {
+  if (status === "scheduled") return "blue";
+  if (status === "confirmed" || status === "completed") return "green";
+  if (status === "in_progress") return "yellow";
+  return "neutral";
+}
 
 
 function groupByDay(appts: Appointment[]) {
@@ -108,96 +112,40 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl">Appointments</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {appointments.length} total · {appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed").length} upcoming
-          </p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-        >
-          + New Appointment
-        </button>
-      </div>
+      <PageHeader
+        title="Appointments"
+        description={`${appointments.length} total · ${appointments.filter((a) => a.status === "scheduled" || a.status === "confirmed").length} upcoming`}
+        action={<Button onClick={() => setShowForm(true)}>+ New Appointment</Button>}
+      />
 
       {/* Form panel */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onClick={() => setShowForm(false)}>
           <div
-            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-neutral-800"
+            className="h-full w-full max-w-md overflow-y-auto bg-neutral-950 p-6 shadow-xl border-l border-border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-xl">New Appointment</h2>
-              <button onClick={() => setShowForm(false)} className="text-neutral-500 hover:text-white">✕</button>
+              <button onClick={() => setShowForm(false)} className="text-text-muted hover:text-text-primary">✕</button>
             </div>
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Title *</label>
-                <input
-                  value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Initial consultation"
-                  required
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
+              <Input label="Title *" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Initial consultation" required />
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">Start *</label>
-                  <input
-                    type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)}
-                    required
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-neutral-500 mb-1">End *</label>
-                  <input
-                    type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)}
-                    required
-                    className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-                  />
-                </div>
+                <Input label="Start *" type="datetime-local" value={startAt} onChange={(e) => setStartAt(e.target.value)} required />
+                <Input label="End *" type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} required />
               </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Location</label>
-                <input
-                  value={location} onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Address or virtual link"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Assigned To</label>
-                <input
-                  value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}
-                  placeholder="Employee name or ID"
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-neutral-500 mb-1">Notes</label>
-                <textarea
-                  value={notes} onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
-                  className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-                />
-              </div>
-              {formError && <p className="text-sm text-red-400">{formError}</p>}
+              <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Address or virtual link" />
+              <Input label="Assigned To" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} placeholder="Employee name or ID" />
+              <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              {formError && <p className="text-sm text-status-danger">{formError}</p>}
               <div className="flex gap-3 pt-2">
-                <button
-                  type="submit" disabled={loading}
-                  className="flex-1 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                >
+                <Button type="submit" disabled={loading} loading={loading} className="flex-1">
                   {loading ? "Creating…" : "Create Appointment"}
-                </button>
+                </Button>
                 <button
                   type="button" onClick={() => setShowForm(false)}
-                  className="rounded border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-800 transition-colors"
+                  className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:bg-elevated transition-colors"
                 >
                   Cancel
                 </button>
@@ -214,16 +162,18 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
 
       {/* Empty state */}
       {!error && appointments.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-12 text-center">
-          <p className="font-display text-lg text-neutral-300">No appointments yet</p>
-          <p className="mt-2 text-sm text-neutral-500">Schedule appointments with customers and track them here.</p>
-          <button
-            onClick={() => setShowForm(true)}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Book first appointment
-          </button>
-        </div>
+        <EmptyState
+          title="No appointments yet"
+          description="Schedule appointments with customers and track them here."
+          action={
+            <button
+              onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Book first appointment
+            </button>
+          }
+        />
       )}
 
       {/* Calendar-style grouped list */}
@@ -231,28 +181,26 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
         <div className="flex flex-col gap-6">
           {[...grouped.entries()].map(([day, appts]) => (
             <div key={day}>
-              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-500">{day}</p>
-              <div className="flex flex-col divide-y divide-neutral-800 rounded border border-neutral-800">
+              <p className="mb-3 text-xs font-medium uppercase tracking-wider text-text-muted">{day}</p>
+              <Card className="flex flex-col divide-y divide-border overflow-hidden">
                 {appts.map((a) => (
                   <div key={a.id} className="flex items-center gap-4 px-5 py-4">
                     <div className="shrink-0 text-center w-12">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-text-primary">
                         {new Date(a.startAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
-                      <p className="text-[10px] text-neutral-600">
+                      <p className="text-[10px] text-text-muted">
                         {new Date(a.endAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white truncate">{a.title}</p>
-                      <div className="flex gap-3 text-xs text-neutral-600 mt-0.5">
+                      <p className="font-medium text-text-primary truncate">{a.title}</p>
+                      <div className="flex gap-3 text-xs text-text-muted mt-0.5">
                         {a.location && <span>📍 {a.location}</span>}
                         {a.assignedTo && <span>👤 {a.assignedTo}</span>}
                       </div>
                     </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLE[a.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {a.status.replace("_", " ")}
-                    </span>
+                    <Badge color={apptStatusColor(a.status)}>{a.status.replace("_", " ")}</Badge>
                     <div className="flex gap-2 shrink-0">
                       {a.status === "scheduled" && (
                         <button
@@ -265,7 +213,7 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
                       {(a.status === "scheduled" || a.status === "confirmed") && (
                         <button
                           onClick={() => handleCancel(a.id)}
-                          className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-700 transition-colors"
+                          className="rounded bg-elevated px-2 py-1 text-xs text-text-muted hover:bg-elevated/80 transition-colors"
                         >
                           Cancel
                         </button>
@@ -273,7 +221,7 @@ export function AppointmentsClient({ orgId, businessId, appointments: initialApp
                     </div>
                   </div>
                 ))}
-              </div>
+              </Card>
             </div>
           ))}
         </div>

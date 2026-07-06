@@ -1,5 +1,9 @@
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../../src/components/ui/Card";
+import { Badge } from "../../../../../src/components/ui/Badge";
 import { DecisionActions, RecommendationActions } from "./ApprovalActions";
 
 interface Props {
@@ -17,7 +21,7 @@ export default async function ApprovalsPage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load approvals.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">Approval Center</h1>
+        <PageHeader title="Approval Center" />
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load approvals</p>
           <p className="mt-1 text-sm">{message}</p>
@@ -30,43 +34,40 @@ export default async function ApprovalsPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl">Approval Center</h1>
-        {hasWork && (
-          <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-medium text-white">
-            {queue.totalPending} pending
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title="Approval Center"
+        action={hasWork ? (
+          <Badge color="red">{queue.totalPending} pending</Badge>
+        ) : undefined}
+      />
 
       {!hasWork ? (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-400">
-          <p className="text-lg font-medium">All caught up</p>
-          <p className="mt-1 text-sm">No decisions or recommendations awaiting your approval.</p>
-        </div>
+        <EmptyState
+          title="All caught up"
+          description="No decisions or recommendations awaiting your approval."
+          dashed={false}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {queue.pendingDecisions.length > 0 && (
             <section>
-              <h2 className="mb-3 font-display text-lg text-neutral-300">
+              <h2 className="mb-3 font-display text-lg text-text-primary">
                 Decisions ({queue.pendingDecisions.length})
               </h2>
               <div className="flex flex-col gap-3">
                 {queue.pendingDecisions.map((d) => (
-                  <div key={d.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
+                  <Card key={d.id}>
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="font-medium">{d.objective}</p>
-                        <p className="mt-1 text-sm text-neutral-400">
+                        <p className="mt-1 text-sm text-text-muted">
                           Confidence: {Math.round(d.confidenceScore * 100)}%
                         </p>
                       </div>
-                      <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400 shrink-0">
-                        {d.status}
-                      </span>
+                      <Badge color="neutral">{d.status}</Badge>
                     </div>
                     <DecisionActions decisionId={d.id} orgId={orgId} />
-                  </div>
+                  </Card>
                 ))}
               </div>
             </section>
@@ -74,18 +75,18 @@ export default async function ApprovalsPage({ params }: Props) {
 
           {queue.pendingRecommendations.length > 0 && (
             <section>
-              <h2 className="mb-3 font-display text-lg text-neutral-300">
+              <h2 className="mb-3 font-display text-lg text-text-primary">
                 Recommendations ({queue.pendingRecommendations.length})
               </h2>
               <div className="flex flex-col gap-3">
                 {queue.pendingRecommendations.map((r) => (
-                  <div key={r.id} className="rounded border border-neutral-800 bg-neutral-900 p-4">
+                  <Card key={r.id}>
                     <div className="flex items-start justify-between">
                       <p className="font-medium">{r.title}</p>
-                      <span className="rounded bg-neutral-800 px-2 py-1 text-xs text-neutral-400">{r.status}</span>
+                      <Badge color="neutral">{r.status}</Badge>
                     </div>
                     <RecommendationActions recommendationId={r.id} orgId={orgId} />
-                  </div>
+                  </Card>
                 ))}
               </div>
             </section>

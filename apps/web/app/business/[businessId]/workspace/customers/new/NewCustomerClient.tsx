@@ -4,6 +4,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../../src/lib/apiClient";
+import { Input, Select, Textarea } from "../../../../../../src/components/ui/Input";
+import { Button } from "../../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../../src/components/ui/PageHeader";
 
 const SOURCES = [
   { value: "", label: "— Select source —" },
@@ -48,13 +51,11 @@ export function NewCustomerClient({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-8 max-w-xl">
-      <div>
-        <Link href={`${base}/customers`} className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors">
-          ← Customers
-        </Link>
-        <h1 className="mt-3 font-display text-3xl">Add customer</h1>
-        <p className="mt-1 text-sm text-neutral-500">Create a customer record and start tracking their history.</p>
-      </div>
+      <PageHeader
+        title="Add customer"
+        description="Create a customer record and start tracking their history."
+        back={<Link href={`${base}/customers`} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← Customers</Link>}
+      />
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-4">
@@ -65,41 +66,23 @@ export function NewCustomerClient({ orgId }: { orgId: string }) {
         <Field label="Phone" name="phone" type="tel" />
         <Field label="Address" name="address" />
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-neutral-400">How did they find you?</label>
-          <select
-            name="source"
-            className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white focus:border-neutral-500 focus:outline-none"
-          >
-            {SOURCES.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
-        </div>
+        <Select label="How did they find you?" name="source">
+          {SOURCES.map((s) => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </Select>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm text-neutral-400">Notes</label>
-          <textarea
-            name="notes"
-            rows={4}
-            placeholder="Anything worth remembering about this customer…"
-            className="resize-none rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-          />
-        </div>
+        <Textarea label="Notes" name="notes" rows={4} placeholder="Anything worth remembering about this customer…" />
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-status-danger">{error}</p>}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded bg-red-700 px-5 py-2 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
-          >
+          <Button type="submit" disabled={submitting} loading={submitting}>
             {submitting ? "Creating…" : "Create customer"}
-          </button>
+          </Button>
           <Link
             href={`${base}/customers`}
-            className="rounded bg-neutral-800 px-5 py-2 text-sm text-neutral-400 hover:bg-neutral-700 transition-colors"
+            className="rounded bg-elevated px-5 py-2 text-sm text-text-muted hover:bg-border transition-colors"
           >
             Cancel
           </Link>
@@ -109,29 +92,8 @@ export function NewCustomerClient({ orgId }: { orgId: string }) {
   );
 }
 
-function Field({
-  label,
-  name,
-  type = "text",
-  required,
-  autoFocus,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  required?: boolean;
-  autoFocus?: boolean;
+function Field({ label, name, type = "text", required, autoFocus }: {
+  label: string; name: string; type?: string; required?: boolean; autoFocus?: boolean;
 }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm text-neutral-400">{label}</label>
-      <input
-        name={name}
-        type={type}
-        required={required}
-        autoFocus={autoFocus}
-        className="rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
-      />
-    </div>
-  );
+  return <Input label={label} name={name} type={type} required={required} autoFocus={autoFocus} />;
 }

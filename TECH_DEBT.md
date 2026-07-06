@@ -80,3 +80,35 @@ Last updated: 2026-07-03
 | TD-019 | `ParallelStepGroup` type contract | Goal 17 (Scheduler) |
 | TD-021 | Domain events in-process only | RC1 WS4 (DurableEventBus) |
 | TD-028 | No Zod validation on HTTP bodies | Goals 21-23 |
+
+---
+
+## RC2 Phase A Deferred Items
+
+### TD-035 — Landing page inline styles vs Tailwind tokens
+**Status:** Open (identified RC2 Phase A)  
+**Context:** New marketing components use inline styles with hardcoded values rather than Tailwind token classes. Values are semantically aligned but not DRY.  
+**Recommendation:** Migrate marketing components to use CSS variables from `landing.css` or Tailwind token classes in RC2 Phase C.  
+**Risk:** Low — styling is correct, just not unified with the token system  
+**Owner:** RC2 Phase C
+
+### TD-036 — Demo video CTA
+**Status:** Open (identified RC2 Phase A)  
+**Context:** "Watch 2-min demo" CTA in HeroSection links to `/waitlist`. No actual demo video exists.  
+**Recommendation:** Create a 2-minute product walkthrough video and host it, or replace CTA with "Book a live demo" until video is ready.  
+**Risk:** Medium — dishonest CTA erodes trust  
+**Owner:** Marketing / RC2 Phase B
+
+### TD-037 — Placeholder testimonials
+**Status:** Open (identified RC2 Phase A)  
+**Context:** Three testimonials in page.tsx are clearly placeholder copy. Must be replaced before any public-facing launch.  
+**Recommendation:** Gather 3 real customer quotes from beta users.  
+**Risk:** High before launch — fake testimonials are a legal and trust liability  
+**Owner:** Customer Success / RC2 Phase B
+
+### TD-038 — Onboarding flow not built
+**Status:** Open (identified RC2 Phase A)  
+**Context:** No `/onboarding` route exists. New users land on dashboard without guidance.  
+**Recommendation:** Build guided onboarding wizard: questionnaire → Health Report → activate AI team member. This is the highest-priority UX gap.  
+**Risk:** High — directly impacts early retention  
+**Owner:** RC2 Phase B

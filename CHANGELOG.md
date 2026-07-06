@@ -1,5 +1,31 @@
 # Changelog
 
+## RC2 Phase A — Project Renaissance: Landing Page & Product Experience (2026-07-03)
+
+### New Landing Page Sections
+- `BusinessOutcomes` — 6-card before/after transformation grid with measurable stats
+- `IntelligencePreview` — product UI mock: health score, business overview, priority decisions
+- `AiWorkforceSection` — workforce stats (214 tasks/wk, 21 hrs saved) + overnight activity timeline
+- `WorkspacePreview` — full-width executive dashboard mock with revenue chart and activity feed
+- `EnterpriseTrust` — 6 trust pillars (Security, Privacy, Auditability, Approvals, RBAC, Multi-biz)
+
+### Page Narrative
+Full landing page now tells a complete story: Pain → Outcomes → Intelligence → AI Workforce → Product Preview → Trust → Pricing → Social Proof → FAQ → CTA
+
+### Documentation
+- `docs/rc2/RC2_PRODUCT_EXPERIENCE_REPORT.md`
+- `docs/rc2/RC2_DESIGN_SYSTEM_AUDIT.md`
+- `docs/rc2/RC2_MVP_UX_GAP_ANALYSIS.md`
+- `docs/rc2/RC2_CONTENT_GUIDELINES.md`
+
+### Validation
+- `pnpm typecheck` — 0 errors
+- `pnpm lint` — 0 warnings
+- `pnpm arch:check` — 0 violations, 0 unused files
+- All 531 tests still passing
+
+---
+
 ## RC1.6 — Backend Convergence & Freeze Certification (2026-07-03)
 
 ### Audit & Validation

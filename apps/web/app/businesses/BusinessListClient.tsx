@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { PageHeader } from "../../src/components/ui/PageHeader";
+import { EmptyState } from "../../src/components/ui/EmptyState";
+import { Badge } from "../../src/components/ui/Badge";
+import { Button } from "../../src/components/ui/Button";
+import { Card } from "../../src/components/ui/Card";
 
 interface BusinessSummary {
   id: string;
@@ -29,16 +34,11 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   if (error) {
     return (
       <div className="flex flex-col gap-6">
-        <PageHeader />
+        <PageHeader title="Businesses" description="All businesses in your organization." action={<Link href="/business/new"><Button>+ Add Business</Button></Link>} />
         <div className="rounded border border-red-800 bg-red-950/30 p-5 text-red-400">
           <p className="font-medium">Failed to load businesses</p>
           <p className="mt-1 text-sm">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Retry
-          </button>
+          <Button variant="danger" onClick={() => window.location.reload()} className="mt-4">Retry</Button>
         </div>
       </div>
     );
@@ -47,10 +47,10 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   if (!businesses) {
     return (
       <div className="flex flex-col gap-6 animate-pulse">
-        <div className="h-10 w-48 rounded bg-neutral-800" />
+        <div className="h-10 w-48 rounded bg-elevated" />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-48 rounded border border-neutral-800 bg-neutral-900" />
+            <div key={i} className="h-48 rounded border border-border bg-surface" />
           ))}
         </div>
       </div>
@@ -59,73 +59,61 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
 
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader />
+      <PageHeader
+        title="Businesses"
+        description="All businesses in your organization."
+        action={<Link href="/business/new"><Button>+ Add Business</Button></Link>}
+      />
 
       {businesses.length === 0 ? (
-        <div className="rounded border border-neutral-700 bg-neutral-900 p-12 text-center">
-          <p className="text-lg font-medium text-neutral-200">No businesses yet</p>
-          <p className="mt-2 text-sm text-neutral-400 max-w-sm mx-auto">
-            Add your first business to start tracking health, KPIs, and AI recommendations.
-          </p>
-          <Link
-            href="/business/new"
-            className="mt-5 inline-flex rounded bg-red-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Add Your First Business →
-          </Link>
-        </div>
+        <EmptyState
+          title="No businesses yet"
+          description="Add your first business to start tracking health, KPIs, and AI recommendations."
+          action={<Link href="/business/new"><Button>Add Your First Business →</Button></Link>}
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {businesses.map((business) => {
             const tone = business.health ? healthLabel(business.health.overallScore) : null;
             return (
-              <div
-                key={business.id}
-                className="flex flex-col gap-4 rounded border border-neutral-800 bg-neutral-900 p-5 hover:border-neutral-700 transition-colors"
-              >
+              <Card key={business.id} hoverable className="flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-display font-semibold text-neutral-100 leading-tight truncate">
+                    <p className="font-display font-semibold text-text-primary leading-tight truncate">
                       {business.businessName}
                     </p>
-                    <p className="text-xs text-neutral-500 mt-0.5 capitalize">
+                    <p className="text-xs text-text-muted mt-0.5 capitalize">
                       {business.businessType.replace(/_/g, " ")}
                     </p>
                   </div>
                   {tone && business.health ? (
-                    <div className={`flex-shrink-0 rounded border px-2 py-1 text-center ${tone.bg}`}>
-                      <p className={`font-display text-xl font-black leading-none ${tone.color}`}>
-                        {business.health.overallScore}
-                      </p>
-                      <p className={`text-[10px] font-medium leading-tight ${tone.color}`}>{tone.label}</p>
-                    </div>
+                    <Badge color={tone.label === "Excellent" ? "green" : tone.label === "Good" ? "blue" : tone.label === "Needs Attention" ? "yellow" : "red"}>
+                      {business.health.overallScore} · {tone.label}
+                    </Badge>
                   ) : (
-                    <div className="flex-shrink-0 rounded border border-neutral-700 bg-neutral-800 px-2 py-1 text-center">
-                      <p className="font-display text-sm font-medium leading-none text-neutral-500">—</p>
-                      <p className="text-[10px] text-neutral-600 leading-tight">No score</p>
-                    </div>
+                    <Badge color="neutral">No score</Badge>
                   )}
                 </div>
 
                 {/* Meta */}
-                <div className="flex gap-4 text-xs text-neutral-500">
+                <div className="flex gap-4 text-xs text-text-muted">
                   <span>{business.employeeCount} employees</span>
                   <span>{business.locationCount} location{business.locationCount !== 1 ? "s" : ""}</span>
                   <span>{business.yearsOperating}yr{business.yearsOperating !== 1 ? "s" : ""}</span>
                 </div>
 
                 {/* Quick Links */}
-                <div className="flex gap-2 border-t border-neutral-800 pt-3">
+                <div className="flex gap-2 border-t border-border pt-3">
                   <Link
                     href={`/business/${business.id}/health`}
-                    className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-center text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
+                    className="flex-1 rounded border border-border px-3 py-1.5 text-center text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
                   >
                     Health
                   </Link>
                   <Link
                     href={`/business/${business.id}/workspace`}
-                    className="flex-1 rounded border border-neutral-700 px-3 py-1.5 text-center text-xs text-neutral-400 hover:border-neutral-600 hover:text-white transition-colors"
+                    className="flex-1 rounded border border-border px-3 py-1.5 text-center text-xs text-text-muted hover:border-border-strong hover:text-text-primary transition-colors"
                   >
                     Workspace
                   </Link>
@@ -136,7 +124,7 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
                     Mission Control
                   </Link>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -145,20 +133,3 @@ export default function BusinessListClient({ orgId: _orgId, businesses, error }:
   );
 }
 
-function PageHeader() {
-  return (
-    <div className="flex items-start justify-between gap-6">
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Organization</p>
-        <h1 className="mt-1 font-display text-3xl">Businesses</h1>
-        <p className="mt-2 text-sm text-neutral-400">All businesses in your organization.</p>
-      </div>
-      <Link
-        href="/business/new"
-        className="shrink-0 rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-      >
-        + Add Business
-      </Link>
-    </div>
-  );
-}

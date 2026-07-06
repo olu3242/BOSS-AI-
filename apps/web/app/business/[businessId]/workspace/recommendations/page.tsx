@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Card } from "../../../../../src/components/ui/Card";
+import { Badge } from "../../../../../src/components/ui/Badge";
 import { RecommendationActions } from "../approvals/ApprovalActions";
 
 interface Props {
@@ -13,12 +17,12 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   high: "Complex",
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  proposed: "bg-yellow-900/50 text-yellow-400 border-yellow-900/50",
-  approved: "bg-green-900/50 text-green-400 border-green-900/50",
-  dismissed: "bg-neutral-800 text-neutral-500 border-neutral-700",
-  completed: "bg-blue-900/50 text-blue-400 border-blue-900/50",
-};
+function statusBadgeColor(status: string): "yellow" | "green" | "blue" | "neutral" {
+  if (status === "proposed") return "yellow";
+  if (status === "approved") return "green";
+  if (status === "completed") return "blue";
+  return "neutral";
+}
 
 const CATEGORY_LABEL: Record<string, string> = {
   revenue_growth: "Revenue",
@@ -48,7 +52,7 @@ export default async function RecommendationsPage({ params }: Props) {
     const message = error instanceof ApiClientError ? error.body.message : "Failed to load recommendations.";
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-display text-3xl">AI Recommendations</h1>
+        <PageHeader title="AI Recommendations" />
         <div className="rounded border border-red-800 bg-red-950/30 p-4 text-red-400">
           <p className="font-medium">Failed to load recommendations</p>
           <p className="mt-1 text-sm">{message}</p>
@@ -72,38 +76,31 @@ export default async function RecommendationsPage({ params }: Props) {
   return (
     <div className="flex flex-col gap-8">
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-3xl">AI Recommendations</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            {recommendations.length} total · {proposed.length} pending your review
-          </p>
-        </div>
-        <Link
-          href={base}
-          className="text-sm text-neutral-500 hover:text-neutral-300 transition-colors"
-        >
-          ← Command Center
-        </Link>
-      </div>
+      <PageHeader
+        title="AI Recommendations"
+        description={`${recommendations.length} total · ${proposed.length} pending your review`}
+        back={<Link href={base} className="text-xs text-text-muted hover:text-text-secondary transition-colors">← Command Center</Link>}
+      />
 
       {recommendations.length === 0 && (
-        <div className="rounded border border-neutral-800 bg-neutral-900 p-8 text-center text-neutral-400">
-          <p className="font-medium">No recommendations yet</p>
-          <p className="mt-1 text-sm">Complete the Business MRI to generate AI-powered recommendations.</p>
-          <Link
-            href={`/business/${businessId}/mri`}
-            className="mt-4 inline-flex rounded bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 transition-colors"
-          >
-            Start Business MRI
-          </Link>
-        </div>
+        <EmptyState
+          title="No recommendations yet"
+          description="Complete the Business MRI to generate AI-powered recommendations."
+          action={
+            <Link
+              href={`/business/${businessId}/mri`}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors"
+            >
+              Start Business MRI
+            </Link>
+          }
+        />
       )}
 
       {/* ── PROPOSED (awaiting action) ────────────────────────── */}
       {proposed.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-lg text-neutral-300">
+          <h2 className="mb-4 font-display text-lg text-text-primary">
             Awaiting Your Review
             <span className="ml-2 rounded-full bg-yellow-600 px-2 py-0.5 text-xs font-medium text-white">
               {proposed.length}
@@ -129,7 +126,7 @@ export default async function RecommendationsPage({ params }: Props) {
       {/* ── APPROVED ──────────────────────────────────────────── */}
       {approved.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-lg text-neutral-300">Approved</h2>
+          <h2 className="mb-4 font-display text-lg text-text-primary">Approved</h2>
           <div className="flex flex-col gap-3">
             {approved.map((rec) => (
               <RecommendationCard key={rec.id} rec={rec} priority={priorityByRecId.get(rec.id)} />
@@ -141,7 +138,7 @@ export default async function RecommendationsPage({ params }: Props) {
       {/* ── DISMISSED ─────────────────────────────────────────── */}
       {dismissed.length > 0 && (
         <section>
-          <h2 className="mb-4 font-display text-lg text-neutral-300 opacity-60">Dismissed</h2>
+          <h2 className="mb-4 font-display text-lg text-text-primary opacity-60">Dismissed</h2>
           <div className="flex flex-col gap-3 opacity-60">
             {dismissed.map((rec) => (
               <RecommendationCard key={rec.id} rec={rec} priority={priorityByRecId.get(rec.id)} />
@@ -181,52 +178,48 @@ function RecommendationCard({
   orgId?: string;
 }) {
   return (
-    <article className="rounded border border-neutral-800 bg-neutral-900 p-5">
+    <Card>
       <div className="flex items-start gap-4">
         {priority && (
           <div className="shrink-0 text-center">
-            <span className="font-display text-2xl font-black text-neutral-600">#{priority.rank}</span>
+            <span className="font-display text-2xl font-black text-text-muted">#{priority.rank}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="font-medium text-white">{rec.title}</h3>
+            <h3 className="font-medium text-text-primary">{rec.title}</h3>
             <div className="flex shrink-0 items-center gap-2">
               {priority && (
-                <span className="rounded border border-neutral-700 bg-neutral-800 px-2 py-0.5 text-[11px] font-medium text-neutral-400 uppercase tracking-wide">
-                  {priority.priority}
-                </span>
+                <Badge color="neutral">{priority.priority}</Badge>
               )}
-              <span className={`rounded border px-2 py-0.5 text-[11px] font-medium capitalize ${STATUS_STYLE[rec.status] ?? "bg-neutral-800 text-neutral-400 border-neutral-700"}`}>
-                {rec.status}
-              </span>
+              <Badge color={statusBadgeColor(rec.status)}>{rec.status}</Badge>
             </div>
           </div>
 
-          <p className="mt-2 text-sm text-neutral-400 leading-relaxed">{rec.description}</p>
+          <p className="mt-2 text-sm text-text-muted leading-relaxed">{rec.description}</p>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-neutral-500">
+          <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-text-muted">
             <span>
               Category:{" "}
-              <span className="text-neutral-300">
+              <span className="text-text-secondary">
                 {CATEGORY_LABEL[rec.category] ?? rec.category.replace(/_/g, " ")}
               </span>
             </span>
             <span>
               Difficulty:{" "}
-              <span className="text-neutral-300">{DIFFICULTY_LABEL[rec.difficulty] ?? rec.difficulty}</span>
+              <span className="text-text-secondary">{DIFFICULTY_LABEL[rec.difficulty] ?? rec.difficulty}</span>
             </span>
             <span>
               Effort:{" "}
-              <span className="text-neutral-300">{rec.estimatedEffortHours}h</span>
+              <span className="text-text-secondary">{rec.estimatedEffortHours}h</span>
             </span>
             <span>
               Time-to-value:{" "}
-              <span className="text-neutral-300">{rec.estimatedTimeToValueDays} days</span>
+              <span className="text-text-secondary">{rec.estimatedTimeToValueDays} days</span>
             </span>
             <span>
               Confidence:{" "}
-              <span className="text-neutral-300">{Math.round(rec.confidence * 100)}%</span>
+              <span className="text-text-secondary">{Math.round(rec.confidence * 100)}%</span>
             </span>
           </div>
 
@@ -241,20 +234,18 @@ function RecommendationCard({
           {rec.relatedKpiKeys.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {rec.relatedKpiKeys.map((k) => (
-                <span key={k} className="rounded bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-500">
-                  {k.replace(/_/g, " ")}
-                </span>
+                <Badge key={k} color="neutral">{k.replace(/_/g, " ")}</Badge>
               ))}
             </div>
           )}
 
           {showActions && (
-            <div className="mt-4 border-t border-neutral-800 pt-4">
+            <div className="mt-4 border-t border-border pt-4">
               <RecommendationActions recommendationId={rec.id} orgId={orgId} />
             </div>
           )}
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

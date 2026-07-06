@@ -2,6 +2,12 @@
 
 import { useState } from "react";
 import { apiClient } from "../../../../../src/lib/apiClient";
+import { EmptyState } from "../../../../../src/components/ui/EmptyState";
+import { Input, Select } from "../../../../../src/components/ui/Input";
+import { Button } from "../../../../../src/components/ui/Button";
+import { PageHeader } from "../../../../../src/components/ui/PageHeader";
+import { Badge } from "../../../../../src/components/ui/Badge";
+import { Card } from "../../../../../src/components/ui/Card";
 
 type Payment = {
   id: string; customerId: string; invoiceId: string;
@@ -14,20 +20,17 @@ type Invoice = {
   totalCents: number; currency: string; createdAt: string;
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  pending:   "bg-yellow-900/40 text-yellow-400",
-  completed: "bg-green-900/40 text-green-400",
-  failed:    "bg-red-900/40 text-red-400",
-  refunded:  "bg-purple-900/40 text-purple-400",
-};
+function paymentStatusColor(status: string): "yellow" | "green" | "red" | "neutral" {
+  if (status === "pending") return "yellow";
+  if (status === "completed") return "green";
+  if (status === "failed") return "red";
+  return "neutral";
+}
 
-const METHOD_STYLE: Record<string, string> = {
-  cash:          "bg-neutral-800 text-neutral-300",
-  card:          "bg-blue-900/40 text-blue-300",
-  bank_transfer: "bg-cyan-900/40 text-cyan-300",
-  check:         "bg-neutral-700 text-neutral-300",
-  other:         "bg-neutral-800 text-neutral-400",
-};
+function paymentMethodColor(method: string): "blue" | "neutral" {
+  if (method === "card") return "blue";
+  return "neutral";
+}
 
 const STATUS_TABS = ["all", "pending", "completed", "refunded"];
 
@@ -108,18 +111,11 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold">Payments</h1>
-          <p className="mt-1 text-sm text-neutral-400">{payments.length} total payment{payments.length !== 1 ? "s" : ""}</p>
-        </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 transition-colors"
-        >
-          Record Payment
-        </button>
-      </div>
+      <PageHeader
+        title="Payments"
+        description={`${payments.length} total payment${payments.length !== 1 ? "s" : ""}`}
+        action={<Button onClick={() => setShowForm(!showForm)}>Record Payment</Button>}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-400">
@@ -129,75 +125,50 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
       )}
 
       {showForm && (
-        <form onSubmit={handleCreate} className="rounded-xl border border-neutral-800 bg-neutral-950 p-6 space-y-4">
-          <h2 className="font-semibold text-neutral-100">Record Payment</h2>
+        <Card padding="lg">
+        <form onSubmit={handleCreate} className="space-y-4">
+          <h2 className="font-semibold text-text-primary">Record Payment</h2>
           {formError && <p className="text-sm text-red-400">{formError}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Invoice *</label>
-              <select value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100">
-                <option value="">Select invoice…</option>
-                {unpaidInvoices.map((inv) => (
-                  <option key={inv.id} value={inv.id}>
-                    {inv.invoiceNumber} — {formatMoney(inv.totalCents, inv.currency)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Amount *</label>
-              <input type="number" step="0.01" min="0.01" value={amountCents}
-                onChange={(e) => setAmountCents(e.target.value)} placeholder="0.00"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Payment Method *</label>
-              <select value={method} onChange={(e) => setMethod(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100">
-                <option value="cash">Cash</option>
-                <option value="card">Card</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="check">Check</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Paid Date</label>
-              <input type="datetime-local" value={paidAt} onChange={(e) => setPaidAt(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Reference / Transaction ID</label>
-              <input type="text" value={reference} onChange={(e) => setReference(e.target.value)}
-                placeholder="txn_xxx"
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
-            <div>
-              <label className="block text-xs text-neutral-400 mb-1">Notes</label>
-              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100" />
-            </div>
+            <Select label="Invoice *" value={invoiceId} onChange={(e) => setInvoiceId(e.target.value)}>
+              <option value="">Select invoice…</option>
+              {unpaidInvoices.map((inv) => (
+                <option key={inv.id} value={inv.id}>
+                  {inv.invoiceNumber} — {formatMoney(inv.totalCents, inv.currency)}
+                </option>
+              ))}
+            </Select>
+            <Input label="Amount *" type="number" step="0.01" min="0.01" value={amountCents} onChange={(e) => setAmountCents(e.target.value)} placeholder="0.00" />
+            <Select label="Payment Method *" value={method} onChange={(e) => setMethod(e.target.value)}>
+              <option value="cash">Cash</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="check">Check</option>
+              <option value="other">Other</option>
+            </Select>
+            <Input label="Paid Date" type="datetime-local" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} />
+            <Input label="Reference / Transaction ID" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="txn_xxx" />
+            <Input label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={loading}
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50">
+            <Button type="submit" disabled={loading} loading={loading}>
               {loading ? "Saving…" : "Record Payment"}
-            </button>
+            </Button>
             <button type="button" onClick={() => { setShowForm(false); setFormError(null); }}
-              className="rounded-lg border border-neutral-700 px-4 py-2 text-sm text-neutral-400 hover:text-white">
+              className="rounded border border-border px-4 py-2 text-sm text-text-muted hover:text-text-primary transition-colors">
               Cancel
             </button>
           </div>
         </form>
+        </Card>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-neutral-800 pb-0">
+      <div className="flex gap-1 border-b border-border pb-0">
         {STATUS_TABS.map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-              activeTab === tab ? "border-accent text-accent" : "border-transparent text-neutral-400 hover:text-white"
+              activeTab === tab ? "border-accent text-accent" : "border-transparent text-text-muted hover:text-text-primary"
             }`}>
             {tab}
           </button>
@@ -205,33 +176,34 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-neutral-800 p-12 text-center">
-          <p className="text-neutral-400">No payments found.</p>
-          <button onClick={() => setShowForm(true)}
-            className="mt-4 text-sm text-accent hover:underline">Record first payment</button>
-        </div>
+        <EmptyState
+          title="No payments found"
+          description="Record payments received from customers to track your cash flow."
+          action={
+            <button onClick={() => setShowForm(true)}
+              className="rounded bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover transition-colors">
+              Record first payment
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {filtered.map((payment) => (
-            <div key={payment.id} className="rounded-xl border border-neutral-800 bg-neutral-950 p-5">
+            <Card key={payment.id}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="font-semibold text-neutral-100">{formatMoney(payment.amountCents, payment.currency)}</span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${STATUS_STYLE[payment.status] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {payment.status}
-                    </span>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${METHOD_STYLE[payment.method] ?? "bg-neutral-800 text-neutral-400"}`}>
-                      {payment.method.replace("_", " ")}
-                    </span>
+                    <span className="font-semibold text-text-primary">{formatMoney(payment.amountCents, payment.currency)}</span>
+                    <Badge color={paymentStatusColor(payment.status)}>{payment.status}</Badge>
+                    <Badge color={paymentMethodColor(payment.method)}>{payment.method.replace("_", " ")}</Badge>
                   </div>
-                  <div className="mt-1 text-xs text-neutral-500 space-x-3">
-                    <span>Invoice: <span className="text-neutral-400 font-mono">{payment.invoiceId.slice(0, 8)}…</span></span>
-                    {payment.reference && <span>Ref: <span className="text-neutral-400">{payment.reference}</span></span>}
+                  <div className="mt-1 text-xs text-text-muted space-x-3">
+                    <span>Invoice: <span className="text-text-secondary font-mono">{payment.invoiceId.slice(0, 8)}…</span></span>
+                    {payment.reference && <span>Ref: <span className="text-text-secondary">{payment.reference}</span></span>}
                     <span>Paid: {formatDate(payment.paidAt)}</span>
                     <span>Created: {formatDate(payment.createdAt)}</span>
                   </div>
-                  {payment.notes && <p className="mt-1 text-sm text-neutral-400">{payment.notes}</p>}
+                  {payment.notes && <p className="mt-1 text-sm text-text-secondary">{payment.notes}</p>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   {payment.status === "pending" && (
@@ -248,7 +220,7 @@ export function PaymentsClient({ orgId, businessId, payments: initialPayments, i
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
