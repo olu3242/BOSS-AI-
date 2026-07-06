@@ -120,7 +120,24 @@ export function createLoopRuntimeService(
     });
     return { output: null, errorMessage: CHECKPOINT_SENTINEL };
   });
-  handlers.register("scheduled", notImplementedHandler("scheduled"));
+  handlers.register("scheduled", async (input) => {
+    const { orgId, businessId, scheduleKey, cronExpression, description } = input as {
+      orgId: string; businessId?: string; scheduleKey: string; cronExpression?: string; description?: string;
+    };
+    await repos.eventBus.publish({
+      type: "workflow.scheduled",
+      payload: {
+        orgId,
+        businessId: businessId ?? "",
+        scheduleKey,
+        cronExpression: cronExpression ?? "",
+        description: description ?? "",
+        scheduledAt: nowIso(),
+      },
+      occurredAt: nowIso(),
+    });
+    return { output: { scheduleKey, scheduledAt: nowIso() }, errorMessage: null };
+  });
 
   // ── Notification action handlers ──────────────────────────────────────────
   const notifications = createNotificationService(repos);

@@ -335,16 +335,31 @@ export function createApiFromContainer(
   );
 
   // ── Event Bus → Workflow triggers (Phase 3 — Event Bus Completion) ──────────
-  // job.completed → WF-003 (Review Request) + WF-005 (Invoice Follow-Up)
+  // job.completed → auto-invoice + analytics
   repos.eventBus.subscribe<{ orgId: string; businessId: string; jobId: string; customerId: string }>(
     "job.completed",
-    (e) => {
+    async (e) => {
       void productAnalytics.track({
         type: "analytics.job.completed",
         orgId: e.payload.orgId,
         businessId: e.payload.businessId,
         properties: { jobId: e.payload.jobId },
       });
+
+      // Auto-create a draft invoice when a job completes (if customer is present)
+      if (e.payload.customerId) {
+        try {
+          const job = await repos.jobs.findById(e.payload.orgId, e.payload.jobId);
+          if (job && !job.deletedAt) {
+            await invoiceServiceInstance.createInvoice(e.payload.orgId, e.payload.businessId, {
+              customerId: e.payload.customerId,
+              jobId: job.id,
+              lineItems: [{ description: job.title, quantity: 1, unitPriceCents: 0 }],
+              notes: `Auto-generated draft invoice for completed job: ${job.title}`,
+            });
+          }
+        } catch { /* invoice creation is best-effort; job data may be incomplete */ }
+      }
     },
   );
 
