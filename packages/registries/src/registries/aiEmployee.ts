@@ -36,12 +36,23 @@ export interface AiEmployeeEscalationRule {
 
 export type AiEmployeeRegistration = Omit<
   AiEmployeeEntry,
-  "escalationRules"
+  "escalationRules" | "readModels" | "writeModels" | "allowedActions" | "decisionAuthority" | "promptTemplateKey" | "memory" | "businessObjectives" | "lifecycleStages"
 > & {
   escalationRules: Array<string | AiEmployeeEscalationRule>;
+  // Wave 1C fields are optional for backward-compatible registrations
+  readModels?: string[];
+  writeModels?: string[];
+  allowedActions?: string[];
+  decisionAuthority?: AiEmployeeEntry["decisionAuthority"];
+  promptTemplateKey?: string;
+  memory?: AiEmployeeMemoryConfig;
+  businessObjectives?: string[];
+  lifecycleStages?: string[];
 };
 
 const registry = createRegistry<AiEmployeeEntry>();
+
+const DEFAULT_MEMORY: AiEmployeeMemoryConfig = { shortTermTtlMinutes: 60, longTermEnabled: false, contextKeys: [] };
 
 export const aiEmployeeRegistry = {
   list: registry.list,
@@ -54,6 +65,14 @@ export const aiEmployeeRegistry = {
           ? rule
           : `${rule.condition} -> ${rule.escalateTo} via ${rule.method}`,
       ),
+      readModels: entry.readModels ?? [],
+      writeModels: entry.writeModels ?? [],
+      allowedActions: entry.allowedActions ?? [],
+      decisionAuthority: entry.decisionAuthority ?? "recommend",
+      promptTemplateKey: entry.promptTemplateKey ?? `${entry.key}.default`,
+      memory: entry.memory ?? DEFAULT_MEMORY,
+      businessObjectives: entry.businessObjectives ?? [],
+      lifecycleStages: entry.lifecycleStages ?? [],
     });
   },
 };
