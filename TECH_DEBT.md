@@ -37,10 +37,10 @@ Last updated: 2026-07-03
 **Owner:** RC2 AI workforce sprint
 
 ### TD-030 — Event Log Compaction
-**Status:** Open  
+**Status:** Closed (RC5)
 **Context:** Event log is append-only with no archival policy. Under production load, 10K+ events/org/day accumulate indefinitely.  
 **Risk:** Medium for storage costs at scale  
-**Recommendation:** Implement rolling window (keep 90 days), archive to cold storage  
+**Resolution:** Migration 0044 adds `compact_event_log(retention_days, org_id)` Postgres function + `event_log_compaction_runs` audit table. `EventLogRepository.compact()` method added to both Postgres and in-memory implementations. `EventLogCompactionService` provides `compactForOrg` / `compactAll` — call from scheduler or cron. Default 90-day retention.
 **Owner:** RC2 infra
 
 ### TD-031 — Rate Limiting
@@ -81,6 +81,7 @@ Last updated: 2026-07-03
 | TD-021 | Domain events in-process only | RC1 WS4 (DurableEventBus) |
 | TD-024 | AI Employee Handler Has No Real LLM Inference | RC4 |
 | TD-028 | No Zod validation on HTTP bodies | Goals 21-23 |
+| TD-030 | Event Log Compaction | RC5 |
 | TD-031 | Rate Limiting | RC5 |
 | TD-032 | Postgres RLS Integration Tests | RC5 |
 

@@ -948,6 +948,18 @@ export function createInMemoryEventLogRepository(): EventLogRepository {
     async listSince(since, limit = 500) {
       return entries.filter((e) => e.occurredAt >= since).slice(0, limit);
     },
+    async compact(retentionDays = 90, orgId) {
+      const cutoff = new Date(Date.now() - retentionDays * 86_400_000).toISOString();
+      let deleted = 0;
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const e = entries[i]!;
+        if (e.occurredAt < cutoff && (orgId === undefined || e.orgId === orgId)) {
+          entries.splice(i, 1);
+          deleted++;
+        }
+      }
+      return deleted;
+    },
   };
 }
 

@@ -596,6 +596,8 @@ export interface EventLogRepository {
   listByOrgId(orgId: string, limit?: number): Promise<EventLogEntry[]>;
   listByCorrelationId(correlationId: string): Promise<EventLogEntry[]>;
   listSince(since: string, limit?: number): Promise<EventLogEntry[]>;
+  /** Delete events older than retentionDays (default 90). Scoped to orgId if provided. Returns deleted row count. */
+  compact(retentionDays?: number, orgId?: string): Promise<number>;
 }
 
 export interface LeadRepository {
