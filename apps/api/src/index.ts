@@ -289,6 +289,44 @@ export function createApiFromContainer(
   graphRuntime.start();
   installLifecycleChain(repos);
 
+  // ── Wave 2 Revenue OS services ────────────────────────────────────────────
+  const pricingEngine = createPricingEngineService(repos.eventBus);
+  const invoiceServiceInstance = createInvoiceService(repos);
+  const collectionsServiceInstance = createCollectionsService(repos, invoiceServiceInstance, repos.eventBus);
+  const revenueIntelligence = createRevenueIntelligenceService(repos, repos.eventBus);
+  const revenueCommunication = createRevenueCommunicationService(notification, repos.eventBus);
+  const revenueAi = createRevenueAiService(repos, revenueIntelligence, collectionsServiceInstance);
+  const revenueDashboard = createRevenueDashboardService(repos, revenueIntelligence, collectionsServiceInstance);
+
+  // ── Wave 2: Revenue Communication event subscriptions ────────────────────
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; invoiceId: string }>(
+    "invoice.sent",
+    (e) => {
+      void revenueCommunication.sendInvoiceEmail(e.payload.orgId, e.payload.businessId, e.payload.invoiceId);
+    },
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; paymentId: string }>(
+    "payment.received",
+    (e) => {
+      void revenueCommunication.sendPaymentReceipt(e.payload.orgId, e.payload.businessId, e.payload.paymentId);
+    },
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; invoiceId: string }>(
+    "invoice.overdue",
+    (e) => {
+      void revenueCommunication.sendPaymentReminder(e.payload.orgId, e.payload.businessId, e.payload.invoiceId);
+    },
+  );
+
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; caseId: string }>(
+    "collections.reminder.sent",
+    (e) => {
+      void revenueCommunication.sendCollectionsReminder(e.payload.orgId, e.payload.businessId, e.payload.caseId);
+    },
+  );
+
   // ── Event Bus → Workflow triggers (Phase 3 — Event Bus Completion) ──────────
   // job.completed → WF-003 (Review Request) + WF-005 (Invoice Follow-Up)
   repos.eventBus.subscribe<{ orgId: string; businessId: string; jobId: string; customerId: string }>(
@@ -424,7 +462,7 @@ export function createApiFromContainer(
     customer: createCustomerController(createCustomerService(repos)),
     job: createJobController(createJobService(repos)),
     appointment: createAppointmentController(createAppointmentService(repos)),
-    invoice: createInvoiceController(createInvoiceService(repos)),
+    invoice: createInvoiceController(invoiceServiceInstance),
     payment: createPaymentController(createPaymentService(repos)),
     review: createReviewController(createReviewService(repos)),
     lead: createLeadController(createLeadService(repos)),
@@ -434,6 +472,12 @@ export function createApiFromContainer(
     task: createTaskController(createTaskService(repos)),
     document: createDocumentController(createDocumentService(repos)),
     estimate: createEstimateController(createEstimateService(repos)),
+    pricingEngine,
+    collections: collectionsServiceInstance,
+    revenueIntelligence,
+    revenueCommunication,
+    revenueAi,
+    revenueDashboard,
     workflow: createWorkflowController(createWorkflowService(repos.workflows)),
     workflowRun: createWorkflowRunController(createWorkflowRunService(repos.workflowRuns)),
     lifecyclePolicy: createLifecyclePolicyController(createLifecyclePolicyService(repos.lifecyclePolicies)),
@@ -607,3 +651,9 @@ export * from "./services/lifecycleChainService.js";
 
 export * from "./services/searchService.js";
 export * from "./services/communicationService.js";
+export * from "./services/pricingEngineService.js";
+export * from "./services/collectionsService.js";
+export * from "./services/revenueIntelligenceService.js";
+export * from "./services/revenueCommunicationService.js";
+export * from "./services/revenueAiService.js";
+export * from "./services/revenueDashboardService.js";
