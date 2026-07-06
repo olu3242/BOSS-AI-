@@ -56,6 +56,7 @@ import { createRootCauseService } from "./services/rootCauseService.js";
 import { createExecutionPlanService } from "./services/executionPlanService.js";
 import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
 import { createBusinessOperatingLoopService } from "./services/businessOperatingLoopService.js";
+import { installLifecycleChain } from "./services/lifecycleChainService.js";
 import { createWorkspaceService } from "./services/workspaceService.js";
 import { createFeatureFlagService } from "./services/featureFlagService.js";
 import { createSupportService } from "./services/supportService.js";
@@ -234,6 +235,7 @@ export function createApiFromContainer(
   );
 
   graphRuntime.start();
+  installLifecycleChain(repos);
 
   // ── Event Bus → Workflow triggers (Phase 3 — Event Bus Completion) ──────────
   // job.completed → WF-003 (Review Request) + WF-005 (Invoice Follow-Up)
@@ -543,3 +545,4 @@ export * from "./services/workflowService.js";
 export * from "./services/workflowRunService.js";
 export * from "./services/lifecyclePolicyService.js";
 export * from "./services/policyEngineService.js";
+export * from "./services/lifecycleChainService.js";
