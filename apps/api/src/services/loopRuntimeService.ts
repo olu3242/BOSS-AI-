@@ -12,13 +12,6 @@ export interface LoopRuntimeService {
   resume(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
 }
 
-function notImplementedHandler(taskType: string) {
-  return async () => ({
-    output: null,
-    errorMessage: `No handler implemented yet for task type "${taskType}"`,
-  });
-}
-
 export function createLoopRuntimeService(
   repos: RepositoryContainer,
   toolFabric: ToolFabricService
