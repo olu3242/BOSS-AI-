@@ -20,7 +20,8 @@ Always respond with valid JSON matching the exact shape requested. No markdown, 
 
 export async function runAiEmployeeInference(
   request: AiInferenceRequest,
-  apiKey?: string
+  apiKey?: string,
+  systemPromptOverride?: string,
 ): Promise<AiInferenceResult> {
   const client = new Anthropic({ apiKey });
 
@@ -39,7 +40,7 @@ Respond with this JSON structure:
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: systemPromptOverride ?? SYSTEM_PROMPT,
     messages: [{ role: "user", content: userPrompt }],
   });
 

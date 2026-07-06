@@ -67,6 +67,7 @@ import { createMarketplaceService } from "./services/marketplaceService.js";
 import { createSchedulerService } from "./services/schedulerService.js";
 import { createBteService } from "./services/bteService.js";
 import { createAiWorkforceService } from "./services/aiWorkforceService.js";
+import { createAiEmployeeExecutionService } from "./services/aiEmployeeExecutionService.js";
 import { createOrgHealthService } from "./services/orgHealthService.js";
 import { createInsightService } from "./services/insightService.js";
 import { createCustomerService } from "./services/customerService.js";
@@ -217,6 +218,7 @@ export function createApiFromContainer(
   const scheduler = createSchedulerService(repos, loopRuntime, workflowStepRegistry);
   const bte = createBteService(repos, businessOperatingLoop, scheduler);
   const aiWorkforce = createAiWorkforceService(repos);
+  const aiEmployeeExecution = createAiEmployeeExecutionService(repos);
   const orgHealth = createOrgHealthService(repos, bte, aiWorkforce);
   const insight = createInsightService(repos);
 
@@ -453,6 +455,7 @@ export function createApiFromContainer(
     scheduler,
     bte,
     aiWorkforce,
+    aiEmployeeExecution,
     orgHealth,
     insight,
     kpiPlatform,

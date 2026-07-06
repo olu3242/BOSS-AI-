@@ -1,10 +1,10 @@
 import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepEntry } from "@boss/loop";
-import { decideAiEmployeeAction, runAiEmployeeInference } from "@boss/mcp";
-import { aiEmployeeRegistry } from "@boss/registries";
+import { decideAiEmployeeAction } from "@boss/mcp";
 import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 import type { ToolFabricService } from "./toolFabricService.js";
+import { createAiEmployeeExecutionService } from "./aiEmployeeExecutionService.js";
 import { createNotificationService } from "./notificationService.js";
 
 export interface LoopRuntimeService {
@@ -23,6 +23,7 @@ export function createLoopRuntimeService(
   toolFabric: ToolFabricService
 ): LoopRuntimeService {
   const handlers = createTaskHandlerRegistry();
+  const aiEmployeeExecution = createAiEmployeeExecutionService(repos);
 
   handlers.register("tool", async (input) => {
     const { orgId, businessId, capabilityKey, roleKey, requestedBy, ...rest } = input as {
@@ -57,6 +58,7 @@ export function createLoopRuntimeService(
     } & Record<string, unknown>;
 
     try {
+      // Pre-flight: policy decision (escalate before inference if policy says so)
       const decision = decideAiEmployeeAction({ employeeKey, capabilityKey, requestedBy, input: rest });
 
       if (decision.kind === "escalate") {
@@ -68,43 +70,23 @@ export function createLoopRuntimeService(
         return { output: null, errorMessage: decision.reason };
       }
 
-      // Run LLM inference to enrich the tool input with AI reasoning (TD-024)
-      const employee = aiEmployeeRegistry.get(employeeKey);
-      let toolInput = decision.toolRequest.input;
-      let inferenceReasoning: string | undefined;
-      if (employee && process.env.ANTHROPIC_API_KEY) {
-        const inference = await runAiEmployeeInference({
-          employeeKey,
-          employeeRole: employee.label,
-          employeeMission: employee.mission ?? "",
-          capabilityKey,
-          taskInput: rest,
-        }).catch(() => null);
-        if (inference) {
-          toolInput = inference.enrichedInput;
-          inferenceReasoning = inference.reasoning;
-        }
-      }
-
-      await repos.eventBus.publish({
-        type: "ai_employee.inference.completed",
-        payload: { orgId, businessId, employeeKey, capabilityKey, reasoning: inferenceReasoning ?? null },
-        occurredAt: nowIso(),
+      // Full execution pipeline: prompt resolution + memory + LLM inference + escalation eval
+      const result = await aiEmployeeExecution.execute({
+        orgId,
+        businessId,
+        employeeKey,
+        capabilityKey,
+        requestedBy,
+        taskInput: rest,
       });
+
+      if (result.escalated) {
+        return { output: null, errorMessage: result.escalationReason ?? "Escalated by AI employee" };
+      }
 
       const execution = await toolFabric.requestTool(orgId, businessId, {
         ...decision.toolRequest,
-        input: toolInput,
-      });
-
-      await repos.memoryRecords.upsert({
-        orgId,
-        businessId,
-        ownerType: "agent",
-        ownerId: employeeKey,
-        key: `last_execution:${capabilityKey}`,
-        value: { toolExecutionId: execution.id, status: execution.status, occurredAt: nowIso() },
-        expiresAt: null,
+        input: result.enrichedInput,
       });
 
       await repos.eventBus.publish({
