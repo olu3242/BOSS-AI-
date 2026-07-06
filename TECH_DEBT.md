@@ -7,7 +7,7 @@ Last updated: 2026-07-03
 ## Open Items
 
 ### TD-013 — Provider Simulations
-**Status:** Open  
+**Status:** Closed (RC5)  
 **Context:** 13 of 19 providers are simulated (HTTP mock responses). Real HTTP adapters exist for Twilio, Gmail, Slack, Teams, MessageBird, Microsoft365, Google Calendar, QuickBooks (8 total).  
 **Risk:** Medium — integration correctness unverified for simulated providers  
 **Owner:** RC2
@@ -44,7 +44,7 @@ Last updated: 2026-07-03
 **Owner:** RC2 infra
 
 ### TD-031 — Rate Limiting
-**Status:** Open (identified in RC1.5 security review)  
+**Status:** Closed (RC5)  
 **Context:** No per-tenant rate limiting on API endpoints.  
 **Risk:** High — abuse vector for multi-tenant platform  
 **Recommendation:** Implement token bucket per `org_id` at API gateway or middleware layer  
