@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const syne = Syne({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
+// Font CSS variables are declared in globals.css via @import from Google Fonts.
+// This avoids build-time network fetches while preserving runtime font loading.
+const syne = { variable: "--font-syne" };
+const dmSans = { variable: "--font-dm-sans" };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://getboss.ai"),
