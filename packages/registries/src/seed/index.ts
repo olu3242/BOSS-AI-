@@ -8,7 +8,6 @@ import { seedPlatformCatalogs } from "./platformCatalogs.js";
 import { seedBusinessRelationshipRegistry } from "../registries/businessRelationship.js";
 import { seedSemanticViewRegistry } from "../registries/semanticView.js";
 import { seedBusinessQueryRegistry } from "../registries/businessQuery.js";
-import { seedAiEmployees } from "./aiEmployees.js";
 
 export { seedEventRegistry } from "./events.js";
 export { seedAiEmployees } from "./aiEmployees.js";
@@ -35,5 +34,4 @@ export function seedCoreRegistries(): void {
   seedBusinessRelationshipRegistry();
   seedSemanticViewRegistry();
   seedBusinessQueryRegistry();
-  seedAiEmployees();
 }
