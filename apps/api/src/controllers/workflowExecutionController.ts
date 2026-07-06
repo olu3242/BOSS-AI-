@@ -15,6 +15,12 @@ export function createWorkflowExecutionController(service: WorkflowExecutionServ
     retry: (orgId: string, businessId: string, executionId: string, steps: StepEntry[]) =>
       service.retry(orgId, businessId, executionId, steps),
 
+    approveCheckpoint: (orgId: string, businessId: string, executionId: string, steps: StepEntry[]) =>
+      service.approveCheckpoint(orgId, businessId, executionId, steps),
+
+    rejectCheckpoint: (orgId: string, businessId: string, executionId: string) =>
+      service.rejectCheckpoint(orgId, businessId, executionId),
+
     listDeadLetters: (orgId: string, businessId: string) =>
       service.listDeadLetters(orgId, businessId),
   };

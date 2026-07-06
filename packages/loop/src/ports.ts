@@ -2,6 +2,7 @@ import type { DeadLetterEntry, ExecutionEventRecord, ExecutionState, TaskExecuti
 
 export interface WorkflowExecutionPort {
   create(input: Omit<WorkflowExecution, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<WorkflowExecution>;
+  findById(orgId: string, id: string): Promise<WorkflowExecution | null>;
   updateState(
     orgId: string,
     id: string,

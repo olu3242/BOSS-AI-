@@ -373,6 +373,18 @@ export const apiClient = {
       { method: "POST", body: JSON.stringify({}) }
     ),
 
+  approveCheckpoint: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/approve-checkpoint`,
+      { method: "POST", body: JSON.stringify({ steps: [] }) }
+    ),
+
+  rejectCheckpoint: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/reject-checkpoint`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
   listDeadLetters: (orgId: string, businessId: string) =>
     request<Array<{
       id: string;

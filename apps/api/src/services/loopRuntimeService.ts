@@ -1,4 +1,4 @@
-import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepEntry } from "@boss/loop";
+import { createLoopRuntime, createTaskHandlerRegistry, CHECKPOINT_SENTINEL, type LoopRuntime, type StepEntry } from "@boss/loop";
 import { decideAiEmployeeAction } from "@boss/mcp";
 import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";
@@ -9,6 +9,7 @@ import { createNotificationService } from "./notificationService.js";
 
 export interface LoopRuntimeService {
   execute(orgId: string, businessId: string, workflowKey: string, steps: StepEntry[]): Promise<WorkflowExecution>;
+  resume(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
 }
 
 function notImplementedHandler(taskType: string) {
@@ -101,7 +102,24 @@ export function createLoopRuntimeService(
     }
   });
 
-  handlers.register("manual", notImplementedHandler("manual"));
+  handlers.register("manual", async (input) => {
+    const { orgId, businessId, workflowExecutionId, stepKey, description } = input as {
+      orgId: string; businessId?: string; workflowExecutionId?: string; stepKey?: string; description?: string;
+    };
+    await repos.eventBus.publish({
+      type: "workflow.approval.requested",
+      payload: {
+        orgId,
+        businessId: businessId ?? "",
+        workflowExecutionId: workflowExecutionId ?? "",
+        stepKey: stepKey ?? "",
+        description: description ?? "Human approval required",
+        requestedAt: nowIso(),
+      },
+      occurredAt: nowIso(),
+    });
+    return { output: null, errorMessage: CHECKPOINT_SENTINEL };
+  });
   handlers.register("scheduled", notImplementedHandler("scheduled"));
 
   // ── Notification action handlers ──────────────────────────────────────────
@@ -170,6 +188,9 @@ export function createLoopRuntimeService(
   return {
     execute(orgId, businessId, workflowKey, steps) {
       return runtime.execute(orgId, businessId, workflowKey, steps);
+    },
+    resume(orgId, businessId, executionId, steps) {
+      return runtime.resume(orgId, businessId, executionId, steps);
     },
   };
 }

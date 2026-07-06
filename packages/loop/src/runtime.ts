@@ -15,9 +15,11 @@ import type { TaskHandlerRegistry } from "./taskHandlerRegistry.js";
 import { assertTransition } from "./stateMachine.js";
 
 const DEFAULT_MAX_RETRIES = 0;
+export const CHECKPOINT_SENTINEL = "__CHECKPOINT_PENDING__";
 
 export interface LoopRuntime {
   execute(orgId: string, businessId: string, workflowKey: string, steps: StepEntry[]): Promise<WorkflowExecution>;
+  resume(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
 }
 
 async function emit(
@@ -35,6 +37,101 @@ async function emit(
 }
 
 export function createLoopRuntime(ports: LoopRuntimePorts, handlers: TaskHandlerRegistry, eventBus: EventBus): LoopRuntime {
+  async function runSteps(
+    orgId: string,
+    businessId: string,
+    workflowKey: string,
+    steps: StepEntry[],
+    execution: WorkflowExecution,
+    startFromIndex: number,
+  ): Promise<WorkflowExecution> {
+    const completedStepOutputs: Record<string, unknown>[] = [];
+
+    for (let stepIndex = startFromIndex; stepIndex < steps.length; stepIndex += 1) {
+      const entry = steps[stepIndex];
+      if (!entry) continue;
+
+      if (isParallelGroup(entry)) {
+        await emit(ports, eventBus, orgId, businessId, execution.id, "parallel.group.started", {
+          groupKey: entry.groupKey,
+          stepCount: entry.steps.length,
+        });
+
+        const groupResults = await Promise.all(
+          entry.steps.map((step) =>
+            runStep(ports, handlers, eventBus, orgId, businessId, execution.id, step)
+          )
+        );
+
+        const firstFailure = groupResults.find((r) => !r.success);
+        if (firstFailure) {
+          if (firstFailure.errorMessage === CHECKPOINT_SENTINEL) {
+            execution = await ports.workflowExecutions.updateState(
+              orgId, execution.id, "waiting", stepIndex, null, null, null
+            );
+            await emit(ports, eventBus, orgId, businessId, execution.id, "execution.awaiting_approval", {
+              workflowKey, stepIndex,
+            });
+            return execution;
+          }
+          await rollbackCompletedSteps(ports, handlers, eventBus, orgId, businessId, execution.id, steps, stepIndex);
+          execution = await ports.workflowExecutions.updateState(
+            orgId, execution.id, "failed", stepIndex,
+            { completedSteps: completedStepOutputs }, firstFailure.errorMessage, nowIso()
+          );
+          await emit(ports, eventBus, orgId, businessId, execution.id, "execution.failed", {
+            workflowKey, groupKey: entry.groupKey, errorMessage: firstFailure.errorMessage,
+          });
+          return execution;
+        }
+
+        for (const r of groupResults) {
+          completedStepOutputs.push(r.output ?? {});
+        }
+
+        await emit(ports, eventBus, orgId, businessId, execution.id, "parallel.group.completed", {
+          groupKey: entry.groupKey,
+        });
+      } else {
+        const stepResult = await runStep(ports, handlers, eventBus, orgId, businessId, execution.id, entry);
+
+        if (!stepResult.success) {
+          if (stepResult.errorMessage === CHECKPOINT_SENTINEL) {
+            execution = await ports.workflowExecutions.updateState(
+              orgId, execution.id, "waiting", stepIndex, null, null, null
+            );
+            await emit(ports, eventBus, orgId, businessId, execution.id, "execution.awaiting_approval", {
+              workflowKey, stepIndex, stepKey: entry.stepKey,
+            });
+            return execution;
+          }
+          await rollbackCompletedSteps(ports, handlers, eventBus, orgId, businessId, execution.id, steps, stepIndex);
+          execution = await ports.workflowExecutions.updateState(
+            orgId, execution.id, "failed", stepIndex,
+            { completedSteps: completedStepOutputs }, stepResult.errorMessage, nowIso()
+          );
+          await emit(ports, eventBus, orgId, businessId, execution.id, "execution.failed", {
+            workflowKey, stepKey: entry.stepKey, errorMessage: stepResult.errorMessage,
+          });
+          return execution;
+        }
+
+        completedStepOutputs.push(stepResult.output ?? {});
+      }
+
+      execution = await ports.workflowExecutions.updateState(
+        orgId, execution.id, "running", stepIndex + 1, null, null, null
+      );
+    }
+
+    execution = await ports.workflowExecutions.updateState(
+      orgId, execution.id, "completed", steps.length,
+      { completedSteps: completedStepOutputs }, null, nowIso()
+    );
+    await emit(ports, eventBus, orgId, businessId, execution.id, "execution.completed", { workflowKey });
+    return execution;
+  }
+
   return {
     async execute(orgId, businessId, workflowKey, steps) {
       let execution = await ports.workflowExecutions.create({
@@ -58,79 +155,25 @@ export function createLoopRuntime(ports: LoopRuntimePorts, handlers: TaskHandler
       execution = await ports.workflowExecutions.updateState(orgId, execution.id, "running", 0, null, null, null);
       await emit(ports, eventBus, orgId, businessId, execution.id, "execution.started", { workflowKey });
 
-      const completedStepOutputs: Record<string, unknown>[] = [];
+      return runSteps(orgId, businessId, workflowKey, steps, execution, 0);
+    },
 
-      for (let stepIndex = 0; stepIndex < steps.length; stepIndex += 1) {
-        const entry = steps[stepIndex];
-        if (!entry) continue;
+    async resume(orgId, businessId, executionId, steps) {
+      const execution = await ports.workflowExecutions.findById(orgId, executionId);
+      if (!execution) throw new Error(`WorkflowExecution ${executionId} not found`);
+      if (execution.state !== "waiting") throw new Error(`Cannot resume execution in state "${execution.state}"`);
 
-        if (isParallelGroup(entry)) {
-          // Fan-out: run all steps in the group concurrently
-          await emit(ports, eventBus, orgId, businessId, execution.id, "parallel.group.started", {
-            groupKey: entry.groupKey,
-            stepCount: entry.steps.length,
-          });
-
-          const groupResults = await Promise.all(
-            entry.steps.map((step) =>
-              runStep(ports, handlers, eventBus, orgId, businessId, execution.id, step)
-            )
-          );
-
-          const firstFailure = groupResults.find((r) => !r.success);
-          if (firstFailure) {
-            // Roll back sequential steps already completed before this group
-            await rollbackCompletedSteps(ports, handlers, eventBus, orgId, businessId, execution.id, steps, stepIndex);
-            execution = await ports.workflowExecutions.updateState(
-              orgId, execution.id, "failed", stepIndex,
-              { completedSteps: completedStepOutputs }, firstFailure.errorMessage, nowIso()
-            );
-            await emit(ports, eventBus, orgId, businessId, execution.id, "execution.failed", {
-              workflowKey, groupKey: entry.groupKey, errorMessage: firstFailure.errorMessage,
-            });
-            return execution;
-          }
-
-          for (const r of groupResults) {
-            completedStepOutputs.push(r.output ?? {});
-          }
-
-          await emit(ports, eventBus, orgId, businessId, execution.id, "parallel.group.completed", {
-            groupKey: entry.groupKey,
-          });
-        } else {
-          // Sequential step
-          const stepResult = await runStep(ports, handlers, eventBus, orgId, businessId, execution.id, entry);
-
-          if (!stepResult.success) {
-            await rollbackCompletedSteps(ports, handlers, eventBus, orgId, businessId, execution.id, steps, stepIndex);
-            execution = await ports.workflowExecutions.updateState(
-              orgId, execution.id, "failed", stepIndex,
-              { completedSteps: completedStepOutputs }, stepResult.errorMessage, nowIso()
-            );
-            await emit(ports, eventBus, orgId, businessId, execution.id, "execution.failed", {
-              workflowKey, stepKey: entry.stepKey, errorMessage: stepResult.errorMessage,
-            });
-            return execution;
-          }
-
-          completedStepOutputs.push(stepResult.output ?? {});
-        }
-
-        execution = await ports.workflowExecutions.updateState(
-          orgId, execution.id, "running", stepIndex + 1, null, null, null
-        );
-      }
-
-      execution = await ports.workflowExecutions.updateState(
-        orgId, execution.id, "completed", steps.length,
-        { completedSteps: completedStepOutputs }, null, nowIso()
+      const resumedExecution = await ports.workflowExecutions.updateState(
+        orgId, executionId, "running", execution.currentStepIndex, null, null, null
       );
-      await emit(ports, eventBus, orgId, businessId, execution.id, "execution.completed", { workflowKey });
+      await emit(ports, eventBus, orgId, businessId, executionId, "execution.resumed", {
+        workflowKey: execution.workflowKey, fromStepIndex: execution.currentStepIndex,
+      });
 
-      return execution;
+      return runSteps(orgId, businessId, execution.workflowKey, steps, resumedExecution, execution.currentStepIndex);
     },
   };
+
 }
 
 interface StepRunResult {

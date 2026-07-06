@@ -1495,6 +1495,18 @@ export function createHttpServer(api: Api): Express {
       return api.workflowExecution.retry(orgId, param(req, "businessId"), param(req, "executionId"), steps as Parameters<typeof api.workflowExecution.retry>[3]);
     })
   );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/approve-checkpoint",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { steps = [] } = req.body as { steps?: unknown[] };
+      return api.workflowExecution.approveCheckpoint(orgId, param(req, "businessId"), param(req, "executionId"), steps as Parameters<typeof api.workflowExecution.approveCheckpoint>[3]);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/reject-checkpoint",
+    wrap(async (req) => api.workflowExecution.rejectCheckpoint(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
   v1.get(
     "/businesses/:businessId/workflows/dead-letters",
     wrap(async (req) => api.workflowExecution.listDeadLetters(await requireOrgId(req), param(req, "businessId")))

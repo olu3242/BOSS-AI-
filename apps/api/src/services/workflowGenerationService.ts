@@ -21,6 +21,15 @@ export function createWorkflowGenerationService(
 
       const graph = generateWorkflowGraph(recommendation);
 
+      // Idempotency: skip if a non-terminal execution already exists for this workflowKey
+      const existing = await repos.workflowExecutions.listByBusinessId(orgId, businessId);
+      const active = existing.find(
+        (e) =>
+          e.workflowKey === graph.workflowKey &&
+          !["completed", "failed", "cancelled", "rolled_back", "timed_out"].includes(e.state)
+      );
+      if (active) return active;
+
       await repos.businessTimeline.append({
         orgId,
         businessId,

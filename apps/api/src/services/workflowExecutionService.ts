@@ -14,6 +14,8 @@ export interface WorkflowExecutionService {
   get(orgId: string, businessId: string, executionId: string): Promise<WorkflowExecutionDetail>;
   cancel(orgId: string, businessId: string, executionId: string): Promise<WorkflowExecution>;
   retry(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
+  approveCheckpoint(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
+  rejectCheckpoint(orgId: string, businessId: string, executionId: string): Promise<WorkflowExecution>;
   listDeadLetters(orgId: string, businessId: string): Promise<DeadLetterEntry[]>;
 }
 
@@ -62,6 +64,31 @@ export function createWorkflowExecutionService(
         throw new ApiError(409, "WORKFLOW_EXECUTION_NOT_RETRYABLE", `Cannot retry a ${execution.state} execution`);
       }
       return loopRuntime.execute(orgId, businessId, execution.workflowKey, steps);
+    },
+
+    async approveCheckpoint(orgId, businessId, executionId, steps) {
+      const execution = await workflowExecutions.findById(orgId, executionId);
+      if (!execution || execution.businessId !== businessId) {
+        throw new ApiError(404, "WORKFLOW_EXECUTION_NOT_FOUND", `Workflow execution ${executionId} not found`);
+      }
+      if (execution.state !== "waiting") {
+        throw new ApiError(409, "WORKFLOW_NOT_AWAITING_APPROVAL", `Execution is in state "${execution.state}", not "waiting"`);
+      }
+      return loopRuntime.resume(orgId, businessId, executionId, steps);
+    },
+
+    async rejectCheckpoint(orgId, businessId, executionId) {
+      const execution = await workflowExecutions.findById(orgId, executionId);
+      if (!execution || execution.businessId !== businessId) {
+        throw new ApiError(404, "WORKFLOW_EXECUTION_NOT_FOUND", `Workflow execution ${executionId} not found`);
+      }
+      if (execution.state !== "waiting") {
+        throw new ApiError(409, "WORKFLOW_NOT_AWAITING_APPROVAL", `Execution is in state "${execution.state}", not "waiting"`);
+      }
+      return workflowExecutions.updateState(
+        orgId, executionId, "cancelled",
+        execution.currentStepIndex, execution.output, "Checkpoint rejected by user", nowIso()
+      );
     },
 
     async listDeadLetters(orgId, businessId) {

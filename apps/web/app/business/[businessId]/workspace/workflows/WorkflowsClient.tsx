@@ -98,6 +98,7 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
   const [detailLoading, setDetailLoading] = useState(false);
   const [retrying, setRetrying] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [approvingCheckpoint, setApprovingCheckpoint] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Auto-poll every 5s while any execution is running or queued
@@ -153,6 +154,38 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
       setError(err instanceof ApiClientError ? err.body.message : "Failed to retry workflow.");
     } finally {
       setRetrying(null);
+    }
+  }
+
+  async function handleApproveCheckpoint(id: string) {
+    setApprovingCheckpoint(id);
+    setError(null);
+    try {
+      await apiClient.approveCheckpoint(orgId, businessId, id);
+      const updated = await apiClient.listWorkflowExecutions(orgId, businessId);
+      setExecutions(updated);
+      setSelectedId(null);
+      setDetail(null);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.body.message : "Failed to approve checkpoint.");
+    } finally {
+      setApprovingCheckpoint(null);
+    }
+  }
+
+  async function handleRejectCheckpoint(id: string) {
+    setApprovingCheckpoint(id);
+    setError(null);
+    try {
+      await apiClient.rejectCheckpoint(orgId, businessId, id);
+      const updated = await apiClient.listWorkflowExecutions(orgId, businessId);
+      setExecutions(updated);
+      setSelectedId(null);
+      setDetail(null);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.body.message : "Failed to reject checkpoint.");
+    } finally {
+      setApprovingCheckpoint(null);
     }
   }
 
@@ -238,6 +271,24 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
                       >
                         {retrying === ex.id ? "Retrying…" : "Retry"}
                       </button>
+                    )}
+                    {ex.status === "awaiting_approval" && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleApproveCheckpoint(ex.id); }}
+                          disabled={approvingCheckpoint === ex.id}
+                          className="rounded bg-green-800 px-2 py-0.5 text-xs text-green-200 hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        >
+                          {approvingCheckpoint === ex.id ? "Approving…" : "Approve"}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRejectCheckpoint(ex.id); }}
+                          disabled={approvingCheckpoint === ex.id}
+                          className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-red-400 hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </>
                     )}
                     {(ex.status === "running" || ex.status === "queued" || ex.status === "pending") && (
                       <button
