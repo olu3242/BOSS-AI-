@@ -16,7 +16,6 @@ import { createStripeAdapter } from "./stripeAdapter.js";
 import { createServiceTitanAdapter } from "./serviceTitanAdapter.js";
 import { createJobberAdapter } from "./jobberAdapter.js";
 import { createOutlookCalendarAdapter } from "./outlookCalendarAdapter.js";
-import { createSmtpAdapter } from "./smtpAdapter.js";
 import { createZohoAdapter } from "./zohoAdapter.js";
 import { createFreshBooksAdapter } from "./freshbooksAdapter.js";
 import { createGoogleDriveAdapter } from "./googleDriveAdapter.js";
@@ -35,7 +34,7 @@ import { createWhatsAppAdapter } from "./whatsappAdapter.js";
  *   messagebird     api_key  send_sms
  *   gmail           oauth2   send_email
  *   microsoft365    oauth2   send_email
- *   smtp            basic    send_email                    [TD-013]
+ *   smtp            (adapter file exists but not registered — falls through to simulated)
  *   slack           oauth2   send_message, send_notification
  *   teams           oauth2   send_message, send_notification
  *   whatsapp        api_key  send_message                  [TD-013]
@@ -63,7 +62,6 @@ export function createAdapterRegistry(): Map<string, ProviderAdapter> {
     createMessageBirdAdapter(),
     createGmailAdapter(),
     createMicrosoft365Adapter(),
-    createSmtpAdapter(),
     createSlackAdapter(),
     createTeamsAdapter(),
     createWhatsAppAdapter(),

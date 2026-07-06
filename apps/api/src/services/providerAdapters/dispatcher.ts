@@ -61,12 +61,19 @@ export async function dispatchProviderExecution(
   const credential = await credentialResolver.resolve(orgId, businessId, resolved.providerKey);
 
   if (!credential) {
-    // No credential stored → fall back to simulation so developer/test environments
-    // that have not completed an OAuth flow still get a deterministic response.
-    // In production, the integration account will always have a credential by the
-    // time a tool execution is dispatched (the OAuth callback stores it).
-    const simulated = executeToolRequestSimulated(resolved, input);
-    return { ...simulated, errorCode: null, attemptCount: 1, latencyMs: 0 };
+    await repos.eventBus.publish({
+      type: "tool.provider.unavailable",
+      payload: { orgId, businessId, providerKey: resolved.providerKey, reason: "no_credential" },
+      occurredAt: nowIso(),
+    });
+    return {
+      status: "failed",
+      output: null,
+      errorMessage: `No usable credential is available for provider "${resolved.providerKey}"`,
+      errorCode: "AUTH_FAILED",
+      attemptCount: 0,
+      latencyMs: 0,
+    };
   }
 
   await repos.eventBus.publish({
