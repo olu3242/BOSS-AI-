@@ -94,6 +94,7 @@ export function createHttpServer(api: Api): Express {
         heapMb: snap.memoryMb.heapUsed,
         uptimeMs: snap.uptimeMs,
       },
+      alerts: api.alerting.getFiringAlerts(),
       ...snap,
     });
   });
@@ -530,8 +531,9 @@ export function createHttpServer(api: Api): Express {
   // never per-tenant data.
   app.get("/metrics/prometheus", (_req: Request, res: Response) => {
     const snap = api.observability.getSnapshot();
+    const firingCount = api.alerting.getFiringAlerts().length;
     res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
-    res.send(snapshotToPrometheus(snap));
+    res.send(snapshotToPrometheus(snap) + `\n# HELP boss_alerts_firing Number of currently firing alert rules\n# TYPE boss_alerts_firing gauge\nboss_alerts_firing ${firingCount}\n`);
   });
 
   // Feature flags — public read (values safe to expose, no secrets)

@@ -65,9 +65,9 @@ Last updated: 2026-07-03
 **Owner:** RC2 observability sprint
 
 ### TD-034 — Alerting Rules
-**Status:** Open (identified in RC1.5)  
+**Status:** Closed (RC5)
 **Context:** No alerting rules defined for dead letter threshold, health endpoint degradation, or scheduler failures.  
-**Recommendation:** Define PagerDuty/Slack alert rules: dead_letters > 10, health != "ok", scheduler recovered > 5 in 1h  
+**Resolution:** `AlertingService` with three edge-triggered rules (DEAD_LETTERS_HIGH/critical, HEALTH_DEGRADED/warning, SCHEDULER_RECOVERED_HIGH/warning). Emits `alert.fired` / `alert.resolved` domain events on the EventBus so Slack/PagerDuty sinks can subscribe. Firing alerts surfaced on `GET /health` response and `boss_alerts_firing` Prometheus gauge. 14 unit tests covering all rules, edge-trigger deduplication, resolution, and event emission.
 **Owner:** RC2 operations
 
 ---
@@ -86,6 +86,8 @@ Last updated: 2026-07-03
 | TD-031 | Rate Limiting | RC5 |
 | TD-032 | Postgres RLS Integration Tests | RC5 |
 | TD-033 | Prometheus / OTEL Metrics Export | RC5 |
+| TD-034 | Alerting Rules | RC5 |
+
 
 
 

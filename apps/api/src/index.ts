@@ -46,6 +46,7 @@ import { createToolFabricController } from "./controllers/toolFabricController.j
 import { createMissionControlController } from "./controllers/missionControlController.js";
 import { createBusinessDiagnosticController } from "./controllers/businessDiagnosticController.js";
 import { createObservabilityService } from "./services/observabilityService.js";
+import { createAlertingService } from "./services/alertingService.js";
 import { createMultiAgentRuntimeService } from "./services/multiAgentRuntimeService.js";
 import { createBusinessDecisionService } from "./services/businessDecisionService.js";
 import { createScenarioService } from "./services/scenarioService.js";
@@ -181,6 +182,8 @@ export function createApiFromContainer(
   const notification = createNotificationService(repos);
   const communication = createCommunicationService(notification, repos.eventBus);
   observability.attachToEventBus(repos);
+  const alerting = createAlertingService();
+  alerting.attachToEventBus(repos.eventBus);
   const multiAgentRuntime = createMultiAgentRuntimeService(repos, loopRuntime);
   const businessDecision = createBusinessDecisionService(repos);
   const scenario = createScenarioService(repos);
@@ -435,6 +438,7 @@ export function createApiFromContainer(
     workflowGeneration,
     missionControl: createMissionControlController(createMissionControlService(repos)),
     observability,
+    alerting,
     multiAgentRuntime,
     businessDecision,
     scenario,
