@@ -1474,6 +1474,32 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.workflowRun.cancel(await requireOrgId(req), param(req, "runId")))
   );
 
+  // ── WorkflowExecution (Loop runtime) routes ──────────────────────────────
+  v1.get(
+    "/businesses/:businessId/workflows/executions",
+    wrap(async (req) => api.workflowExecution.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/executions/:executionId",
+    wrap(async (req) => api.workflowExecution.get(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/cancel",
+    wrap(async (req) => api.workflowExecution.cancel(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/retry",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { steps = [] } = req.body as { steps?: unknown[] };
+      return api.workflowExecution.retry(orgId, param(req, "businessId"), param(req, "executionId"), steps as Parameters<typeof api.workflowExecution.retry>[3]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/dead-letters",
+    wrap(async (req) => api.workflowExecution.listDeadLetters(await requireOrgId(req), param(req, "businessId")))
+  );
+
   // ── LifecyclePolicy routes ────────────────────────────────────────────────
   v1.post(
     "/businesses/:businessId/lifecycle-policies",

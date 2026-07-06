@@ -101,6 +101,8 @@ import { createWorkflowService } from "./services/workflowService.js";
 import { createWorkflowController } from "./controllers/workflowController.js";
 import { createWorkflowRunService } from "./services/workflowRunService.js";
 import { createWorkflowRunController } from "./controllers/workflowRunController.js";
+import { createWorkflowExecutionService } from "./services/workflowExecutionService.js";
+import { createWorkflowExecutionController } from "./controllers/workflowExecutionController.js";
 import { createLifecyclePolicyService } from "./services/lifecyclePolicyService.js";
 import { createLifecyclePolicyController } from "./controllers/lifecyclePolicyController.js";
 import { createPolicyEngineService } from "./services/policyEngineService.js";
@@ -487,6 +489,9 @@ export function createApiFromContainer(
     revenueDashboard,
     workflow: createWorkflowController(createWorkflowService(repos.workflows)),
     workflowRun: createWorkflowRunController(createWorkflowRunService(repos.workflowRuns)),
+    workflowExecution: createWorkflowExecutionController(
+      createWorkflowExecutionService(repos.workflowExecutions, repos.taskExecutions, repos.deadLetters, loopRuntime)
+    ),
     lifecyclePolicy: createLifecyclePolicyController(createLifecyclePolicyService(repos.lifecyclePolicies)),
     policyEngine: createPolicyEngineService(repos.lifecyclePolicies, repos.workflows, repos.workflowRuns, repos.eventBus),
     notification,

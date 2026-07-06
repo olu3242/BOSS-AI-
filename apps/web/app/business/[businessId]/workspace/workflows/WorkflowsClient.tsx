@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
 import { EmptyState } from "../../../../../src/components/ui/EmptyState";
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
@@ -97,6 +97,27 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
   const [detail, setDetail] = useState<WorkflowDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [retrying, setRetrying] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Auto-poll every 5s while any execution is running or queued
+  useEffect(() => {
+    const hasActive = executions.some((e) => e.status === "running" || e.status === "queued" || e.status === "pending");
+    if (hasActive && !pollRef.current) {
+      pollRef.current = setInterval(async () => {
+        try {
+          const updated = await apiClient.listWorkflowExecutions(orgId, businessId);
+          setExecutions(updated);
+        } catch { /* silently ignore poll errors */ }
+      }, 5000);
+    } else if (!hasActive && pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    return () => {
+      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    };
+  }, [executions, orgId, businessId]);
 
   const filtered = filter === "all" ? executions : executions.filter((e) => e.status === filter);
 
@@ -132,6 +153,22 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
       setError(err instanceof ApiClientError ? err.body.message : "Failed to retry workflow.");
     } finally {
       setRetrying(null);
+    }
+  }
+
+  async function handleCancel(id: string) {
+    setCancelling(id);
+    setError(null);
+    try {
+      await apiClient.cancelWorkflow(orgId, businessId, id);
+      const updated = await apiClient.listWorkflowExecutions(orgId, businessId);
+      setExecutions(updated);
+      setSelectedId(null);
+      setDetail(null);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.body.message : "Failed to cancel workflow.");
+    } finally {
+      setCancelling(null);
     }
   }
 
@@ -202,6 +239,18 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
                         {retrying === ex.id ? "Retrying…" : "Retry"}
                       </button>
                     )}
+                    {(ex.status === "running" || ex.status === "queued" || ex.status === "pending") && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCancel(ex.id); }}
+                        disabled={cancelling === ex.id}
+                        className="rounded bg-neutral-800 px-2 py-0.5 text-xs text-red-400 hover:bg-neutral-700 disabled:opacity-50 transition-colors"
+                      >
+                        {cancelling === ex.id ? "Cancelling…" : "Cancel"}
+                      </button>
+                    )}
+                    <span className={`rounded px-2 py-0.5 text-xs ${statusStyle(ex.status)}`}>{ex.status}</span>
+                    <span className="text-neutral-600 text-xs">{selectedId === ex.id ? "▲" : "▼"}</span>
+
                     <Badge color={workflowStatusColor(ex.status)}>{ex.status}</Badge>
                     <span className="text-text-muted text-xs">{selectedId === ex.id ? "▲" : "▼"}</span>
                   </div>

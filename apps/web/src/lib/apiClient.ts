@@ -367,6 +367,23 @@ export const apiClient = {
       { method: "POST", body: JSON.stringify({}) }
     ),
 
+  cancelWorkflow: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/cancel`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  listDeadLetters: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      workflowExecutionId: string;
+      stepKey: string;
+      taskType: string;
+      errorMessage: string;
+      attempts: number;
+      createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/workflows/dead-letters`),
+
   // Scenarios
   listScenarios: (orgId: string, businessId: string) =>
     request<Array<{

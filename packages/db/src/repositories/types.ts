@@ -400,6 +400,7 @@ export interface WorkflowExecutionRepository {
     errorMessage: string | null,
     completedAt: string | null
   ): Promise<WorkflowExecution>;
+  findById(orgId: string, id: string): Promise<WorkflowExecution | null>;
   listByBusinessId(orgId: string, businessId: string): Promise<WorkflowExecution[]>;
 }
 

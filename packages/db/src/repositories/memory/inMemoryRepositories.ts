@@ -658,6 +658,10 @@ export function createInMemoryWorkflowExecutionRepository(): WorkflowExecutionRe
       executions.set(id, updated);
       return updated;
     },
+    async findById(orgId, id) {
+      const e = executions.get(id);
+      return e && e.orgId === orgId && !e.deletedAt ? e : null;
+    },
     async listByBusinessId(orgId, businessId) {
       return Array.from(executions.values())
         .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
