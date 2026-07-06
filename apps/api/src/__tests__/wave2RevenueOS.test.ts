@@ -226,7 +226,8 @@ describe("Scenario 2: Collections Cycle", () => {
     expect(score1).toBe(0);
 
     const score2 = collectionsService.computeRiskScore(90, 500000);
-    expect(score2).toBeCloseTo(0.6 + 0.1, 2);
+    // (90/90)*0.6 + 0*0.2 + min(0.2, 500000/1_000_000) = 0.6 + 0 + 0.2 = 0.8
+    expect(score2).toBeCloseTo(0.8, 2);
 
     const score3 = collectionsService.computeRiskScore(90, 1_000_000, { previousOverdueCount: 2 });
     expect(score3).toBe(1); // capped at 1
