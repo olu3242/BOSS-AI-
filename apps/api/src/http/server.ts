@@ -6,6 +6,8 @@ import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
 import {
   validate,
+  validateData,
+  validateSafe,
   CreateBusinessSchema,
   SubmitMriResponseSchema,
   UpdateConstraintStatusSchema,
@@ -20,7 +22,26 @@ import {
   CreateGoalSchema,
   UpdateGoalSchema,
   UpdateGoalStatusSchema,
+  UpdateCustomerSchema,
+  UpdateLeadSchema,
+  UpdateOpportunitySchema,
+  UpdateEstimateSchema,
+  UpdateAppointmentSchema,
+  UpdateJobSchema,
+  UpdateInvoiceSchema,
+  CreatePaymentSchema,
+  CreateReviewSchema,
+  UpdateStaffSchema,
+  UpdateTaskSchema,
+  UpdateDocumentSchema,
+  CreateConversationSchema,
+  AddMessageSchema,
+  UpdateWorkflowSchema,
+  UpdateLifecyclePolicySchema,
+  SaveSearchSchema,
+  SendNotificationSchema,
 } from "./validation.js";
+
 
 type Api = ReturnType<typeof createApi>;
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -804,7 +825,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/customers/:customerId",
-    wrap(async (req) => api.customer.update(await requireOrgId(req), param(req, "customerId"), req.body as Parameters<typeof api.customer.update>[2]))
+    wrap(async (req) => api.customer.update(await requireOrgId(req), param(req, "customerId"), validate(UpdateCustomerSchema, req.body)))
   );
 
   v1.delete(
@@ -854,7 +875,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/jobs/:jobId",
-    wrap(async (req) => api.job.update(await requireOrgId(req), param(req, "jobId"), req.body as Parameters<typeof api.job.update>[2]))
+    wrap(async (req) => api.job.update(await requireOrgId(req), param(req, "jobId"), validate(UpdateJobSchema, req.body)))
   );
 
   v1.delete(
@@ -899,7 +920,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/appointments/:appointmentId",
-    wrap(async (req) => api.appointment.update(await requireOrgId(req), param(req, "appointmentId"), req.body as Parameters<typeof api.appointment.update>[2]))
+    wrap(async (req) => api.appointment.update(await requireOrgId(req), param(req, "appointmentId"), validate(UpdateAppointmentSchema, req.body)))
   );
 
   v1.delete(
@@ -941,7 +962,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/invoices/:invoiceId",
-    wrap(async (req) => api.invoice.update(await requireOrgId(req), param(req, "invoiceId"), req.body as Parameters<typeof api.invoice.update>[2]))
+    wrap(async (req) => api.invoice.update(await requireOrgId(req), param(req, "invoiceId"), validate(UpdateInvoiceSchema, req.body) as Parameters<typeof api.invoice.update>[2]))
   );
 
   v1.post(
@@ -967,7 +988,7 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/payments",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      return api.payment.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.payment.create>[2]);
+      return api.payment.create(orgId, param(req, "businessId"), validate(CreatePaymentSchema, req.body) as Parameters<typeof api.payment.create>[2]);
     })
   );
 
@@ -994,7 +1015,7 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/reviews",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      return api.review.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.review.create>[2]);
+      return api.review.create(orgId, param(req, "businessId"), validate(CreateReviewSchema, req.body));
     })
   );
 
@@ -1040,7 +1061,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/leads/:leadId",
-    wrap(async (req) => api.lead.update(await requireOrgId(req), param(req, "leadId"), req.body as Parameters<typeof api.lead.update>[2]))
+    wrap(async (req) => api.lead.update(await requireOrgId(req), param(req, "leadId"), validate(UpdateLeadSchema, req.body) as Parameters<typeof api.lead.update>[2]))
   );
 
   v1.delete(
@@ -1105,7 +1126,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.staff.update(orgId, param(req, "staffId"), req.body as Parameters<typeof api.staff.update>[2], actorId);
+      return api.staff.update(orgId, param(req, "staffId"), validate(UpdateStaffSchema, req.body), actorId);
     })
   );
   v1.delete(
@@ -1140,7 +1161,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.opportunity.update(orgId, param(req, "opportunityId"), req.body as Parameters<typeof api.opportunity.update>[2], actorId);
+      return api.opportunity.update(orgId, param(req, "opportunityId"), validate(UpdateOpportunitySchema, req.body) as Parameters<typeof api.opportunity.update>[2], actorId);
     })
   );
   v1.delete(
@@ -1166,7 +1187,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.conversation.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.conversation.create>[2], actorId);
+      return api.conversation.create(orgId, param(req, "businessId"), validate(CreateConversationSchema, req.body) as unknown as Parameters<typeof api.conversation.create>[2], actorId);
     })
   );
   v1.get(
@@ -1188,6 +1209,15 @@ export function createHttpServer(api: Api): Express {
       const actorId = req.headers["x-actor-id"] as string ?? "system";
       await api.conversation.delete(orgId, param(req, "conversationId"), actorId);
       return { deleted: true };
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/conversations/:conversationId/messages",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      const msg = validateData(AddMessageSchema, req.body);
+      return api.conversation.update(orgId, param(req, "conversationId"), { body: msg.body }, actorId);
     })
   );
 
@@ -1217,7 +1247,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.task.update(orgId, param(req, "taskId"), req.body as Parameters<typeof api.task.update>[2], actorId);
+      return api.task.update(orgId, param(req, "taskId"), validate(UpdateTaskSchema, req.body) as Parameters<typeof api.task.update>[2], actorId);
     })
   );
   v1.delete(
@@ -1252,7 +1282,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.document.update(orgId, param(req, "documentId"), req.body as Parameters<typeof api.document.update>[2], actorId);
+      return api.document.update(orgId, param(req, "documentId"), validate(UpdateDocumentSchema, req.body), actorId);
     })
   );
   v1.delete(
@@ -1287,7 +1317,7 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
       const actorId = req.headers["x-actor-id"] as string ?? "system";
-      return api.estimate.update(orgId, param(req, "estimateId"), req.body as Parameters<typeof api.estimate.update>[2], actorId);
+      return api.estimate.update(orgId, param(req, "estimateId"), validate(UpdateEstimateSchema, req.body) as Parameters<typeof api.estimate.update>[2], actorId);
     })
   );
   v1.post(
@@ -1352,7 +1382,7 @@ export function createHttpServer(api: Api): Express {
   );
   v1.patch(
     "/businesses/:businessId/workflows/:workflowId",
-    wrap(async (req) => api.workflow.update(await requireOrgId(req), param(req, "workflowId"), req.body as Parameters<Api["workflow"]["update"]>[2]))
+    wrap(async (req) => api.workflow.update(await requireOrgId(req), param(req, "workflowId"), validate(UpdateWorkflowSchema, req.body)))
   );
   v1.post(
     "/businesses/:businessId/workflows/:workflowId/publish",
@@ -1431,7 +1461,7 @@ export function createHttpServer(api: Api): Express {
   );
   v1.patch(
     "/businesses/:businessId/lifecycle-policies/:policyId",
-    wrap(async (req) => api.lifecyclePolicy.update(await requireOrgId(req), param(req, "policyId"), req.body as Parameters<Api["lifecyclePolicy"]["update"]>[2]))
+    wrap(async (req) => api.lifecyclePolicy.update(await requireOrgId(req), param(req, "policyId"), validate(UpdateLifecyclePolicySchema, req.body)))
   );
   v1.delete(
     "/businesses/:businessId/lifecycle-policies/:policyId",
@@ -1472,8 +1502,8 @@ export function createHttpServer(api: Api): Express {
     "/search/saved",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      const body = req.body as Record<string, unknown>;
-      return api.search.saveSearch({ ...(body as object), orgId } as Parameters<typeof api.search.saveSearch>[0]);
+      const body = validate(SaveSearchSchema, req.body);
+      return api.search.saveSearch({ ...body, orgId } as Parameters<typeof api.search.saveSearch>[0]);
     })
   );
   v1.get(
@@ -1498,9 +1528,10 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/notifications/send",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      const body = req.body as Record<string, unknown>;
-      const { recipient, channel, templateKey, vars, subject, body: msgBody, locale, retry, escalationChannel, escalationRecipient } = body;
-      return api.communication.send({ orgId, businessId: param(req, "businessId"), recipient: recipient as string, channel: channel as never, templateKey: templateKey as string | undefined, vars: vars as Record<string, unknown> | undefined, subject: subject as string | undefined, body: msgBody as string | undefined, locale: locale as string | undefined, retry: retry as never, escalationChannel: escalationChannel as never, escalationRecipient: escalationRecipient as string | undefined });
+      const errors = validateSafe(SendNotificationSchema, req.body);
+      if (errors) throw new ApiError(400, "validation_error", errors.join("; "));
+      const body = validate(SendNotificationSchema, req.body);
+      return api.communication.send({ orgId, businessId: param(req, "businessId"), recipient: body.recipient, channel: body.channel as never, templateKey: body.templateKey, subject: body.subject, body: body.body });
     })
   );
   v1.post(

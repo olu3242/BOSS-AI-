@@ -1,8 +1,20 @@
 import { aiEmployeeRegistry } from "@boss/registries";
 import type { AiEmployeeEntry } from "@boss/registries";
 
-export const aiEmployees = [
+const baseContract = {
+  readModels: [] as string[],
+  writeModels: [] as string[],
+  allowedActions: ["generate_recommendation"] as string[],
+  decisionAuthority: "recommend" as const,
+  promptTemplateKey: "",
+  memory: { shortTermTtlMinutes: 60, longTermEnabled: false, contextKeys: [] as string[] },
+  businessObjectives: [] as string[],
+  lifecycleStages: [] as string[],
+};
+
+export const aiEmployees: AiEmployeeEntry[] = [
   {
+    ...baseContract,
     key: "ceo_advisor",
     label: "CEO Advisor",
     mission: "Keep the owner focused on what moves the business forward.",
@@ -13,8 +25,10 @@ export const aiEmployees = [
     permissions: ["read:business_health", "read:recommendations"],
     escalationRules: ["escalate_to_owner_on_critical_constraint"],
     lifecycle: "draft",
+    promptTemplateKey: "ceo_advisor.advisory",
   },
   {
+    ...baseContract,
     key: "ai_front_desk",
     label: "AI Front Desk",
     mission: "Greet and triage every inbound customer interaction.",
@@ -25,8 +39,11 @@ export const aiEmployees = [
     permissions: ["read:leads", "write:leads"],
     escalationRules: ["escalate_to_owner_on_complaint"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_front_desk.triage",
+    decisionAuthority: "execute",
   },
   {
+    ...baseContract,
     key: "ai_follow_up_assistant",
     label: "AI Follow-Up Assistant",
     mission: "Ensure no lead or customer goes without a timely follow-up.",
@@ -37,8 +54,11 @@ export const aiEmployees = [
     permissions: ["read:leads", "write:notifications"],
     escalationRules: ["escalate_after_three_failed_attempts"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_follow_up_assistant.nurture",
+    decisionAuthority: "execute",
   },
   {
+    ...baseContract,
     key: "ai_operations_coordinator",
     label: "AI Operations Coordinator",
     mission: "Keep day-to-day operations running without owner intervention.",
@@ -49,8 +69,10 @@ export const aiEmployees = [
     permissions: ["read:tasks", "write:tasks"],
     escalationRules: ["escalate_on_missed_appointment"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_operations_coordinator.ops",
   },
   {
+    ...baseContract,
     key: "ai_review_manager",
     label: "AI Review Manager",
     mission: "Grow and protect the business's reputation.",
@@ -61,8 +83,10 @@ export const aiEmployees = [
     permissions: ["read:reviews", "write:notifications"],
     escalationRules: ["escalate_on_negative_review"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_review_manager.reputation",
   },
   {
+    ...baseContract,
     key: "ai_collections_assistant",
     label: "AI Collections Assistant",
     mission: "Keep cash flow healthy by chasing outstanding invoices.",
@@ -73,8 +97,10 @@ export const aiEmployees = [
     permissions: ["read:invoices", "write:notifications"],
     escalationRules: ["escalate_after_30_days_overdue"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_collections_assistant.collections",
   },
   {
+    ...baseContract,
     key: "ai_reporting_analyst",
     label: "AI Reporting Analyst",
     mission: "Turn raw business data into clear, actionable reporting.",
@@ -85,8 +111,10 @@ export const aiEmployees = [
     permissions: ["read:kpis", "write:reports"],
     escalationRules: ["escalate_on_kpi_anomaly"],
     lifecycle: "draft",
+    promptTemplateKey: "ai_reporting_analyst.reporting",
   },
   {
+    ...baseContract,
     key: "bte_orchestrator",
     label: "BTE Orchestrator",
     mission: "Run the daily Business Transformation Engine cycle for every active business.",
@@ -102,8 +130,11 @@ export const aiEmployees = [
     permissions: ["read:business_health", "read:recommendations", "write:workflows", "write:audit_log"],
     escalationRules: ["escalate_on_bte_cycle_failure", "escalate_on_three_consecutive_score_drops"],
     lifecycle: "available",
+    promptTemplateKey: "bte_orchestrator.cycle",
+    decisionAuthority: "approve",
   },
   {
+    ...baseContract,
     key: "marketplace_advisor",
     label: "Marketplace Advisor",
     mission: "Recommend the right industry packs based on each business's profile and growth stage.",
@@ -119,8 +150,10 @@ export const aiEmployees = [
     permissions: ["read:business_profile", "read:marketplace", "write:recommendations"],
     escalationRules: ["escalate_on_pack_install_failure"],
     lifecycle: "available",
+    promptTemplateKey: "marketplace_advisor.recommendation",
   },
   {
+    ...baseContract,
     key: "onboarding_coach",
     label: "Onboarding Coach",
     mission: "Guide every new business through BOSS setup and first value in under 7 days.",
@@ -136,8 +169,9 @@ export const aiEmployees = [
     permissions: ["read:business_profile", "write:notifications", "read:onboarding_status"],
     escalationRules: ["escalate_if_mri_incomplete_after_72h", "escalate_if_no_login_after_48h"],
     lifecycle: "available",
+    promptTemplateKey: "onboarding_coach.setup",
   },
-] as const satisfies readonly AiEmployeeEntry[];
+];
 
 export function seedAiEmployees(): void {
   for (const employee of aiEmployees) {

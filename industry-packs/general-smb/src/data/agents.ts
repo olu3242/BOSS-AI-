@@ -192,9 +192,10 @@ const triggerByWorkflow = {
 } as const satisfies Record<string, ExecutionMode>;
 
 function workflowReferences(
-  agentKey: (typeof aiEmployees)[number]["key"],
+  agentKey: string,
 ): readonly WorkflowReference[] {
-  return workflowKeysByAgent[agentKey].map((key) => ({ id: key, key }));
+  const keys = (workflowKeysByAgent as Record<string, readonly string[]>)[agentKey] ?? [];
+  return keys.map((key) => ({ id: key, key }));
 }
 
 function executionModes(
@@ -212,7 +213,7 @@ function executionModes(
 
 export const agents: readonly Agent[] = Object.freeze(
   aiEmployees.map((employee) => {
-    const metadata = businessMetadataByAgent[employee.key];
+    const metadata = (businessMetadataByAgent as Record<string, typeof businessMetadataByAgent[keyof typeof businessMetadataByAgent]>)[employee.key]!;
     const workflows = workflowReferences(employee.key);
     const modes = executionModes(workflows);
     const businessDomain = {
@@ -241,8 +242,8 @@ export const agents: readonly Agent[] = Object.freeze(
       businessOutcome: metadata.businessOutcome,
       businessOutcomeId: `${employee.key}.outcome`,
       businessObjectives: metadata.businessObjectives,
-      businessObjectiveIds: metadata.businessObjectives.map(
-        (_, index) => `${employee.key}.objective.${index + 1}`,
+      businessObjectiveIds: (metadata.businessObjectives as readonly string[]).map(
+        (_: string, index: number) => `${employee.key}.objective.${index + 1}`,
       ),
       coreResponsibilities: employee.responsibilities,
       primaryKPIs: employee.kpis.slice(0, 1),

@@ -1339,3 +1339,158 @@ export interface LifecyclePolicy extends TenantScoped, Timestamped {
   priority: number;
   isActive: boolean;
 }
+
+// ─── Wave 1C: Intelligence Convergence ───────────────────────────────────────
+
+// Business Objectives (OKR layer)
+
+export type ObjectiveStatus = "draft" | "active" | "at_risk" | "achieved" | "missed" | "cancelled";
+export type ObjectivePriority = "critical" | "high" | "medium" | "low";
+
+export interface KeyResult extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  objectiveId: ID;
+  title: string;
+  description: string | null;
+  kpiKey: string | null;
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+  confidence: number;
+  dueDate: string;
+  completedAt: string | null;
+  owner: string | null;
+}
+
+export interface BusinessObjective extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  description: string;
+  status: ObjectiveStatus;
+  priority: ObjectivePriority;
+  owner: string | null;
+  dueDate: string | null;
+  completedAt: string | null;
+  progress: number;
+  confidence: number;
+  dependencies: ID[];
+  linkedKpis: string[];
+  linkedRecommendationIds: ID[];
+  keyResults: KeyResult[];
+}
+
+// Canonical KPI Platform
+
+export type KpiTrend = "improving" | "stable" | "declining" | "unknown";
+export type KpiStatus = "on_track" | "at_risk" | "critical" | "unknown";
+
+export interface KpiDataPoint {
+  value: number;
+  measuredAt: string;
+}
+
+export interface KpiForecast {
+  period: string;
+  predictedValue: number;
+  confidence: number;
+  low: number;
+  high: number;
+}
+
+export interface CanonicalKpi extends TenantScoped {
+  businessId: ID;
+  kpiKey: string;
+  label: string;
+  unit: string;
+  owner: string | null;
+  source: string;
+  currentValue: number | null;
+  previousValue: number | null;
+  targetValue: number | null;
+  trend: KpiTrend;
+  status: KpiStatus;
+  confidence: number;
+  history: KpiDataPoint[];
+  forecasts: KpiForecast[];
+  linkedObjectiveIds: ID[];
+  measuredAt: string | null;
+}
+
+// Decision Engine
+
+export type DecisionEngineOutputType = "recommendation" | "risk" | "forecast" | "root_cause" | "priority";
+
+export interface DecisionEngineOutput {
+  id: ID;
+  orgId: ID;
+  businessId: ID;
+  type: DecisionEngineOutputType;
+  title: string;
+  summary: string;
+  priority: ObjectivePriority;
+  expectedImpact: string;
+  confidence: number;
+  riskScore: number;
+  linkedKpis: string[];
+  linkedObjectiveIds: ID[];
+  linkedRecommendationId: ID | null;
+  source: string;
+  createdAt: string;
+  expiresAt: string | null;
+}
+
+export interface DecisionEngineResult {
+  orgId: ID;
+  businessId: ID;
+  runAt: string;
+  outputs: DecisionEngineOutput[];
+  topPriority: DecisionEngineOutput | null;
+  riskProfile: "low" | "medium" | "high" | "critical";
+  healthSummary: string;
+}
+
+// Learning Platform
+
+export type LearningSignalType =
+  | "recommendation.accepted"
+  | "recommendation.rejected"
+  | "recommendation.deferred"
+  | "workflow.outcome.positive"
+  | "workflow.outcome.negative"
+  | "forecast.accurate"
+  | "forecast.inaccurate"
+  | "decision.roi_positive"
+  | "decision.roi_negative";
+
+export interface LearningSignal extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  type: LearningSignalType;
+  entityId: ID;
+  entityType: string;
+  feedback: string | null;
+  magnitude: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface LearningInsight {
+  kpiKey: string | null;
+  category: string;
+  pattern: string;
+  confidence: number;
+  sampleSize: number;
+  recommendation: string;
+}
+
+export interface LearningReport {
+  orgId: ID;
+  businessId: ID;
+  generatedAt: string;
+  totalSignals: number;
+  acceptanceRate: number;
+  forecastAccuracy: number;
+  positiveWorkflowRate: number;
+  insights: LearningInsight[];
+}

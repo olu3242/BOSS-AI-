@@ -23,6 +23,14 @@ beforeAll(() => {
       permissions: [],
       escalationRules: [],
       lifecycle: "available",
+      readModels: [],
+      writeModels: [],
+      allowedActions: ["send_communication"],
+      decisionAuthority: "execute",
+      promptTemplateKey: "test.comms",
+      memory: { shortTermTtlMinutes: 30, longTermEnabled: false, contextKeys: [] },
+      businessObjectives: [],
+      lifecycleStages: [],
     });
   }
   if (!aiEmployeeRegistry.get("test_email_agent")) {
@@ -37,6 +45,14 @@ beforeAll(() => {
       permissions: [],
       escalationRules: [],
       lifecycle: "available",
+      readModels: [],
+      writeModels: [],
+      allowedActions: ["send_communication"],
+      decisionAuthority: "execute",
+      promptTemplateKey: "test.email",
+      memory: { shortTermTtlMinutes: 30, longTermEnabled: false, contextKeys: [] },
+      businessObjectives: [],
+      lifecycleStages: [],
     });
   }
 });

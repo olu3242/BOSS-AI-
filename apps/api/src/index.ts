@@ -108,6 +108,10 @@ import { createCommunicationService } from "./services/communicationService.js";
 import { createPlatformSdk } from "./services/platformSdk.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
 import { createAnalyticsController } from "./controllers/analyticsController.js";
+import { createBusinessObjectiveService } from "./services/businessObjectiveService.js";
+import { createKpiPlatformService } from "./services/kpiPlatformService.js";
+import { createDecisionEngineService } from "./services/decisionEngineService.js";
+import { createLearningPlatformService } from "./services/learningPlatformService.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
@@ -186,6 +190,10 @@ export function createApiFromContainer(
   );
 
   const kpiMeasurement = createKpiMeasurementService(repos);
+  const kpiPlatform = createKpiPlatformService(repos, repos.eventBus);
+  const businessObjective = createBusinessObjectiveService(repos.eventBus);
+  const decisionEngine = createDecisionEngineService(repos, repos.eventBus, kpiPlatform, createBusinessRecommendationService(repos), createRootCauseService(repos), createScenarioService(repos));
+  const learningPlatform = createLearningPlatformService(repos.eventBus);
   const businessGoal = createBusinessGoalService(repos);
   const executiveBriefing = createExecutiveBriefingService(repos);
   const rootCause = createRootCauseService(repos);
@@ -403,6 +411,10 @@ export function createApiFromContainer(
     aiWorkforce,
     orgHealth,
     insight,
+    kpiPlatform,
+    businessObjective,
+    decisionEngine,
+    learningPlatform,
     customer: createCustomerController(createCustomerService(repos)),
     job: createJobController(createJobService(repos)),
     appointment: createAppointmentController(createAppointmentService(repos)),

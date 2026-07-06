@@ -1,6 +1,12 @@
 import type { RegistryEntry } from "../types.js";
 import { createRegistry } from "../createRegistry.js";
 
+export interface AiEmployeeMemoryConfig {
+  shortTermTtlMinutes: number;
+  longTermEnabled: boolean;
+  contextKeys: string[];
+}
+
 export interface AiEmployeeEntry extends RegistryEntry {
   mission: string;
   responsibilities: string[];
@@ -10,6 +16,15 @@ export interface AiEmployeeEntry extends RegistryEntry {
   permissions: string[];
   escalationRules: string[];
   lifecycle: "draft" | "available" | "deprecated";
+  // Wave 1C: Full AI Employee Contract
+  readModels: string[];
+  writeModels: string[];
+  allowedActions: string[];
+  decisionAuthority: "none" | "suggest" | "recommend" | "approve" | "execute";
+  promptTemplateKey: string;
+  memory: AiEmployeeMemoryConfig;
+  businessObjectives: string[];
+  lifecycleStages: string[];
 }
 
 export interface AiEmployeeEscalationRule {
