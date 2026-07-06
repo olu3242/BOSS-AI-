@@ -1281,3 +1281,61 @@ export interface Estimate extends TenantScoped, Timestamped {
   convertedInvoiceId: ID | null;
   notes: string | null;
 }
+
+// ─── Wave 1A: Business Operating Loop ────────────────────────────────────────
+
+export type WorkflowStatus = 'draft' | 'published' | 'archived';
+
+export interface Workflow extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  name: string;
+  description: string | null;
+  triggerEvent: string;
+  status: WorkflowStatus;
+  version: number;
+  configuration: Record<string, unknown>;
+  ownerId: string | null;
+  tags: string[];
+}
+
+export type WorkflowRunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface WorkflowRun extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  workflowId: string;
+  status: WorkflowRunStatus;
+  triggeredBy: string;
+  businessObjectType: string | null;
+  businessObjectId: string | null;
+  runtimeExecutionId: string | null;
+  result: Record<string, unknown> | null;
+  errorMessage: string | null;
+  durationMs: number | null;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export type LifecyclePolicyMode = 'automatic' | 'approval_required' | 'manual';
+
+export interface LifecyclePolicyAction {
+  type: 'create_entity' | 'trigger_workflow' | 'notify';
+  entity?: string;
+  workflowKey?: string;
+  defaults?: Record<string, unknown>;
+  notificationTemplate?: string;
+}
+
+export interface LifecyclePolicy extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  name: string;
+  fromEvent: string;
+  mode: LifecyclePolicyMode;
+  action: LifecyclePolicyAction;
+  conditions: Record<string, unknown>;
+  approvalRoles: string[];
+  priority: number;
+  isActive: boolean;
+}

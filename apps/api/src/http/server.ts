@@ -1333,6 +1333,114 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── Workflow routes ───────────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/workflows",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.workflow.create(orgId, param(req, "businessId"), body as Parameters<Api["workflow"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/workflows",
+    wrap(async (req) => api.workflow.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => api.workflow.getById(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => api.workflow.update(await requireOrgId(req), param(req, "workflowId"), req.body as Parameters<Api["workflow"]["update"]>[2]))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/:workflowId/publish",
+    wrap(async (req) => api.workflow.publish(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/:workflowId/archive",
+    wrap(async (req) => api.workflow.archive(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.delete(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => {
+      await api.workflow.delete(await requireOrgId(req), param(req, "workflowId"));
+      return { deleted: true };
+    })
+  );
+
+  // ── WorkflowRun routes ────────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/workflow-runs",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.workflowRun.create(orgId, param(req, "businessId"), body as Parameters<Api["workflowRun"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/workflow-runs",
+    wrap(async (req) => api.workflowRun.listByBusiness(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflow-runs/:runId",
+    wrap(async (req) => api.workflowRun.getById(await requireOrgId(req), param(req, "runId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/:workflowId/runs",
+    wrap(async (req) => api.workflowRun.listByWorkflow(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/complete",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { result, durationMs } = req.body as { result: Record<string, unknown>; durationMs: number };
+      return api.workflowRun.complete(orgId, param(req, "runId"), result, durationMs);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/fail",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { errorMessage, durationMs } = req.body as { errorMessage: string; durationMs: number };
+      return api.workflowRun.fail(orgId, param(req, "runId"), errorMessage, durationMs);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/cancel",
+    wrap(async (req) => api.workflowRun.cancel(await requireOrgId(req), param(req, "runId")))
+  );
+
+  // ── LifecyclePolicy routes ────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/lifecycle-policies",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.lifecyclePolicy.create(orgId, param(req, "businessId"), body as Parameters<Api["lifecyclePolicy"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/lifecycle-policies",
+    wrap(async (req) => api.lifecyclePolicy.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => api.lifecyclePolicy.getById(await requireOrgId(req), param(req, "policyId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => api.lifecyclePolicy.update(await requireOrgId(req), param(req, "policyId"), req.body as Parameters<Api["lifecyclePolicy"]["update"]>[2]))
+  );
+  v1.delete(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => {
+      await api.lifecyclePolicy.delete(await requireOrgId(req), param(req, "policyId"));
+      return { deleted: true };
+    })
+  );
+
   // ── Analytics routes ──────────────────────────────────────────────────────
   v1.get(
     "/businesses/:businessId/analytics",

@@ -675,3 +675,34 @@ export interface EstimateRepository {
   listByBusinessId(orgId: string, businessId: string): Promise<Estimate[]>;
   listByCustomer(orgId: string, customerId: string): Promise<Estimate[]>;
 }
+
+// ─── Wave 1A: Business Operating Loop ────────────────────────────────────────
+
+import type { Workflow, WorkflowRun, LifecyclePolicy } from "@boss/types";
+
+export interface WorkflowRepository {
+  create(input: Omit<Workflow, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Workflow>;
+  findById(orgId: string, id: string): Promise<Workflow | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Workflow, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Workflow>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Workflow[]>;
+  listByTriggerEvent(orgId: string, triggerEvent: string): Promise<Workflow[]>;
+}
+
+export interface WorkflowRunRepository {
+  create(input: Omit<WorkflowRun, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<WorkflowRun>;
+  findById(orgId: string, id: string): Promise<WorkflowRun | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<WorkflowRun, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<WorkflowRun>;
+  listByBusinessId(orgId: string, businessId: string): Promise<WorkflowRun[]>;
+  listByWorkflow(orgId: string, workflowId: string): Promise<WorkflowRun[]>;
+  listByObject(orgId: string, businessObjectType: string, businessObjectId: string): Promise<WorkflowRun[]>;
+}
+
+export interface LifecyclePolicyRepository {
+  create(input: Omit<LifecyclePolicy, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<LifecyclePolicy>;
+  findById(orgId: string, id: string): Promise<LifecyclePolicy | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<LifecyclePolicy, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<LifecyclePolicy>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<LifecyclePolicy[]>;
+  listByEvent(orgId: string, businessId: string, fromEvent: string): Promise<LifecyclePolicy[]>;
+}

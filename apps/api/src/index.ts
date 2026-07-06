@@ -94,6 +94,13 @@ import { createDocumentService } from "./services/documentService.js";
 import { createDocumentController } from "./controllers/documentController.js";
 import { createEstimateService } from "./services/estimateService.js";
 import { createEstimateController } from "./controllers/estimateController.js";
+import { createWorkflowService } from "./services/workflowService.js";
+import { createWorkflowController } from "./controllers/workflowController.js";
+import { createWorkflowRunService } from "./services/workflowRunService.js";
+import { createWorkflowRunController } from "./controllers/workflowRunController.js";
+import { createLifecyclePolicyService } from "./services/lifecyclePolicyService.js";
+import { createLifecyclePolicyController } from "./controllers/lifecyclePolicyController.js";
+import { createPolicyEngineService } from "./services/policyEngineService.js";
 import { createNotificationService } from "./services/notificationService.js";
 import { createPlatformSdk } from "./services/platformSdk.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
@@ -369,6 +376,10 @@ export function createApiFromContainer(
     task: createTaskController(createTaskService(repos)),
     document: createDocumentController(createDocumentService(repos)),
     estimate: createEstimateController(createEstimateService(repos)),
+    workflow: createWorkflowController(createWorkflowService(repos.workflows)),
+    workflowRun: createWorkflowRunController(createWorkflowRunService(repos.workflowRuns)),
+    lifecyclePolicy: createLifecyclePolicyController(createLifecyclePolicyService(repos.lifecyclePolicies)),
+    policyEngine: createPolicyEngineService(repos.lifecyclePolicies, repos.workflows, repos.workflowRuns, repos.eventBus),
     notification: createNotificationService(repos),
     platformSdk: createPlatformSdk(repos, loopRuntime),
     analytics: createAnalyticsController(createAnalyticsService(repos)),
@@ -527,3 +538,8 @@ export * from "./services/conversationService.js";
 export * from "./services/taskService.js";
 export * from "./services/documentService.js";
 export * from "./services/estimateService.js";
+
+export * from "./services/workflowService.js";
+export * from "./services/workflowRunService.js";
+export * from "./services/lifecyclePolicyService.js";
+export * from "./services/policyEngineService.js";

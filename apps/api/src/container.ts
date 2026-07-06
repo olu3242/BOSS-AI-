@@ -65,6 +65,15 @@ import {
   createPostgresEstimateRepository,
   createInMemoryEstimateRepository,
   type EstimateRepository,
+  createPostgresWorkflowRepository,
+  createInMemoryWorkflowRepository,
+  type WorkflowRepository,
+  createPostgresWorkflowRunRepository,
+  createInMemoryWorkflowRunRepository,
+  type WorkflowRunRepository,
+  createPostgresLifecyclePolicyRepository,
+  createInMemoryLifecyclePolicyRepository,
+  type LifecyclePolicyRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -199,6 +208,9 @@ export interface RepositoryContainer {
   tasks: TaskRepository;
   documents: DocumentRepository;
   estimates: EstimateRepository;
+  workflows: WorkflowRepository;
+  workflowRuns: WorkflowRunRepository;
+  lifecyclePolicies: LifecyclePolicyRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -255,6 +267,9 @@ export function createPostgresContainer(): RepositoryContainer {
     tasks: createPostgresTaskRepository(),
     documents: createPostgresDocumentRepository(),
     estimates: createPostgresEstimateRepository(),
+    workflows: createPostgresWorkflowRepository(),
+    workflowRuns: createPostgresWorkflowRunRepository(),
+    lifecyclePolicies: createPostgresLifecyclePolicyRepository(),
   };
 }
 
@@ -314,5 +329,8 @@ export function createInMemoryContainer(): RepositoryContainer {
     tasks: createInMemoryTaskRepository(),
     documents: createInMemoryDocumentRepository(),
     estimates: createInMemoryEstimateRepository(),
+    workflows: createInMemoryWorkflowRepository(),
+    workflowRuns: createInMemoryWorkflowRunRepository(),
+    lifecyclePolicies: createInMemoryLifecyclePolicyRepository(),
   };
 }
