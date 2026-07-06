@@ -58,9 +58,10 @@ Last updated: 2026-07-03
 **Owner:** RC2
 
 ### TD-033 — Prometheus / OTEL Metrics Export
-**Status:** Open (identified in RC1.5)  
+**Status:** Closed (RC5)
 **Context:** Internal counters exist (`ObservabilityService`) but are not exported to any external metrics system.  
 **Risk:** Low during beta, high for production operations  
+**Resolution:** Added `GET /metrics/prometheus` endpoint (no auth, scraper-friendly) that serializes `MetricSnapshot` to Prometheus exposition text format (text/plain; version=0.0.4). Compatible with Prometheus, Grafana Cloud, and OTEL collectors. No SDK dependency — pure string serialization in `prometheusFormat.ts`. 5 unit tests validate format correctness including `_total` suffix convention.
 **Owner:** RC2 observability sprint
 
 ### TD-034 — Alerting Rules
@@ -84,6 +85,8 @@ Last updated: 2026-07-03
 | TD-030 | Event Log Compaction | RC5 |
 | TD-031 | Rate Limiting | RC5 |
 | TD-032 | Postgres RLS Integration Tests | RC5 |
+| TD-033 | Prometheus / OTEL Metrics Export | RC5 |
+
 
 
 ---

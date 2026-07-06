@@ -5,6 +5,7 @@ import { ApiError } from "./apiError.js";
 import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
 import { createRateLimiter } from "./rateLimiter.js";
+import { snapshotToPrometheus } from "./prometheusFormat.js";
 import {
   validate,
   validateData,
@@ -523,6 +524,15 @@ export function createHttpServer(api: Api): Express {
     "/metrics",
     wrap(async (_req) => api.observability.getSnapshot())
   );
+
+  // Prometheus / OTEL collector scrape endpoint — no auth required so scrapers
+  // can reach it without a service-account JWT. Expose only aggregate counters,
+  // never per-tenant data.
+  app.get("/metrics/prometheus", (_req: Request, res: Response) => {
+    const snap = api.observability.getSnapshot();
+    res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(snapshotToPrometheus(snap));
+  });
 
   // Feature flags — public read (values safe to expose, no secrets)
   v1.get("/flags", (_req, res) => {
