@@ -3,10 +3,15 @@ import { createInMemoryContainer } from "../container.js";
 import { createWorkflowService } from "../services/workflowService.js";
 import { createWorkflowRunService } from "../services/workflowRunService.js";
 import { createLifecyclePolicyService } from "../services/lifecyclePolicyService.js";
-import { createPolicyEngineService } from "../services/policyEngineService.js";
+import { createPolicyEngineService, type PolicyDecision } from "../services/policyEngineService.js";
 
 const ORG = "org-w1a";
 const BIZ = "biz-w1a";
+
+function first<T>(arr: T[]): T {
+  if (arr.length === 0) throw new Error("Expected at least one element");
+  return arr[0] as T;
+}
 
 describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
   let repos: ReturnType<typeof createInMemoryContainer>;
@@ -67,7 +72,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
       await workflowSvc.create(ORG, BIZ, { name: "B", triggerEvent: "lead.converted" }); // draft
       const found = await workflowSvc.listByTriggerEvent(ORG, "lead.converted");
       expect(found).toHaveLength(1);
-      expect(found[0].name).toBe("A");
+      expect(first(found).name).toBe("A");
     });
   });
 
@@ -132,7 +137,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
       });
       const list = await policySvc.listByEvent(ORG, BIZ, "lead.converted");
       expect(list).toHaveLength(1);
-      expect(list[0].name).toBe("P1");
+      expect(first(list).name).toBe("P1");
     });
   });
 
@@ -140,7 +145,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
     it("returns no_policy when no policies match", async () => {
       const decisions = await engine.evaluate(ORG, BIZ, "lead.converted", {});
       expect(decisions).toHaveLength(1);
-      expect(decisions[0].mode).toBe("no_policy");
+      expect(first(decisions).mode).toBe("no_policy");
     });
 
     it("routes automatic policy to create_entity decision", async () => {
@@ -151,7 +156,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
         action: { type: "create_entity", entity: "opportunity" },
       });
       const decisions = await engine.evaluate(ORG, BIZ, "lead.converted", {});
-      expect(decisions[0].mode).toBe("automatic");
+      expect(first(decisions).mode).toBe("automatic");
     });
 
     it("routes approval_required policy correctly", async () => {
@@ -163,7 +168,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
         approvalRoles: ["manager"],
       });
       const decisions = await engine.evaluate(ORG, BIZ, "opportunity.won", {});
-      expect(decisions[0].mode).toBe("approval_required");
+      expect(first(decisions).mode).toBe("approval_required");
     });
 
     it("routes manual policy correctly", async () => {
@@ -174,7 +179,7 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
         action: { type: "create_entity", entity: "lead" },
       });
       const decisions = await engine.evaluate(ORG, BIZ, "estimate.declined", {});
-      expect(decisions[0].mode).toBe("manual");
+      expect(first(decisions).mode).toBe("manual");
     });
 
     it("triggers a workflow run for trigger_workflow action", async () => {
@@ -189,24 +194,23 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
       });
 
       const decisions = await engine.evaluate(ORG, BIZ, "lead.converted", { objectType: "lead", objectId: "lead-1" });
-      expect(decisions[0].mode).toBe("automatic");
-      if (decisions[0].mode === "automatic" && decisions[0].run) {
-        expect(decisions[0].run.workflowId).toBe(wf.id);
-        expect(decisions[0].run.status).toBe("running");
+      const decision: PolicyDecision = first(decisions);
+      expect(decision.mode).toBe("automatic");
+      if (decision.mode === "automatic" && decision.run) {
+        expect(decision.run.workflowId).toBe(wf.id);
+        expect(decision.run.status).toBe("running");
       }
     });
   });
 
   describe("E2E lifecycle chain: lead.converted → PolicyEngine → WorkflowRun", () => {
     it("full chain: publish workflow, configure policy, fire event, get run", async () => {
-      // 1. Publish a workflow that activates on lead.converted
       const wf = await workflowSvc.create(ORG, BIZ, {
         name: "Customer Onboarding",
         triggerEvent: "lead.converted",
       });
       await workflowSvc.publish(ORG, wf.id);
 
-      // 2. Configure a policy that auto-triggers it
       await policySvc.create(ORG, BIZ, {
         name: "Auto-trigger Onboarding",
         fromEvent: "lead.converted",
@@ -214,22 +218,19 @@ describe("Wave 1A — Workflow + LifecyclePolicy + PolicyEngine", () => {
         action: { type: "trigger_workflow", workflowKey: "lead.converted" },
       });
 
-      // 3. Fire the event through the engine
       const decisions = await engine.evaluate(ORG, BIZ, "lead.converted", {
         objectType: "lead",
         objectId: "lead-xyz",
       });
 
-      expect(decisions[0].mode).toBe("automatic");
-      const decision = decisions[0];
+      expect(first(decisions).mode).toBe("automatic");
+      const decision: PolicyDecision = first(decisions);
       if (decision.mode === "automatic" && decision.run) {
-        // 4. Verify the run was created
         const run = await workflowRunSvc.getById(ORG, decision.run.id);
         expect(run.workflowId).toBe(wf.id);
         expect(run.triggeredBy).toMatch(/^policy:/);
         expect(run.status).toBe("running");
 
-        // 5. Verify workflow lists the run
         const runs = await workflowRunSvc.listByWorkflow(ORG, wf.id);
         expect(runs).toHaveLength(1);
       }
