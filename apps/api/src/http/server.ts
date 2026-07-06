@@ -4,6 +4,7 @@ import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
 import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
+import { createRateLimiter } from "./rateLimiter.js";
 import {
   validate,
   validateData,
@@ -97,6 +98,7 @@ export function createHttpServer(api: Api): Express {
   });
 
   const v1 = express.Router();
+  v1.use(createRateLimiter());
 
   if (process.env.NODE_ENV !== "production") {
     v1.post(
