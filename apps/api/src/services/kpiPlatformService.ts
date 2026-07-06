@@ -45,7 +45,7 @@ function determineTrend(history: KpiDataPoint[]): KpiTrend {
   return delta > 0 ? "improving" : "declining";
 }
 
-function determineStatus(reading: KpiReading, target?: number): KpiStatus {
+function _determineStatus(reading: KpiReading, target?: number): KpiStatus {
   if (target == null) return "unknown";
   const pct = (reading.value as number) / target;
   if (pct >= 0.9) return "on_track";
