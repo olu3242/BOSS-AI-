@@ -148,7 +148,7 @@ function decodeCursor(cursor: string): string {
 
 // ── Core search engine ───────────────────────────────────────────────────────
 
-export interface SearchEngineOptions<_T extends Record<string, unknown> = Record<string, unknown>> {
+export interface SearchEngineOptions {
   facetFields?: string[];
   defaultSearchFields?: string[];
   defaultSort?: SearchSort[];
@@ -161,7 +161,7 @@ export interface SearchEngineOptions<_T extends Record<string, unknown> = Record
 export function executeSearch<T extends Record<string, unknown> & { id: string; deletedAt?: string | null }>(
   items: T[],
   query: SearchQuery,
-  opts: SearchEngineOptions<T> = {},
+  opts: SearchEngineOptions = {},
 ): Omit<SearchResult<T>, "queryId" | "durationMs"> {
   const limit = Math.min(query.limit ?? 20, 100);
   const { q, filters = [], sort = opts.defaultSort ?? [], searchFields = opts.defaultSearchFields ?? [] } = query;
@@ -218,7 +218,7 @@ export interface SearchService {
    * Register an entity type with a data fetcher.
    * Called once per entity at startup.
    */
-  register(entity: string, fetcher: EntityFetcher, opts?: SearchEngineOptions<Record<string, unknown>>): void;
+  register(entity: string, fetcher: EntityFetcher, opts?: SearchEngineOptions): void;
 
   /** Execute a search query. */
   search<T extends Record<string, unknown>>(query: SearchQuery): Promise<SearchResult<T>>;
@@ -237,7 +237,7 @@ export interface SearchService {
 }
 
 export function createSearchService(eventBus: EventBus): SearchService {
-  const registry = new Map<string, { fetcher: EntityFetcher; opts: SearchEngineOptions<Record<string, unknown>> }>();
+  const registry = new Map<string, { fetcher: EntityFetcher; opts: SearchEngineOptions }>();
   const savedSearches = new Map<string, SavedSearch>();
 
   return {
