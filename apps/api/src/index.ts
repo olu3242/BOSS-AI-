@@ -103,6 +103,8 @@ import { createLifecyclePolicyService } from "./services/lifecyclePolicyService.
 import { createLifecyclePolicyController } from "./controllers/lifecyclePolicyController.js";
 import { createPolicyEngineService } from "./services/policyEngineService.js";
 import { createNotificationService } from "./services/notificationService.js";
+import { createSearchService } from "./services/searchService.js";
+import { createCommunicationService } from "./services/communicationService.js";
 import { createPlatformSdk } from "./services/platformSdk.js";
 import { createAnalyticsService } from "./services/analyticsService.js";
 import { createAnalyticsController } from "./controllers/analyticsController.js";
@@ -131,6 +133,42 @@ export function createApiFromContainer(
   const loopRuntime = createLoopRuntimeService(repos, toolFabric);
   const workflowGeneration = createWorkflowGenerationService(repos, loopRuntime);
   const observability = createObservabilityService();
+
+  // ── Search Platform ────────────────────────────────────────────────────────
+  const search = createSearchService(repos.eventBus);
+  // Register all searchable entities
+  search.register("customer",     (o, b) => repos.customers.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["name", "email", "phone"], defaultSort: [{ field: "name", direction: "asc" }] });
+  search.register("lead",         (o, b) => repos.leads.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["name", "email", "phone", "source"], defaultSort: [{ field: "createdAt", direction: "desc" }] });
+  search.register("opportunity",  (o, b) => repos.opportunities.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("estimate",     (o, b) => repos.estimates.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("appointment",  (o, b) => repos.appointments.listByBusiness(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title", "location"], defaultSort: [{ field: "scheduledAt", direction: "asc" }], facetFields: ["status"] });
+  search.register("job",          (o, b) => repos.jobs.listByBusiness(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title", "description"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("invoice",      (o, b) => repos.invoices.listByBusiness(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("payment",      (o, b) => repos.payments.listByBusiness(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["method", "reference"], defaultSort: [{ field: "createdAt", direction: "desc" }] });
+  search.register("document",     (o, b) => repos.documents.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title", "type"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["type"] });
+  search.register("conversation", (o, b) => repos.conversations.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["subject", "channel"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["channel", "status"] });
+  search.register("workflow",     (o, b) => repos.workflows.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["name", "description"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("workflow_run", (o, b) => repos.workflowRuns.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status"] });
+  search.register("task",         (o, b) => repos.tasks.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["title", "description"], defaultSort: [{ field: "createdAt", direction: "desc" }], facetFields: ["status", "priority"] });
+  search.register("staff",        (o, b) => repos.staff.listByBusinessId(o, b) as unknown as Promise<Record<string, unknown>[]>,
+    { defaultSearchFields: ["name", "role", "email"], defaultSort: [{ field: "name", direction: "asc" }] });
+
+  // ── Communication Platform ─────────────────────────────────────────────────
+  const notification = createNotificationService(repos);
+  const communication = createCommunicationService(notification, repos.eventBus);
   observability.attachToEventBus(repos);
   const multiAgentRuntime = createMultiAgentRuntimeService(repos, loopRuntime);
   const businessDecision = createBusinessDecisionService(repos);
@@ -382,7 +420,9 @@ export function createApiFromContainer(
     workflowRun: createWorkflowRunController(createWorkflowRunService(repos.workflowRuns)),
     lifecyclePolicy: createLifecyclePolicyController(createLifecyclePolicyService(repos.lifecyclePolicies)),
     policyEngine: createPolicyEngineService(repos.lifecyclePolicies, repos.workflows, repos.workflowRuns, repos.eventBus),
-    notification: createNotificationService(repos),
+    notification,
+    search,
+    communication,
     platformSdk: createPlatformSdk(repos, loopRuntime),
     analytics: createAnalyticsController(createAnalyticsService(repos)),
     businessDiagnostic: createBusinessDiagnosticController(createBusinessDiagnosticService(repos)),
@@ -546,3 +586,6 @@ export * from "./services/workflowRunService.js";
 export * from "./services/lifecyclePolicyService.js";
 export * from "./services/policyEngineService.js";
 export * from "./services/lifecycleChainService.js";
+
+export * from "./services/searchService.js";
+export * from "./services/communicationService.js";

@@ -1447,6 +1447,83 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.analytics.getBusinessAnalytics(await requireOrgId(req), param(req, "businessId")))
   );
 
+  // ── Search Platform routes ─────────────────────────────────────────────────
+  v1.post(
+    "/search",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { entity, businessId, q, filters, sort, cursor, limit } = req.body as {
+        entity: string;
+        businessId?: string;
+        q?: string;
+        filters?: unknown[];
+        sort?: unknown[];
+        cursor?: string;
+        limit?: number;
+      };
+      return api.search.search({ orgId, entity, businessId, q, filters: filters as never, sort: sort as never, cursor, limit });
+    })
+  );
+  v1.get(
+    "/search/entities",
+    wrap(async (_req) => ({ entities: api.search.registeredEntities() }))
+  );
+  v1.post(
+    "/search/saved",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.search.saveSearch({ ...(body as object), orgId } as Parameters<typeof api.search.saveSearch>[0]);
+    })
+  );
+  v1.get(
+    "/search/saved",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { businessId, entity } = req.query as { businessId: string; entity: string };
+      return api.search.listSavedSearches(orgId, businessId, entity);
+    })
+  );
+  v1.post(
+    "/search/saved/:savedSearchId/run",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { businessId, cursor } = req.query as { businessId: string; cursor?: string };
+      return api.search.runSavedSearch(param(req, "savedSearchId"), orgId, businessId, cursor);
+    })
+  );
+
+  // ── Communication Platform routes ─────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/notifications/send",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      const { recipient, channel, templateKey, vars, subject, body: msgBody, locale, retry, escalationChannel, escalationRecipient } = body;
+      return api.communication.send({ orgId, businessId: param(req, "businessId"), recipient: recipient as string, channel: channel as never, templateKey: templateKey as string | undefined, vars: vars as Record<string, unknown> | undefined, subject: subject as string | undefined, body: msgBody as string | undefined, locale: locale as string | undefined, retry: retry as never, escalationChannel: escalationChannel as never, escalationRecipient: escalationRecipient as string | undefined });
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/notifications/send-template",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { templateKey, recipient, vars } = req.body as { templateKey: string; recipient: string; vars: Record<string, unknown> };
+      return api.communication.sendTemplate(templateKey, orgId, param(req, "businessId"), recipient, vars ?? {});
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/notifications/history",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const limit = req.query["limit"] ? Number(req.query["limit"]) : 50;
+      return api.communication.deliveryHistory(orgId, param(req, "businessId"), limit);
+    })
+  );
+  v1.get(
+    "/notifications/templates",
+    wrap(async (_req) => ({ templates: api.communication.listTemplates() }))
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {
