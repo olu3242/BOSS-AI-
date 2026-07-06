@@ -51,10 +51,10 @@ Last updated: 2026-07-03
 **Owner:** RC2 security sprint
 
 ### TD-032 — Postgres RLS Integration Tests
-**Status:** Open (identified in RC1.5)  
+**Status:** Closed (RC5)  
 **Context:** All isolation tests run against in-memory repos. Real Postgres RLS policies are deployed but not tested in CI.  
 **Risk:** Medium — in-memory tests pass but Postgres policies could have gaps  
-**Recommendation:** Add a test mode that spins up a real Postgres instance (e.g., via Docker) and runs the security validation suite against it  
+**Resolution:** Added `packages/db/src/__tests__/rls.test.ts` + `rlsSetup.ts` with Docker globalSetup. Validates cross-tenant isolation on workflow_executions, jobs, appointments, invoices, agent_executions. Run via `pnpm --filter @boss/db test:rls`. Skips cleanly when Docker daemon is unavailable.  
 **Owner:** RC2
 
 ### TD-033 — Prometheus / OTEL Metrics Export
@@ -79,7 +79,11 @@ Last updated: 2026-07-03
 | TD-018 | Parallel step fan-out | Goal 17 (Scheduler) |
 | TD-019 | `ParallelStepGroup` type contract | Goal 17 (Scheduler) |
 | TD-021 | Domain events in-process only | RC1 WS4 (DurableEventBus) |
+| TD-024 | AI Employee Handler Has No Real LLM Inference | RC4 |
 | TD-028 | No Zod validation on HTTP bodies | Goals 21-23 |
+| TD-031 | Rate Limiting | RC5 |
+| TD-032 | Postgres RLS Integration Tests | RC5 |
+
 
 ---
 
