@@ -11,7 +11,6 @@ import {
   deriveKpiReadings,
   deriveKpiRecommendations,
   deriveKpiHealthScore,
-  type KpiReading,
 } from "@boss/mcp";
 import type { CanonicalKpi, KpiDataPoint, KpiForecast, KpiTrend, KpiStatus } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
@@ -45,13 +44,6 @@ function determineTrend(history: KpiDataPoint[]): KpiTrend {
   return delta > 0 ? "improving" : "declining";
 }
 
-function _determineStatus(reading: KpiReading, target?: number): KpiStatus {
-  if (target == null) return "unknown";
-  const pct = (reading.value as number) / target;
-  if (pct >= 0.9) return "on_track";
-  if (pct >= 0.7) return "at_risk";
-  return "critical";
-}
 
 function buildForecasts(history: KpiDataPoint[]): KpiForecast[] {
   if (history.length < 3) return [];
