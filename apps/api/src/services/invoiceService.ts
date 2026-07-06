@@ -1,7 +1,9 @@
 import type { Invoice, InvoiceLineItem } from "@boss/types";
 import type { InvoicePatch } from "@boss/db";
 import { randomUUID } from "node:crypto";
+import { createBossEvent } from "@boss/events";
 import type { RepositoryContainer } from "../container.js";
+import { ApiError } from "../http/apiError.js";
 
 export interface InvoiceService {
   createInvoice(orgId: string, businessId: string, input: {
@@ -27,6 +29,19 @@ export interface InvoiceService {
   listByCustomer(orgId: string, customerId: string): Promise<Invoice[]>;
 
   deleteInvoice(orgId: string, invoiceId: string): Promise<void>;
+
+  /** Transition sent→viewed when customer opens invoice link */
+  markViewed(orgId: string, invoiceId: string): Promise<Invoice>;
+  /** Scan all sent invoices past dueAt and transition to overdue */
+  markOverdue(orgId: string, businessId: string): Promise<{ updated: number }>;
+  /** Cancel an invoice */
+  cancel(orgId: string, invoiceId: string, reason?: string): Promise<Invoice>;
+  /** Refund a paid invoice */
+  refund(orgId: string, invoiceId: string, amountCents: number, reason?: string): Promise<Invoice>;
+  /** List all overdue invoices for a business */
+  listOverdue(orgId: string, businessId: string): Promise<Invoice[]>;
+  /** Apply a credit note to reduce invoice balance */
+  applyCreditNote(orgId: string, invoiceId: string, amountCents: number): Promise<Invoice>;
 }
 
 function generateInvoiceNumber(): string {
@@ -157,6 +172,111 @@ export function createInvoiceService(repos: RepositoryContainer): InvoiceService
 
     async deleteInvoice(orgId, invoiceId) {
       await repos.invoices.softDelete(orgId, invoiceId);
+    },
+
+    async markViewed(orgId, invoiceId) {
+      const inv = await repos.invoices.findById(orgId, invoiceId);
+      if (!inv) throw new ApiError(404, "INVOICE_NOT_FOUND", `Invoice ${invoiceId} not found`);
+      if (inv.status !== "sent") {
+        throw new ApiError(409, "INVOICE_INVALID_STATUS", "Only sent invoices can be marked as viewed");
+      }
+      const updated = await repos.invoices.update(orgId, invoiceId, { status: "viewed" });
+      await repos.eventBus.publish(
+        createBossEvent("invoice.viewed", { invoiceId, customerId: inv.customerId }, {
+          orgId, businessId: inv.businessId, actorId: "customer",
+          requestId: invoiceId, correlationId: invoiceId, traceId: invoiceId,
+        }),
+      );
+      return updated;
+    },
+
+    async markOverdue(orgId, businessId) {
+      const invoices = await repos.invoices.listByBusiness(orgId, businessId);
+      const now = new Date().toISOString();
+      let updated = 0;
+      for (const inv of invoices) {
+        if (["sent", "viewed"].includes(inv.status) && inv.dueAt !== null && inv.dueAt < now) {
+          await repos.invoices.update(orgId, inv.id, { status: "overdue" });
+          await repos.eventBus.publish(
+            createBossEvent("invoice.overdue", { invoiceId: inv.id, businessId, dueAt: inv.dueAt, amountCents: inv.totalCents }, {
+              orgId, businessId, actorId: "system",
+              requestId: inv.id, correlationId: inv.id, traceId: inv.id,
+            }),
+          );
+          updated++;
+        }
+      }
+      return { updated };
+    },
+
+    async cancel(orgId, invoiceId, reason) {
+      const inv = await repos.invoices.findById(orgId, invoiceId);
+      if (!inv) throw new ApiError(404, "INVOICE_NOT_FOUND", `Invoice ${invoiceId} not found`);
+      if (["paid", "cancelled", "refunded"].includes(inv.status)) {
+        throw new ApiError(409, "INVOICE_INVALID_STATUS", "Invoice cannot be cancelled in its current status");
+      }
+      const updated = await repos.invoices.update(orgId, invoiceId, {
+        status: "cancelled",
+        metadata: { ...inv.metadata, cancelledAt: new Date().toISOString(), cancelReason: reason ?? null },
+      });
+      await repos.eventBus.publish(
+        createBossEvent("invoice.cancelled", { invoiceId, reason: reason ?? null }, {
+          orgId, businessId: inv.businessId, actorId: "system",
+          requestId: invoiceId, correlationId: invoiceId, traceId: invoiceId,
+        }),
+      );
+      return updated;
+    },
+
+    async refund(orgId, invoiceId, amountCents, reason) {
+      const inv = await repos.invoices.findById(orgId, invoiceId);
+      if (!inv) throw new ApiError(404, "INVOICE_NOT_FOUND", `Invoice ${invoiceId} not found`);
+      if (inv.status !== "paid") {
+        throw new ApiError(409, "INVOICE_INVALID_STATUS", "Only paid invoices can be refunded");
+      }
+      const updated = await repos.invoices.update(orgId, invoiceId, {
+        status: "refunded",
+        metadata: { ...inv.metadata, refundedAt: new Date().toISOString(), refundAmountCents: amountCents, refundReason: reason ?? null },
+      });
+      await repos.eventBus.publish(
+        createBossEvent("invoice.refunded", { invoiceId, amountCents, reason: reason ?? null }, {
+          orgId, businessId: inv.businessId, actorId: "system",
+          requestId: invoiceId, correlationId: invoiceId, traceId: invoiceId,
+        }),
+      );
+      return updated;
+    },
+
+    async listOverdue(orgId, businessId) {
+      const invoices = await repos.invoices.listByBusiness(orgId, businessId);
+      return invoices
+        .filter((i) => i.status === "overdue")
+        .sort((a, b) => {
+          const da = a.dueAt ?? "";
+          const db = b.dueAt ?? "";
+          return da < db ? -1 : da > db ? 1 : 0;
+        });
+    },
+
+    async applyCreditNote(orgId, invoiceId, amountCents) {
+      const inv = await repos.invoices.findById(orgId, invoiceId);
+      if (!inv) throw new ApiError(404, "INVOICE_NOT_FOUND", `Invoice ${invoiceId} not found`);
+      const newTotal = Math.max(0, inv.totalCents - amountCents);
+      const updated = await repos.invoices.update(orgId, invoiceId, {
+        totalCents: newTotal,
+        metadata: {
+          ...inv.metadata,
+          creditAppliedCents: ((inv.metadata["creditAppliedCents"] as number | undefined) ?? 0) + amountCents,
+          lastCreditAt: new Date().toISOString(),
+        },
+      });
+      await repos.eventBus.publish(
+        createBossEvent("invoice.credit_applied", { invoiceId, amountCents, newTotalCents: newTotal }, {
+          orgId, businessId: inv.businessId, actorId: "system",
+          requestId: invoiceId, correlationId: invoiceId, traceId: invoiceId,
+        }),
+      );
+      return updated;
     },
   };
 }

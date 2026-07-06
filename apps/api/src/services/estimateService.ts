@@ -20,6 +20,8 @@ export interface EstimateService {
       lineItems: EstimateLineItem[];
       taxCents?: number;
       discountCents?: number;
+      taxRate?: number;
+      discountRate?: number;
       currency?: string;
       validUntil?: string | null;
       notes?: string | null;
@@ -38,6 +40,8 @@ export interface EstimateService {
       lineItems: EstimateLineItem[];
       taxCents: number;
       discountCents: number;
+      taxRate: number;
+      discountRate: number;
       validUntil: string | null;
       notes: string | null;
     }>,
@@ -48,14 +52,28 @@ export interface EstimateService {
   accept(orgId: string, id: string, actorId: string): Promise<Estimate>;
   decline(orgId: string, id: string, actorId: string): Promise<Estimate>;
   convert(orgId: string, id: string, invoiceId: string, actorId: string): Promise<Estimate>;
-
   delete(orgId: string, id: string, actorId: string): Promise<void>;
+
+  /** Transition sent→viewed when customer opens the estimate link */
+  markViewed(orgId: string, id: string): Promise<Estimate>;
+  /** Scan all sent/viewed estimates for the business past their validUntil and expire them */
+  checkExpiry(orgId: string, businessId: string): Promise<{ expired: number }>;
 }
 
-function computeTotals(lineItems: EstimateLineItem[], taxCents: number, discountCents: number) {
+function computeTotals(
+  lineItems: EstimateLineItem[],
+  taxCents: number,
+  discountCents: number,
+  taxRate?: number,
+  discountRate?: number,
+) {
   const subtotalCents = lineItems.reduce((sum, li) => sum + li.totalCents, 0);
-  const totalCents = subtotalCents + taxCents - discountCents;
-  return { subtotalCents, totalCents };
+  const resolvedTaxCents =
+    taxRate !== undefined ? Math.round(subtotalCents * (taxRate / 100)) : taxCents;
+  const resolvedDiscountCents =
+    discountRate !== undefined ? Math.round(subtotalCents * (discountRate / 100)) : discountCents;
+  const totalCents = Math.max(0, subtotalCents + resolvedTaxCents - resolvedDiscountCents);
+  return { subtotalCents, totalCents, taxCents: resolvedTaxCents, discountCents: resolvedDiscountCents };
 }
 
 export function createEstimateService(repos: RepositoryContainer): EstimateService {
@@ -66,7 +84,8 @@ export function createEstimateService(repos: RepositoryContainer): EstimateServi
 
       const taxCents = input.taxCents ?? 0;
       const discountCents = input.discountCents ?? 0;
-      const { subtotalCents, totalCents } = computeTotals(input.lineItems, taxCents, discountCents);
+      const { subtotalCents, totalCents, taxCents: resolvedTax, discountCents: resolvedDiscount } =
+        computeTotals(input.lineItems, taxCents, discountCents, input.taxRate, input.discountRate);
 
       const estimate = await repos.estimates.create({
         orgId,
@@ -76,8 +95,8 @@ export function createEstimateService(repos: RepositoryContainer): EstimateServi
         status: "draft",
         lineItems: input.lineItems,
         subtotalCents,
-        taxCents,
-        discountCents,
+        taxCents: resolvedTax,
+        discountCents: resolvedDiscount,
         totalCents,
         currency: input.currency ?? "USD",
         validUntil: input.validUntil ?? null,
@@ -112,11 +131,19 @@ export function createEstimateService(repos: RepositoryContainer): EstimateServi
       if (existing.status !== "draft") throw new ApiError(409, "ESTIMATE_NOT_EDITABLE", "Only draft estimates can be edited");
 
       const lineItems = patch.lineItems ?? existing.lineItems;
-      const taxCents = patch.taxCents ?? existing.taxCents;
-      const discountCents = patch.discountCents ?? existing.discountCents;
-      const { subtotalCents, totalCents } = computeTotals(lineItems, taxCents, discountCents);
+      const baseTaxCents = patch.taxCents ?? existing.taxCents;
+      const baseDiscountCents = patch.discountCents ?? existing.discountCents;
+      const { subtotalCents, totalCents, taxCents, discountCents } = computeTotals(
+        lineItems,
+        baseTaxCents,
+        baseDiscountCents,
+        patch.taxRate,
+        patch.discountRate,
+      );
 
-      return repos.estimates.update(orgId, id, { ...patch, lineItems, subtotalCents, taxCents, discountCents, totalCents });
+      const { taxRate: _taxRate, discountRate: _discountRate, ...restPatch } = patch;
+      void _taxRate; void _discountRate;
+      return repos.estimates.update(orgId, id, { ...restPatch, lineItems, subtotalCents, taxCents, discountCents, totalCents });
     },
 
     async send(orgId, id, actorId) {
@@ -206,6 +233,52 @@ export function createEstimateService(repos: RepositoryContainer): EstimateServi
           { orgId, businessId: est.businessId, actorId, requestId: id, correlationId: id, traceId: id },
         ),
       );
+    },
+
+    async markViewed(orgId, id) {
+      const est = await repos.estimates.findById(orgId, id);
+      if (!est) throw new ApiError(404, "ESTIMATE_NOT_FOUND", `Estimate ${id} not found`);
+      if (est.status !== "sent") {
+        throw new ApiError(409, "ESTIMATE_INVALID_STATUS", "Only sent estimates can be marked as viewed");
+      }
+
+      const updated = await repos.estimates.update(orgId, id, { status: "viewed" });
+
+      await repos.eventBus.publish(
+        createBossEvent(
+          "estimate.viewed",
+          { estimateId: id, customerId: est.customerId },
+          { orgId, businessId: est.businessId, actorId: "customer", requestId: id, correlationId: id, traceId: id },
+        ),
+      );
+
+      return updated;
+    },
+
+    async checkExpiry(orgId, businessId) {
+      const estimates = await repos.estimates.listByBusinessId(orgId, businessId);
+      const now = new Date().toISOString();
+      let expired = 0;
+
+      for (const est of estimates) {
+        if (
+          ["sent", "viewed"].includes(est.status) &&
+          est.validUntil !== null &&
+          est.validUntil < now
+        ) {
+          await repos.estimates.update(orgId, est.id, { status: "expired" });
+          await repos.eventBus.publish(
+            createBossEvent(
+              "estimate.expired",
+              { estimateId: est.id, businessId, validUntil: est.validUntil },
+              { orgId, businessId, actorId: "system", requestId: est.id, correlationId: est.id, traceId: est.id },
+            ),
+          );
+          expired++;
+        }
+      }
+
+      return { expired };
     },
   };
 }

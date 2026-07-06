@@ -1,8 +1,19 @@
 import { aiEmployeeRegistry } from "@boss/registries";
-import type { AiEmployeeEntry } from "@boss/registries";
+import type { AiEmployeeRegistration } from "@boss/registries";
 
-const aiEmployees: AiEmployeeEntry[] = [
-  {
+const baseContract = {
+  readModels: [] as string[],
+  writeModels: [] as string[],
+  allowedActions: [] as string[],
+  decisionAuthority: "recommend" as const,
+  promptTemplateKey: "",
+  memory: { shortTermTtlMinutes: 60, longTermEnabled: false, contextKeys: [] as string[] },
+  businessObjectives: [] as string[],
+  lifecycleStages: [] as string[],
+};
+
+const aiEmployees: AiEmployeeRegistration[] = [
+  { ...baseContract,
     key: "hs_dispatcher",
     label: "AI Dispatcher",
     mission: "Assign the right technician to every job at the right time with minimal travel.",
@@ -19,7 +30,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_no_available_technician", "escalate_on_emergency_unassigned"],
     lifecycle: "available",
   },
-  {
+  { ...baseContract,
     key: "hs_operations_manager",
     label: "AI Operations Manager",
     mission: "Keep field operations running at peak efficiency.",
@@ -36,7 +47,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_callback_rate_above_10_pct"],
     lifecycle: "available",
   },
-  {
+  { ...baseContract,
     key: "hs_service_manager",
     label: "AI Service Manager",
     mission: "Ensure every customer gets a high-quality service experience.",
@@ -53,7 +64,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_1_star_review", "escalate_on_callback_within_7_days"],
     lifecycle: "available",
   },
-  {
+  { ...baseContract,
     key: "hs_customer_success_manager",
     label: "AI Customer Success Manager",
     mission: "Turn one-time customers into loyal maintenance plan subscribers.",
@@ -70,7 +81,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_no_renewal_after_30_days"],
     lifecycle: "available",
   },
-  {
+  { ...baseContract,
     key: "hs_revenue_manager",
     label: "AI Revenue Manager",
     mission: "Maximize revenue per technician and ensure healthy margins on every job.",
@@ -87,7 +98,7 @@ const aiEmployees: AiEmployeeEntry[] = [
     escalationRules: ["escalate_on_margin_below_40_pct"],
     lifecycle: "available",
   },
-  {
+  { ...baseContract,
     key: "hs_inventory_coordinator",
     label: "AI Inventory Coordinator",
     mission: "Keep parts stocked to support first-time fix rates and reduce job delays.",

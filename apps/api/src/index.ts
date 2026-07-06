@@ -112,6 +112,12 @@ import { createBusinessObjectiveService } from "./services/businessObjectiveServ
 import { createKpiPlatformService } from "./services/kpiPlatformService.js";
 import { createDecisionEngineService } from "./services/decisionEngineService.js";
 import { createLearningPlatformService } from "./services/learningPlatformService.js";
+import { createPricingEngineService } from "./services/pricingEngineService.js";
+import { createCollectionsService } from "./services/collectionsService.js";
+import { createRevenueIntelligenceService } from "./services/revenueIntelligenceService.js";
+import { createRevenueCommunicationService } from "./services/revenueCommunicationService.js";
+import { createRevenueAiService } from "./services/revenueAiService.js";
+import { createRevenueDashboardService } from "./services/revenueDashboardService.js";
 
 import { InMemoryEventBus } from "@boss/events";
 import { InMemoryAuditSink, PostgresAuditSink } from "./observability.js";
