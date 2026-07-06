@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { apiClient, ApiClientError } from "../../../../../src/lib/apiClient";
+import { apiClient } from "../../../../../src/lib/apiClient";
 import { requireActiveTenant } from "../../../../../src/server/auth";
 
 import { PageHeader } from "../../../../../src/components/ui/PageHeader";
