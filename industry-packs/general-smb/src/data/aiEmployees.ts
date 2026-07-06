@@ -16,7 +16,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ceo_advisor",
-    label: "CEO Advisor",
+    label: "APEX",
+    description: "CEO Advisor — surfaces top constraints, recommends priorities, and tracks goal progress",
     mission: "Keep the owner focused on what moves the business forward.",
     responsibilities: ["Surface top constraints", "Recommend priorities", "Track goal progress"],
     capabilities: ["reporting", "operations"],
@@ -30,7 +31,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_front_desk",
-    label: "AI Front Desk",
+    label: "FAYE",
+    description: "Front Desk Agent — greets and triages every inbound customer interaction, captures leads, and routes to scheduling",
     mission: "Greet and triage every inbound customer interaction.",
     responsibilities: ["Answer inbound messages", "Capture lead details", "Route to scheduling"],
     capabilities: ["communication", "lead_management"],
@@ -45,7 +47,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_follow_up_assistant",
-    label: "AI Follow-Up Assistant",
+    label: "FELIX",
+    description: "Follow-Up Agent — ensures no lead or customer goes without a timely follow-up, re-engages cold pipeline",
     mission: "Ensure no lead or customer goes without a timely follow-up.",
     responsibilities: ["Send follow-up messages", "Re-engage cold leads", "Log outcomes"],
     capabilities: ["lead_management", "communication"],
@@ -60,7 +63,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_operations_coordinator",
-    label: "AI Operations Coordinator",
+    label: "OAK",
+    description: "Operations Coordinator — keeps day-to-day operations running without owner intervention",
     mission: "Keep day-to-day operations running without owner intervention.",
     responsibilities: ["Coordinate scheduling", "Track task completion", "Flag bottlenecks"],
     capabilities: ["operations", "scheduling", "task_management"],
@@ -74,7 +78,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_review_manager",
-    label: "AI Review Manager",
+    label: "ROSE",
+    description: "Reputation Agent — grows and protects the business's online reputation through review management",
     mission: "Grow and protect the business's reputation.",
     responsibilities: ["Request reviews", "Monitor review sentiment", "Draft responses"],
     capabilities: ["reviews"],
@@ -88,7 +93,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_collections_assistant",
-    label: "AI Collections Assistant",
+    label: "COLE",
+    description: "Collections Agent — keeps cash flow healthy by chasing outstanding invoices and flagging chronic late payers",
     mission: "Keep cash flow healthy by chasing outstanding invoices.",
     responsibilities: ["Send payment reminders", "Track invoice aging", "Flag chronic late payers"],
     capabilities: ["billing", "finance"],
@@ -102,7 +108,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "ai_reporting_analyst",
-    label: "AI Reporting Analyst",
+    label: "REECE",
+    description: "Reporting Analyst — turns raw business data into clear, actionable KPI reports and highlights anomalies",
     mission: "Turn raw business data into clear, actionable reporting.",
     responsibilities: ["Compile KPI reports", "Highlight anomalies", "Maintain business timeline"],
     capabilities: ["reporting"],
@@ -116,7 +123,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "bte_orchestrator",
-    label: "BTE Orchestrator",
+    label: "ORION",
+    description: "BTE Orchestrator — runs the daily Business Transformation Engine cycle for every active business",
     mission: "Run the daily Business Transformation Engine cycle for every active business.",
     responsibilities: [
       "Trigger daily health analysis per business",
@@ -136,7 +144,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "marketplace_advisor",
-    label: "Marketplace Advisor",
+    label: "MARS",
+    description: "Marketplace Advisor — recommends the right industry packs based on business profile and growth stage",
     mission: "Recommend the right industry packs based on each business's profile and growth stage.",
     responsibilities: [
       "Analyze business DNA and MRI responses",
@@ -155,7 +164,8 @@ export const aiEmployees: AiEmployeeEntry[] = [
   {
     ...baseContract,
     key: "onboarding_coach",
-    label: "Onboarding Coach",
+    label: "ONYX",
+    description: "Onboarding Coach — guides every new business through BOSS setup and first value in under 7 days",
     mission: "Guide every new business through BOSS setup and first value in under 7 days.",
     responsibilities: [
       "Prompt completion of MRI questionnaire",

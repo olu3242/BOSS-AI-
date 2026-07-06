@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 export function seedAiEmployees(): void {
   aiEmployeeRegistry.register({
     key: "acct_managing_partner",
-    label: "Managing Partner AI",
+    label: "MORGAN",
+    description: "Managing Partner Advisor — monitors firm utilization, revenue, and strategic performance",
     mission: "Oversee firm operations, staff utilization, and strategic direction of the practice",
     responsibilities: [
       "Monitor billable hours and utilization across all staff",
@@ -21,7 +22,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "acct_billing_manager",
-    label: "Billing Manager AI",
+    label: "BLAKE",
+    description: "Billing Manager — maximizes revenue collection through disciplined invoicing and AR management",
     mission: "Maximize revenue collection through disciplined billing and AR management",
     responsibilities: [
       "Generate and send monthly invoices",
@@ -39,7 +41,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "acct_client_manager",
-    label: "Client Manager AI",
+    label: "COLE",
+    description: "Client Manager — ensures client satisfaction, drives retention, and identifies expansion opportunities",
     mission: "Ensure client satisfaction, drive retention, and identify expansion opportunities",
     responsibilities: [
       "Conduct quarterly business reviews with key clients",
@@ -57,7 +60,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "acct_business_developer",
-    label: "Business Development AI",
+    label: "BEAU",
+    description: "Business Developer — drives new client acquisition through referral networks and targeted outreach",
     mission: "Drive new client acquisition through referral network and targeted outreach",
     responsibilities: [
       "Track referral sources and conversion rates",
@@ -75,7 +79,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "acct_operations_manager",
-    label: "Operations Manager AI",
+    label: "OWEN",
+    description: "Operations Manager — ensures on-time delivery of all client work and streamlines firm workflows",
     mission: "Ensure on-time delivery of all client work and streamline firm workflows",
     responsibilities: [
       "Monitor all client deadlines and filing dates",
@@ -93,7 +98,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "acct_compliance_coordinator",
-    label: "Compliance Coordinator AI",
+    label: "CARA",
+    description: "Compliance Coordinator — tracks all regulatory deadlines and ensures zero missed filings",
     mission: "Track all regulatory deadlines and ensure zero missed filings",
     responsibilities: [
       "Monitor tax filing deadlines for all clients",

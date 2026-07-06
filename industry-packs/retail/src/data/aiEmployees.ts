@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "retail_store_manager",
-    label: "Store Manager",
+    label: "STORM",
+    description: "Store Manager — owns commercial performance, margin, inventory health, and team productivity",
     mission: "Own the store's commercial performance: sales, margin, inventory health, and team productivity.",
     responsibilities: [
       "Review daily sales against budget and prior year",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "retail_inventory_manager",
-    label: "Inventory Manager",
+    label: "IAN",
+    description: "Inventory Manager — maintains optimal stock levels, manages reorder points, and eliminates slow-moving SKUs",
     mission: "Maintain optimal inventory levels — enough to never stockout, not so much that capital is trapped.",
     responsibilities: [
       "Monitor sell-through rates and reorder points weekly",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "retail_sales_floor_lead",
-    label: "Sales Floor Lead",
+    label: "SAWYER",
+    description: "Sales Floor Lead — converts foot traffic into revenue by coaching associates and maintaining floor standards",
     mission: "Convert foot traffic into revenue by maintaining a compelling floor environment and coaching team on selling skills.",
     responsibilities: [
       "Monitor and improve store conversion rate during shifts",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "retail_loss_prevention_coordinator",
-    label: "Loss Prevention Coordinator",
+    label: "LANCE",
+    description: "Loss Prevention Coordinator — detects and reduces shrinkage from theft, damage, and administrative error",
     mission: "Protect store profitability by detecting and reducing shrinkage from all sources: theft, damage, and administrative error.",
     responsibilities: [
       "Conduct regular shrinkage audits and cycle counts",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "retail_customer_experience_manager",
-    label: "Customer Experience Manager",
+    label: "CLEO",
+    description: "Customer Experience Manager — builds loyal customers through outstanding service, returns handling, and loyalty programs",
     mission: "Build loyal, returning customers through outstanding service, smooth returns processing, and a compelling loyalty program.",
     responsibilities: [
       "Drive loyalty program enrollment at checkout",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "retail_merchandising_coordinator",
-    label: "Merchandising Coordinator",
+    label: "MILES",
+    description: "Merchandising Coordinator — maximizes sell-through and sales per sqft by placing the right product in the right place",
     mission: "Maximize sell-through and sales per square foot by ensuring the right product is in the right place at the right time.",
     responsibilities: [
       "Execute planogram and floor layout updates",

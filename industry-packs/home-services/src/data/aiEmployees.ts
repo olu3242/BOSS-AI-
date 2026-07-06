@@ -15,7 +15,8 @@ const baseContract = {
 const aiEmployees: AiEmployeeRegistration[] = [
   { ...baseContract,
     key: "hs_dispatcher",
-    label: "AI Dispatcher",
+    label: "DREW",
+    description: "Dispatch Coordinator — assigns technicians to jobs, optimizes routes, and ensures full coverage",
     mission: "Assign the right technician to every job at the right time with minimal travel.",
     responsibilities: [
       "Match jobs to technicians by skill and proximity",
@@ -32,7 +33,8 @@ const aiEmployees: AiEmployeeRegistration[] = [
   },
   { ...baseContract,
     key: "hs_operations_manager",
-    label: "AI Operations Manager",
+    label: "OMAR",
+    description: "Operations Manager — monitors job completion rates, quality issues, and daily field efficiency",
     mission: "Keep field operations running at peak efficiency.",
     responsibilities: [
       "Monitor daily job completion rates",
@@ -49,7 +51,8 @@ const aiEmployees: AiEmployeeRegistration[] = [
   },
   { ...baseContract,
     key: "hs_service_manager",
-    label: "AI Service Manager",
+    label: "SIERRA",
+    description: "Service Manager — ensures quality on every job, resolves complaints, and tracks first-time fix rates",
     mission: "Ensure every customer gets a high-quality service experience.",
     responsibilities: [
       "Review completed jobs for quality signals",
@@ -66,7 +69,8 @@ const aiEmployees: AiEmployeeRegistration[] = [
   },
   { ...baseContract,
     key: "hs_customer_success_manager",
-    label: "AI Customer Success Manager",
+    label: "CASS",
+    description: "Customer Success Manager — converts one-time customers into loyal maintenance plan subscribers",
     mission: "Turn one-time customers into loyal maintenance plan subscribers.",
     responsibilities: [
       "Follow up after job completion",
@@ -83,7 +87,8 @@ const aiEmployees: AiEmployeeRegistration[] = [
   },
   { ...baseContract,
     key: "hs_revenue_manager",
-    label: "AI Revenue Manager",
+    label: "RAYA",
+    description: "Revenue Manager — maximizes revenue per technician and ensures healthy margins on every job",
     mission: "Maximize revenue per technician and ensure healthy margins on every job.",
     responsibilities: [
       "Monitor average ticket value",
@@ -100,7 +105,8 @@ const aiEmployees: AiEmployeeRegistration[] = [
   },
   { ...baseContract,
     key: "hs_inventory_coordinator",
-    label: "AI Inventory Coordinator",
+    label: "IVY",
+    description: "Inventory Coordinator — keeps parts stocked to support first-time fix rates and reduce job delays",
     mission: "Keep parts stocked to support first-time fix rates and reduce job delays.",
     responsibilities: [
       "Monitor parts usage across jobs",
