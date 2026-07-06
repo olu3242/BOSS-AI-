@@ -11,7 +11,7 @@ export function seedAiEmployees(): void {
   // ALICE — Revenue Intelligence Analyst
   aiEmployeeRegistry.register({
     key: "alice",
-    name: "ALICE",
+    label: "ALICE",
     description: "Revenue Intelligence Analyst — monitors pipeline, forecasts revenue, surfaces conversion opportunities",
     mission: "Maximize revenue by identifying and acting on pipeline and conversion opportunities",
     responsibilities: [
@@ -42,7 +42,7 @@ export function seedAiEmployees(): void {
   // MAX — Operations Optimizer
   aiEmployeeRegistry.register({
     key: "max",
-    name: "MAX",
+    label: "MAX",
     description: "Operations Optimizer — tracks job completion, utilization, and workforce efficiency",
     mission: "Maximize operational efficiency and workforce utilization",
     responsibilities: [
@@ -73,7 +73,7 @@ export function seedAiEmployees(): void {
   // REX — Customer Retention Specialist
   aiEmployeeRegistry.register({
     key: "rex",
-    name: "REX",
+    label: "REX",
     description: "Customer Retention Specialist — prevents churn, drives satisfaction, surfaces re-engagement opportunities",
     mission: "Maximize customer lifetime value and retention rate",
     responsibilities: [
@@ -104,7 +104,7 @@ export function seedAiEmployees(): void {
   // NOVA — Business Intelligence Analyst
   aiEmployeeRegistry.register({
     key: "nova",
-    name: "NOVA",
+    label: "NOVA",
     description: "Business Intelligence Analyst — synthesizes KPIs, generates executive insights, drives strategic decisions",
     mission: "Provide executive-level business intelligence for strategic decision-making",
     responsibilities: [
@@ -134,7 +134,7 @@ export function seedAiEmployees(): void {
   // FINN — Financial Intelligence Agent
   aiEmployeeRegistry.register({
     key: "finn",
-    name: "FINN",
+    label: "FINN",
     description: "Financial Intelligence Agent — tracks cash flow, flags payment risks, optimizes pricing and collections",
     mission: "Protect and optimize the financial health of the business",
     responsibilities: [
@@ -165,7 +165,7 @@ export function seedAiEmployees(): void {
   // LENA — Lead Generation and Nurture Agent
   aiEmployeeRegistry.register({
     key: "lena",
-    name: "LENA",
+    label: "LENA",
     description: "Lead Generation and Nurture Agent — qualifies leads, accelerates pipeline, personalizes outreach",
     mission: "Maximize qualified lead flow and pipeline conversion velocity",
     responsibilities: [
@@ -195,7 +195,7 @@ export function seedAiEmployees(): void {
   // TESS — Scheduling and Dispatch Coordinator
   aiEmployeeRegistry.register({
     key: "tess",
-    name: "TESS",
+    label: "TESS",
     description: "Scheduling and Dispatch Coordinator — optimizes appointment scheduling, dispatch, and field routing",
     mission: "Maximize scheduling efficiency, minimize travel time, ensure on-time delivery",
     responsibilities: [
@@ -226,7 +226,7 @@ export function seedAiEmployees(): void {
   // GABRIEL — Strategic Growth Advisor
   aiEmployeeRegistry.register({
     key: "gabriel",
-    name: "GABRIEL",
+    label: "GABRIEL",
     description: "Strategic Growth Advisor — identifies growth opportunities, benchmarks against industry, advises on expansion",
     mission: "Identify and quantify growth opportunities that transform business trajectory",
     responsibilities: [

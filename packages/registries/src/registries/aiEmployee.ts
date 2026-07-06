@@ -8,6 +8,7 @@ export interface AiEmployeeMemoryConfig {
 }
 
 export interface AiEmployeeEntry extends RegistryEntry {
+  description?: string;
   mission: string;
   responsibilities: string[];
   capabilities: string[];
