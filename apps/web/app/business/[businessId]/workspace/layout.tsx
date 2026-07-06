@@ -8,6 +8,30 @@ interface WorkspaceLayoutProps {
   params: Promise<{ businessId: string }>;
 }
 
+const NAV_ITEMS = [
+  { href: "/analytics",     label: "Analytics" },
+  { href: "",               label: "Command Center" },
+  { href: "/customers",     label: "Customers" },
+  { href: "/jobs",          label: "Jobs" },
+  { href: "/appointments",  label: "Appointments" },
+  { href: "/invoices",      label: "Invoices" },
+  { href: "/payments",      label: "Payments" },
+  { href: "/reviews",       label: "Reviews" },
+  { href: "/work",          label: "Work" },
+  { href: "/money",         label: "Money" },
+  { href: "/operations",    label: "Operations" },
+  { href: "/workforce",     label: "AI Workforce" },
+  { href: "/intelligence",  label: "Intelligence" },
+  { href: "/decisions",     label: "Decisions" },
+  { href: "/scenarios",     label: "Scenarios" },
+  { href: "/workflows",     label: "Workflows" },
+  { href: "/settings",      label: "Settings" },
+];
+
+const GLOBAL_NAV = [
+  { href: "/dashboard",   label: "Dashboard" },
+  { href: "/businesses",  label: "Businesses" },
+
 const SIDEBAR_SECTIONS = [
   {
     label: "Intelligence",

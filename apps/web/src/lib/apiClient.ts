@@ -609,4 +609,28 @@ export const apiClient = {
       pendingApprovalsCount: number;
       revenueAtRisk: number;
     }>(orgId, "/dashboard"),
+
+  // AI Workforce
+  listAiEmployees: (orgId: string) =>
+    request<Array<{
+      key: string; label: string; description: string; mission: string;
+      capabilities: string[]; lifecycle: string; kpis: string[];
+    }>>(orgId, "/ai-workforce"),
+
+  promoteEmployee: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: "available"; promotedAt: string }>(
+      orgId, `/ai-workforce/${employeeKey}/promote`,
+      { method: "POST" }
+    ),
+
+  deprecateEmployee: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: "deprecated"; deprecatedAt: string }>(
+      orgId, `/ai-workforce/${employeeKey}/deprecate`,
+      { method: "POST" }
+    ),
+
+  getEmployeeLifecycle: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: string }>(
+      orgId, `/ai-workforce/${employeeKey}/lifecycle`
+    ),
 };

@@ -25,9 +25,9 @@ Last updated: 2026-07-03
 **Owner:** RC2
 
 ### TD-023 — AI Employees in Draft Lifecycle
-**Status:** Open  
+**Status:** Closed (RC5)  
 **Context:** All seeded employees are `lifecycle: "draft"`. No lifecycle management UI.  
-**Risk:** Low — backend complete, UI pending  
+**Resolution:** All general-smb employees set to `lifecycle: "available"`. `promoteEmployee` / `deprecateEmployee` / `getEffectiveLifecycle` API methods added. AI Workforce page added to workspace UI at `/workspace/workforce` with promote/deprecate controls per employee.  
 **Owner:** Web app phase
 
 ### TD-024 — AI Employee Handler Has No Real LLM Inference
@@ -80,6 +80,7 @@ Last updated: 2026-07-03
 | TD-018 | Parallel step fan-out | Goal 17 (Scheduler) |
 | TD-019 | `ParallelStepGroup` type contract | Goal 17 (Scheduler) |
 | TD-021 | Domain events in-process only | RC1 WS4 (DurableEventBus) |
+| TD-023 | AI Employees in Draft Lifecycle | RC5 |
 | TD-024 | AI Employee Handler Has No Real LLM Inference | RC4 |
 | TD-028 | No Zod validation on HTTP bodies | Goals 21-23 |
 | TD-030 | Event Log Compaction | RC5 |
