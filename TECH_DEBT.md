@@ -31,7 +31,7 @@ Last updated: 2026-07-03
 **Owner:** Web app phase
 
 ### TD-024 — AI Employee Handler Has No Real LLM Inference
-**Status:** Open  
+**Status:** Closed (RC5)  
 **Context:** The `ai` task type handler in Loop runtime does not call Claude API. Returns deterministic mock.  
 **Risk:** Medium — AI workforce execution not yet live  
 **Owner:** RC2 AI workforce sprint
