@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { createRateLimiter, _bucketsForTesting } from "../http/rateLimiter.js";
 
 function makeReq(orgId?: string, ip = "127.0.0.1"): Request {
