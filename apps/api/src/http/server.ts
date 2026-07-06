@@ -973,6 +973,11 @@ export function createHttpServer(api: Api): Express {
     wrap(async (req) => api.appointment.cancel(await requireOrgId(req), param(req, "appointmentId")))
   );
 
+  v1.post(
+    "/businesses/:businessId/appointments/:appointmentId/no-show",
+    wrap(async (req) => api.appointment.noShow(await requireOrgId(req), param(req, "businessId"), param(req, "appointmentId")))
+  );
+
   // ── Invoices routes ───────────────────────────────────────────────────────
   v1.get(
     "/businesses/:businessId/invoices",

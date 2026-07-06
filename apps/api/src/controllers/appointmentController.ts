@@ -10,6 +10,7 @@ export function createAppointmentController(service: AppointmentService) {
       service.updateAppointment(orgId, appointmentId, patch),
     confirm: (orgId: string, appointmentId: string) => service.confirmAppointment(orgId, appointmentId),
     cancel: (orgId: string, appointmentId: string) => service.cancelAppointment(orgId, appointmentId),
+    noShow: (orgId: string, businessId: string, appointmentId: string) => service.markNoShow(orgId, businessId, appointmentId),
     delete: (orgId: string, appointmentId: string) => service.deleteAppointment(orgId, appointmentId),
   };
 }

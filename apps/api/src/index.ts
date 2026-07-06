@@ -204,11 +204,12 @@ export function createApiFromContainer(
   const kpiMeasurement = createKpiMeasurementService(repos);
   const kpiPlatform = createKpiPlatformService(repos, repos.eventBus);
   const businessObjective = createBusinessObjectiveService(repos.eventBus);
-  const decisionEngine = createDecisionEngineService(repos, repos.eventBus, kpiPlatform, createBusinessRecommendationService(repos), createRootCauseService(repos), createScenarioService(repos));
+  const rootCause = createRootCauseService(repos);
+  const businessRecommendation = createBusinessRecommendationService(repos);
+  const decisionEngine = createDecisionEngineService(repos, repos.eventBus, kpiPlatform, businessRecommendation, rootCause, scenario);
   const learningPlatform = createLearningPlatformService(repos.eventBus);
   const businessGoal = createBusinessGoalService(repos);
   const executiveBriefing = createExecutiveBriefingService(repos);
-  const rootCause = createRootCauseService(repos);
   const executionPlan = createExecutionPlanService(repos);
   const outcomeVerification = createOutcomeVerificationService(repos);
   const businessOperatingLoop = createBusinessOperatingLoopService(repos);
@@ -246,14 +247,14 @@ export function createApiFromContainer(
     },
   );
 
-  repos.eventBus.subscribe<{ orgId: string; businessId: string; mriId: string }>(
-    "mri.completed",
+  repos.eventBus.subscribe<{ orgId: string; businessId: string; businessMriId: string }>(
+    "business.mri.completed",
     (e) => {
       void productAnalytics.track({
         type: "analytics.mri.completed",
         orgId: e.payload.orgId,
         businessId: e.payload.businessId,
-        properties: { mriId: e.payload.mriId },
+        properties: { mriId: e.payload.businessMriId },
       });
     },
   );
@@ -449,7 +450,7 @@ export function createApiFromContainer(
     businessCapability: createBusinessCapabilityController(createBusinessCapabilityService(repos)),
     businessTimeline: createBusinessTimelineController(createBusinessTimelineService(repos)),
     businessConstraint: createBusinessConstraintController(createBusinessConstraintService(repos)),
-    businessRecommendation: createBusinessRecommendationController(createBusinessRecommendationService(repos)),
+    businessRecommendation: createBusinessRecommendationController(businessRecommendation),
     toolFabric: createToolFabricController(toolFabric),
     loopRuntime,
     workflowGeneration,

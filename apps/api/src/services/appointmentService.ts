@@ -21,6 +21,7 @@ export interface AppointmentService {
 
   confirmAppointment(orgId: string, appointmentId: string): Promise<Appointment>;
   cancelAppointment(orgId: string, appointmentId: string): Promise<Appointment>;
+  markNoShow(orgId: string, businessId: string, appointmentId: string): Promise<Appointment>;
 
   listByBusiness(orgId: string, businessId: string): Promise<Appointment[]>;
   listByCustomer(orgId: string, customerId: string): Promise<Appointment[]>;
@@ -95,6 +96,16 @@ export function createAppointmentService(repos: RepositoryContainer): Appointmen
       await repos.eventBus.publish({
         type: "appointment.cancelled",
         payload: { orgId, appointmentId },
+        occurredAt: new Date().toISOString(),
+      });
+      return appt;
+    },
+
+    async markNoShow(orgId, businessId, appointmentId) {
+      const appt = await repos.appointments.update(orgId, appointmentId, { status: 'no_show' as AppointmentStatus });
+      await repos.eventBus.publish({
+        type: "appointment.no_show",
+        payload: { orgId, businessId, appointmentId },
         occurredAt: new Date().toISOString(),
       });
       return appt;
