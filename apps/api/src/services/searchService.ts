@@ -148,7 +148,7 @@ function decodeCursor(cursor: string): string {
 
 // ── Core search engine ───────────────────────────────────────────────────────
 
-export interface SearchEngineOptions<T extends Record<string, unknown>> {
+export interface SearchEngineOptions<_T extends Record<string, unknown> = Record<string, unknown>> {
   facetFields?: string[];
   defaultSearchFields?: string[];
   defaultSort?: SearchSort[];

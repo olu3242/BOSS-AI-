@@ -146,7 +146,7 @@ export function createCommunicationService(
   async function dispatchWithRetry(
     req: NotificationRequest,
     retryConfig: RetryConfig,
-    deliveryId: string,
+    _deliveryId: string,
   ): Promise<NotificationResult> {
     let lastResult: NotificationResult | null = null;
     let delay = retryConfig.backoffMs;
