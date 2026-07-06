@@ -9,5 +9,9 @@ export function createPaymentController(service: PaymentService) {
       service.createPayment(orgId, businessId, input),
     updateStatus: (orgId: string, paymentId: string, status: PaymentStatus) =>
       service.updateStatus(orgId, paymentId, status),
+    refundPayment: (orgId: string, paymentId: string, amountCents: number, reason?: string) =>
+      service.refundPayment(orgId, paymentId, amountCents, reason),
+    listByInvoice: (orgId: string, invoiceId: string) =>
+      service.listByInvoice(orgId, invoiceId),
   };
 }

@@ -1555,6 +1555,209 @@ export function createHttpServer(api: Api): Express {
     wrap(async (_req) => ({ templates: api.communication.listTemplates() }))
   );
 
+  // ── Wave 2: Estimate enhancements ─────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/view",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.estimate.markViewed(orgId, param(req, "estimateId"));
+    })
+  );
+
+  // ── Wave 2: Invoice enhancements ──────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/view",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.invoice.markViewed(orgId, param(req, "invoiceId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/cancel",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { reason } = req.body as { reason?: string };
+      return api.invoice.cancel(orgId, param(req, "invoiceId"), reason);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/refund",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { amountCents, reason } = req.body as { amountCents: number; reason?: string };
+      if (typeof amountCents !== "number") throw new ApiError(400, "missing_amount", "amountCents is required");
+      return api.invoice.refund(orgId, param(req, "invoiceId"), amountCents, reason);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/invoices/overdue",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.invoice.listOverdue(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Payment enhancements ──────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/payments/:paymentId/refund",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { amountCents, reason } = req.body as { amountCents: number; reason?: string };
+      if (typeof amountCents !== "number") throw new ApiError(400, "missing_amount", "amountCents is required");
+      return api.payment.refundPayment(orgId, param(req, "paymentId"), amountCents, reason);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/invoices/:invoiceId/payments",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.payment.listByInvoice(orgId, param(req, "invoiceId"));
+    })
+  );
+
+  // ── Wave 2: Collections routes ─────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/collections",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.listCases(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/remind",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.sendReminder(orgId, param(req, "caseId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/escalate",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { notes } = req.body as { notes?: string };
+      return api.collections.escalate(orgId, param(req, "caseId"), notes);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/payment-plan",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { installmentCents, frequencyDays } = req.body as { installmentCents: number; frequencyDays: number };
+      if (typeof installmentCents !== "number") throw new ApiError(400, "missing_installment", "installmentCents is required");
+      if (typeof frequencyDays !== "number") throw new ApiError(400, "missing_frequency", "frequencyDays is required");
+      return api.collections.createPaymentPlan(orgId, param(req, "caseId"), installmentCents, frequencyDays);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/resolve",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.resolve(orgId, param(req, "caseId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/write-off",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { reason } = req.body as { reason: string };
+      if (!reason) throw new ApiError(400, "missing_reason", "reason is required");
+      return api.collections.writeOff(orgId, param(req, "caseId"), reason);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/run-cycle",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.runCollectionsCycle(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Revenue Intelligence routes ──────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/revenue",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.compute(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/revenue/forecast",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const months = req.query["months"] ? Number(req.query["months"]) : undefined;
+      return api.revenueIntelligence.cashFlowForecast(orgId, param(req, "businessId"), months);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/revenue/leakage",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.revenueLeakage(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/cashflow",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.cashFlowForecast(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: AI Revenue Intelligence routes ────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/ai/revenue/pricing",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.pricingRecommendation(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/collections-risk",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.collectionsRisk(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/cash-flow-alerts",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.cashFlowAlert(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/cross-sell",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.crossSellOpportunities(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Executive Dashboard ───────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/revenue-dashboard",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueDashboard.get(orgId, param(req, "businessId"));
+    })
+  );
+
   app.use("/api/v1", v1);
 
   app.use((req, res) => {

@@ -22,5 +22,9 @@ export function createEstimateController(service: EstimateService) {
       service.convert(orgId, id, invoiceId, actorId),
 
     delete: (orgId: string, id: string, actorId: string) => service.delete(orgId, id, actorId),
+
+    markViewed: (orgId: string, id: string) => service.markViewed(orgId, id),
+
+    checkExpiry: (orgId: string, businessId: string) => service.checkExpiry(orgId, businessId),
   };
 }

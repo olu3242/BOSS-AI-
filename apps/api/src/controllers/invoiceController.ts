@@ -12,5 +12,10 @@ export function createInvoiceController(service: InvoiceService) {
     markPaid: (orgId: string, invoiceId: string, paymentMethod?: string) =>
       service.markPaid(orgId, invoiceId, paymentMethod),
     delete: (orgId: string, invoiceId: string) => service.deleteInvoice(orgId, invoiceId),
+    markViewed: (orgId: string, invoiceId: string) => service.markViewed(orgId, invoiceId),
+    cancel: (orgId: string, invoiceId: string, reason?: string) => service.cancel(orgId, invoiceId, reason),
+    refund: (orgId: string, invoiceId: string, amountCents: number, reason?: string) =>
+      service.refund(orgId, invoiceId, amountCents, reason),
+    listOverdue: (orgId: string, businessId: string) => service.listOverdue(orgId, businessId),
   };
 }
