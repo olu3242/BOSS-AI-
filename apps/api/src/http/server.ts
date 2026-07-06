@@ -786,6 +786,24 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  v1.post(
+    "/ai-workforce/:employeeKey/promote",
+    wrap(async (req) => api.aiWorkforce.promoteEmployee(await requireOrgId(req), param(req, "employeeKey")))
+  );
+
+  v1.post(
+    "/ai-workforce/:employeeKey/deprecate",
+    wrap(async (req) => api.aiWorkforce.deprecateEmployee(await requireOrgId(req), param(req, "employeeKey")))
+  );
+
+  v1.get(
+    "/ai-workforce/:employeeKey/lifecycle",
+    wrap(async (req) => ({
+      employeeKey: param(req, "employeeKey"),
+      lifecycle: await api.aiWorkforce.getEffectiveLifecycle(await requireOrgId(req), param(req, "employeeKey")),
+    }))
+  );
+
   // ── Org Health routes ─────────────────────────────────────────────────────
   v1.get(
     "/org/health",

@@ -25,7 +25,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["business_health_score", "business_growth_score"],
     permissions: ["read:business_health", "read:recommendations"],
     escalationRules: ["escalate_to_owner_on_critical_constraint"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ceo_advisor.advisory",
   },
   {
@@ -40,7 +40,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["lead_response_time"],
     permissions: ["read:leads", "write:leads"],
     escalationRules: ["escalate_to_owner_on_complaint"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_front_desk.triage",
     decisionAuthority: "execute",
   },
@@ -56,7 +56,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["lead_response_time", "lead_conversion_rate"],
     permissions: ["read:leads", "write:notifications"],
     escalationRules: ["escalate_after_three_failed_attempts"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_follow_up_assistant.nurture",
     decisionAuthority: "execute",
   },
@@ -72,7 +72,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["administrative_hours"],
     permissions: ["read:tasks", "write:tasks"],
     escalationRules: ["escalate_on_missed_appointment"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_operations_coordinator.ops",
   },
   {
@@ -87,7 +87,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["review_rating"],
     permissions: ["read:reviews", "write:notifications"],
     escalationRules: ["escalate_on_negative_review"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_review_manager.reputation",
   },
   {
@@ -102,7 +102,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["outstanding_invoices"],
     permissions: ["read:invoices", "write:notifications"],
     escalationRules: ["escalate_after_30_days_overdue"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_collections_assistant.collections",
   },
   {
@@ -117,7 +117,7 @@ export const aiEmployees: AiEmployeeEntry[] = [
     kpis: ["business_health_score"],
     permissions: ["read:kpis", "write:reports"],
     escalationRules: ["escalate_on_kpi_anomaly"],
-    lifecycle: "draft",
+    lifecycle: "available",
     promptTemplateKey: "ai_reporting_analyst.reporting",
   },
   {
