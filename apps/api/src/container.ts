@@ -14,6 +14,9 @@ import {
   createPostgresEventLogRepository,
   createInMemoryEventLogRepository,
   type EventLogRepository,
+  createPostgresExecutionMetricsRepository,
+  createInMemoryExecutionMetricsRepository,
+  type ExecutionMetricsRepository,
   createPostgresKpiReadingRepository,
   createInMemoryKpiReadingRepository,
   type KpiReadingRepository,
@@ -44,6 +47,36 @@ import {
   createPostgresReviewRepository,
   createInMemoryReviewRepository,
   type ReviewRepository,
+  createPostgresLeadRepository,
+  createInMemoryLeadRepository,
+  type LeadRepository,
+  createPostgresStaffRepository,
+  createInMemoryStaffRepository,
+  type StaffRepository,
+  createPostgresOpportunityRepository,
+  createInMemoryOpportunityRepository,
+  type OpportunityRepository,
+  createPostgresConversationRepository,
+  createInMemoryConversationRepository,
+  type ConversationRepository,
+  createPostgresTaskRepository,
+  createInMemoryTaskRepository,
+  type TaskRepository,
+  createPostgresDocumentRepository,
+  createInMemoryDocumentRepository,
+  type DocumentRepository,
+  createPostgresEstimateRepository,
+  createInMemoryEstimateRepository,
+  type EstimateRepository,
+  createPostgresWorkflowRepository,
+  createInMemoryWorkflowRepository,
+  type WorkflowRepository,
+  createPostgresWorkflowRunRepository,
+  createInMemoryWorkflowRunRepository,
+  type WorkflowRunRepository,
+  createPostgresLifecyclePolicyRepository,
+  createInMemoryLifecyclePolicyRepository,
+  type LifecyclePolicyRepository,
   createPostgresBusinessRepository,
   createPostgresBusinessProfileRepository,
   createPostgresBusinessMriRepository,
@@ -125,11 +158,12 @@ import {
 } from "@boss/db";
 import { createInMemoryEventBus, createDurableEventBus, type EventBus } from "@boss/events";
 import { installGeneralSmbPack } from "@boss/industry-pack-general-smb";
-import { createEnvSecretStore, type SecretStore } from "./services/secretVault/index.js";
+import { createEnvSecretStore, createDbSecretStore, type SecretStore } from "./services/secretVault/index.js";
 
 export interface RepositoryContainer {
   eventBus: EventBus;
   eventLog: EventLogRepository;
+  executionMetrics: ExecutionMetricsRepository;
   secretStore: SecretStore;
   businesses: BusinessRepository;
   businessProfiles: BusinessProfileRepository;
@@ -171,6 +205,16 @@ export interface RepositoryContainer {
   invoices: InvoiceRepository;
   payments: PaymentRepository;
   reviews: ReviewRepository;
+  leads: LeadRepository;
+  staff: StaffRepository;
+  opportunities: OpportunityRepository;
+  conversations: ConversationRepository;
+  tasks: TaskRepository;
+  documents: DocumentRepository;
+  estimates: EstimateRepository;
+  workflows: WorkflowRepository;
+  workflowRuns: WorkflowRunRepository;
+  lifecyclePolicies: LifecyclePolicyRepository;
 }
 
 export function createPostgresContainer(): RepositoryContainer {
@@ -179,7 +223,8 @@ export function createPostgresContainer(): RepositoryContainer {
   return {
     eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
     eventLog,
-    secretStore: createEnvSecretStore(),
+    executionMetrics: createPostgresExecutionMetricsRepository(),
+    secretStore: process.env.BOSS_SECRET_VAULT_KEY ? createDbSecretStore() : createEnvSecretStore(),
     businesses: createPostgresBusinessRepository(),
     businessProfiles: createPostgresBusinessProfileRepository(),
     businessMri: createPostgresBusinessMriRepository(),
@@ -220,6 +265,16 @@ export function createPostgresContainer(): RepositoryContainer {
     invoices: createPostgresInvoiceRepository(),
     payments: createPostgresPaymentRepository(),
     reviews: createPostgresReviewRepository(),
+    leads: createPostgresLeadRepository(),
+    staff: createPostgresStaffRepository(),
+    opportunities: createPostgresOpportunityRepository(),
+    conversations: createPostgresConversationRepository(),
+    tasks: createPostgresTaskRepository(),
+    documents: createPostgresDocumentRepository(),
+    estimates: createPostgresEstimateRepository(),
+    workflows: createPostgresWorkflowRepository(),
+    workflowRuns: createPostgresWorkflowRunRepository(),
+    lifecyclePolicies: createPostgresLifecyclePolicyRepository(),
   };
 }
 
@@ -231,6 +286,7 @@ export function createInMemoryContainer(): RepositoryContainer {
   return {
     eventBus: createDurableEventBus(createInMemoryEventBus(), eventLog),
     eventLog,
+    executionMetrics: createInMemoryExecutionMetricsRepository(),
     secretStore: createEnvSecretStore(),
     businesses: createInMemoryBusinessRepository(),
     businessProfiles: createInMemoryBusinessProfileRepository(),
@@ -272,5 +328,15 @@ export function createInMemoryContainer(): RepositoryContainer {
     invoices: createInMemoryInvoiceRepository(),
     payments: createInMemoryPaymentRepository(),
     reviews: createInMemoryReviewRepository(),
+    leads: createInMemoryLeadRepository(),
+    staff: createInMemoryStaffRepository(),
+    opportunities: createInMemoryOpportunityRepository(),
+    conversations: createInMemoryConversationRepository(),
+    tasks: createInMemoryTaskRepository(),
+    documents: createInMemoryDocumentRepository(),
+    estimates: createInMemoryEstimateRepository(),
+    workflows: createInMemoryWorkflowRepository(),
+    workflowRuns: createInMemoryWorkflowRunRepository(),
+    lifecyclePolicies: createInMemoryLifecyclePolicyRepository(),
   };
 }

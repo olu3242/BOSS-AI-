@@ -8,6 +8,7 @@ interface WorkspaceLayoutProps {
   params: Promise<{ businessId: string }>;
 }
 
+
 const SIDEBAR_SECTIONS = [
   {
     label: "Intelligence",

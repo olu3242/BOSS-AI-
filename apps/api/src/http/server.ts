@@ -4,8 +4,12 @@ import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
 import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
+import { createRateLimiter } from "./rateLimiter.js";
+import { snapshotToPrometheus } from "./prometheusFormat.js";
 import {
   validate,
+  validateData,
+  validateSafe,
   CreateBusinessSchema,
   SubmitMriResponseSchema,
   UpdateConstraintStatusSchema,
@@ -20,7 +24,26 @@ import {
   CreateGoalSchema,
   UpdateGoalSchema,
   UpdateGoalStatusSchema,
+  UpdateCustomerSchema,
+  UpdateLeadSchema,
+  UpdateOpportunitySchema,
+  UpdateEstimateSchema,
+  UpdateAppointmentSchema,
+  UpdateJobSchema,
+  UpdateInvoiceSchema,
+  CreatePaymentSchema,
+  CreateReviewSchema,
+  UpdateStaffSchema,
+  UpdateTaskSchema,
+  UpdateDocumentSchema,
+  CreateConversationSchema,
+  AddMessageSchema,
+  UpdateWorkflowSchema,
+  UpdateLifecyclePolicySchema,
+  SaveSearchSchema,
+  SendNotificationSchema,
 } from "./validation.js";
+
 
 type Api = ReturnType<typeof createApi>;
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -71,11 +94,13 @@ export function createHttpServer(api: Api): Express {
         heapMb: snap.memoryMb.heapUsed,
         uptimeMs: snap.uptimeMs,
       },
+      alerts: api.alerting.getFiringAlerts(),
       ...snap,
     });
   });
 
   const v1 = express.Router();
+  v1.use(createRateLimiter());
 
   if (process.env.NODE_ENV !== "production") {
     v1.post(
@@ -501,6 +526,16 @@ export function createHttpServer(api: Api): Express {
     wrap(async (_req) => api.observability.getSnapshot())
   );
 
+  // Prometheus / OTEL collector scrape endpoint — no auth required so scrapers
+  // can reach it without a service-account JWT. Expose only aggregate counters,
+  // never per-tenant data.
+  app.get("/metrics/prometheus", (_req: Request, res: Response) => {
+    const snap = api.observability.getSnapshot();
+    const firingCount = api.alerting.getFiringAlerts().length;
+    res.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+    res.send(snapshotToPrometheus(snap) + `\n# HELP boss_alerts_firing Number of currently firing alert rules\n# TYPE boss_alerts_firing gauge\nboss_alerts_firing ${firingCount}\n`);
+  });
+
   // Feature flags — public read (values safe to expose, no secrets)
   v1.get("/flags", (_req, res) => {
     res.json(api.featureFlags.getAll());
@@ -751,6 +786,24 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  v1.post(
+    "/ai-workforce/:employeeKey/promote",
+    wrap(async (req) => api.aiWorkforce.promoteEmployee(await requireOrgId(req), param(req, "employeeKey")))
+  );
+
+  v1.post(
+    "/ai-workforce/:employeeKey/deprecate",
+    wrap(async (req) => api.aiWorkforce.deprecateEmployee(await requireOrgId(req), param(req, "employeeKey")))
+  );
+
+  v1.get(
+    "/ai-workforce/:employeeKey/lifecycle",
+    wrap(async (req) => ({
+      employeeKey: param(req, "employeeKey"),
+      lifecycle: await api.aiWorkforce.getEffectiveLifecycle(await requireOrgId(req), param(req, "employeeKey")),
+    }))
+  );
+
   // ── Org Health routes ─────────────────────────────────────────────────────
   v1.get(
     "/org/health",
@@ -804,7 +857,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/customers/:customerId",
-    wrap(async (req) => api.customer.update(await requireOrgId(req), param(req, "customerId"), req.body as Parameters<typeof api.customer.update>[2]))
+    wrap(async (req) => api.customer.update(await requireOrgId(req), param(req, "customerId"), validate(UpdateCustomerSchema, req.body)))
   );
 
   v1.delete(
@@ -854,7 +907,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/jobs/:jobId",
-    wrap(async (req) => api.job.update(await requireOrgId(req), param(req, "jobId"), req.body as Parameters<typeof api.job.update>[2]))
+    wrap(async (req) => api.job.update(await requireOrgId(req), param(req, "jobId"), validate(UpdateJobSchema, req.body)))
   );
 
   v1.delete(
@@ -899,7 +952,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/appointments/:appointmentId",
-    wrap(async (req) => api.appointment.update(await requireOrgId(req), param(req, "appointmentId"), req.body as Parameters<typeof api.appointment.update>[2]))
+    wrap(async (req) => api.appointment.update(await requireOrgId(req), param(req, "appointmentId"), validate(UpdateAppointmentSchema, req.body)))
   );
 
   v1.delete(
@@ -918,6 +971,11 @@ export function createHttpServer(api: Api): Express {
   v1.post(
     "/businesses/:businessId/appointments/:appointmentId/cancel",
     wrap(async (req) => api.appointment.cancel(await requireOrgId(req), param(req, "appointmentId")))
+  );
+
+  v1.post(
+    "/businesses/:businessId/appointments/:appointmentId/no-show",
+    wrap(async (req) => api.appointment.noShow(await requireOrgId(req), param(req, "businessId"), param(req, "appointmentId")))
   );
 
   // ── Invoices routes ───────────────────────────────────────────────────────
@@ -941,7 +999,7 @@ export function createHttpServer(api: Api): Express {
 
   v1.patch(
     "/businesses/:businessId/invoices/:invoiceId",
-    wrap(async (req) => api.invoice.update(await requireOrgId(req), param(req, "invoiceId"), req.body as Parameters<typeof api.invoice.update>[2]))
+    wrap(async (req) => api.invoice.update(await requireOrgId(req), param(req, "invoiceId"), validate(UpdateInvoiceSchema, req.body) as Parameters<typeof api.invoice.update>[2]))
   );
 
   v1.post(
@@ -967,7 +1025,7 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/payments",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      return api.payment.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.payment.create>[2]);
+      return api.payment.create(orgId, param(req, "businessId"), validate(CreatePaymentSchema, req.body) as Parameters<typeof api.payment.create>[2]);
     })
   );
 
@@ -994,7 +1052,7 @@ export function createHttpServer(api: Api): Express {
     "/businesses/:businessId/reviews",
     wrap(async (req) => {
       const orgId = await requireOrgId(req);
-      return api.review.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.review.create>[2]);
+      return api.review.create(orgId, param(req, "businessId"), validate(CreateReviewSchema, req.body));
     })
   );
 
@@ -1014,10 +1072,765 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── Sales OS — Leads routes ───────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/leads",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const q = (req.query as Record<string, string>).q;
+      if (q?.trim()) return api.lead.search(orgId, param(req, "businessId"), q);
+      return api.lead.list(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.lead.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.lead.create>[2]);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => api.lead.get(await requireOrgId(req), param(req, "leadId")))
+  );
+
+  v1.patch(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => api.lead.update(await requireOrgId(req), param(req, "leadId"), validate(UpdateLeadSchema, req.body) as Parameters<typeof api.lead.update>[2]))
+  );
+
+  v1.delete(
+    "/businesses/:businessId/leads/:leadId",
+    wrap(async (req) => {
+      await api.lead.delete(await requireOrgId(req), param(req, "leadId"));
+      return { deleted: true };
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/qualify",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actor = (req.body as { actor?: string }).actor ?? "system";
+      return api.lead.qualify(orgId, param(req, "leadId"), actor);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/assign",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { assignedTo } = req.body as { assignedTo: string };
+      return api.lead.assign(orgId, param(req, "leadId"), assignedTo);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/convert",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { convertedCustomerId } = req.body as { convertedCustomerId: string };
+      return api.lead.convert(orgId, param(req, "leadId"), convertedCustomerId);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/leads/:leadId/lost",
+    wrap(async (req) => api.lead.markLost(await requireOrgId(req), param(req, "leadId")))
+  );
+
+  // ── Staff routes ─────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/staff",
+    wrap(async (req) => api.staff.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/staff",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.staff.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.staff.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => api.staff.get(await requireOrgId(req), param(req, "staffId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.staff.update(orgId, param(req, "staffId"), validate(UpdateStaffSchema, req.body), actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/staff/:staffId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.staff.delete(orgId, param(req, "staffId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Opportunity routes ────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/opportunities",
+    wrap(async (req) => api.opportunity.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/opportunities",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.opportunity.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.opportunity.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => api.opportunity.get(await requireOrgId(req), param(req, "opportunityId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.opportunity.update(orgId, param(req, "opportunityId"), validate(UpdateOpportunitySchema, req.body) as Parameters<typeof api.opportunity.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/opportunities/:opportunityId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.opportunity.delete(orgId, param(req, "opportunityId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Conversation routes ───────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/conversations",
+    wrap(async (req) => {
+      const limit = req.query.limit ? Number(req.query.limit) : undefined;
+      return api.conversation.list(await requireOrgId(req), param(req, "businessId"), limit);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/conversations",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.conversation.create(orgId, param(req, "businessId"), validate(CreateConversationSchema, req.body) as unknown as Parameters<typeof api.conversation.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => api.conversation.get(await requireOrgId(req), param(req, "conversationId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.conversation.update(orgId, param(req, "conversationId"), req.body as Parameters<typeof api.conversation.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/conversations/:conversationId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.conversation.delete(orgId, param(req, "conversationId"), actorId);
+      return { deleted: true };
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/conversations/:conversationId/messages",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      const msg = validateData(AddMessageSchema, req.body);
+      return api.conversation.update(orgId, param(req, "conversationId"), { body: msg.body }, actorId);
+    })
+  );
+
+  // ── Task routes ───────────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/tasks",
+    wrap(async (req) => api.task.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/tasks",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.task.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.task.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => api.task.get(await requireOrgId(req), param(req, "taskId")))
+  );
+  v1.get(
+    "/businesses/:businessId/tasks/:taskId/children",
+    wrap(async (req) => api.task.listChildren(await requireOrgId(req), param(req, "taskId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.task.update(orgId, param(req, "taskId"), validate(UpdateTaskSchema, req.body) as Parameters<typeof api.task.update>[2], actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/tasks/:taskId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.task.delete(orgId, param(req, "taskId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Document routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/documents",
+    wrap(async (req) => api.document.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/documents",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.document.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.document.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => api.document.get(await requireOrgId(req), param(req, "documentId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.document.update(orgId, param(req, "documentId"), validate(UpdateDocumentSchema, req.body), actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/documents/:documentId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.document.delete(orgId, param(req, "documentId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Estimate routes ───────────────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/estimates",
+    wrap(async (req) => api.estimate.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.post(
+    "/businesses/:businessId/estimates",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.create(orgId, param(req, "businessId"), req.body as Parameters<typeof api.estimate.create>[2], actorId);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => api.estimate.get(await requireOrgId(req), param(req, "estimateId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.update(orgId, param(req, "estimateId"), validate(UpdateEstimateSchema, req.body) as Parameters<typeof api.estimate.update>[2], actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/send",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.send(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/accept",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.accept(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/decline",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      return api.estimate.decline(orgId, param(req, "estimateId"), actorId);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/convert",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      const { invoiceId } = req.body as { invoiceId: string };
+      return api.estimate.convert(orgId, param(req, "estimateId"), invoiceId, actorId);
+    })
+  );
+  v1.delete(
+    "/businesses/:businessId/estimates/:estimateId",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const actorId = req.headers["x-actor-id"] as string ?? "system";
+      await api.estimate.delete(orgId, param(req, "estimateId"), actorId);
+      return { deleted: true };
+    })
+  );
+
+  // ── Workflow routes ───────────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/workflows",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.workflow.create(orgId, param(req, "businessId"), body as Parameters<Api["workflow"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/workflows",
+    wrap(async (req) => api.workflow.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => api.workflow.getById(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => api.workflow.update(await requireOrgId(req), param(req, "workflowId"), validate(UpdateWorkflowSchema, req.body)))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/:workflowId/publish",
+    wrap(async (req) => api.workflow.publish(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/:workflowId/archive",
+    wrap(async (req) => api.workflow.archive(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.delete(
+    "/businesses/:businessId/workflows/:workflowId",
+    wrap(async (req) => {
+      await api.workflow.delete(await requireOrgId(req), param(req, "workflowId"));
+      return { deleted: true };
+    })
+  );
+
+  // ── WorkflowRun routes ────────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/workflow-runs",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.workflowRun.create(orgId, param(req, "businessId"), body as Parameters<Api["workflowRun"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/workflow-runs",
+    wrap(async (req) => api.workflowRun.listByBusiness(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflow-runs/:runId",
+    wrap(async (req) => api.workflowRun.getById(await requireOrgId(req), param(req, "runId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/:workflowId/runs",
+    wrap(async (req) => api.workflowRun.listByWorkflow(await requireOrgId(req), param(req, "workflowId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/complete",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { result, durationMs } = req.body as { result: Record<string, unknown>; durationMs: number };
+      return api.workflowRun.complete(orgId, param(req, "runId"), result, durationMs);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/fail",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { errorMessage, durationMs } = req.body as { errorMessage: string; durationMs: number };
+      return api.workflowRun.fail(orgId, param(req, "runId"), errorMessage, durationMs);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflow-runs/:runId/cancel",
+    wrap(async (req) => api.workflowRun.cancel(await requireOrgId(req), param(req, "runId")))
+  );
+
+  // ── WorkflowExecution (Loop runtime) routes ──────────────────────────────
+  v1.get(
+    "/businesses/:businessId/workflows/executions",
+    wrap(async (req) => api.workflowExecution.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/executions/:executionId",
+    wrap(async (req) => api.workflowExecution.get(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/cancel",
+    wrap(async (req) => api.workflowExecution.cancel(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/retry",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { steps = [] } = req.body as { steps?: unknown[] };
+      return api.workflowExecution.retry(orgId, param(req, "businessId"), param(req, "executionId"), steps as Parameters<typeof api.workflowExecution.retry>[3]);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/approve-checkpoint",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { steps = [] } = req.body as { steps?: unknown[] };
+      return api.workflowExecution.approveCheckpoint(orgId, param(req, "businessId"), param(req, "executionId"), steps as Parameters<typeof api.workflowExecution.approveCheckpoint>[3]);
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/workflows/executions/:executionId/reject-checkpoint",
+    wrap(async (req) => api.workflowExecution.rejectCheckpoint(await requireOrgId(req), param(req, "businessId"), param(req, "executionId")))
+  );
+  v1.get(
+    "/businesses/:businessId/workflows/dead-letters",
+    wrap(async (req) => api.workflowExecution.listDeadLetters(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  // ── LifecyclePolicy routes ────────────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/lifecycle-policies",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = req.body as Record<string, unknown>;
+      return api.lifecyclePolicy.create(orgId, param(req, "businessId"), body as Parameters<Api["lifecyclePolicy"]["create"]>[2]);
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/lifecycle-policies",
+    wrap(async (req) => api.lifecyclePolicy.list(await requireOrgId(req), param(req, "businessId")))
+  );
+  v1.get(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => api.lifecyclePolicy.getById(await requireOrgId(req), param(req, "policyId")))
+  );
+  v1.patch(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => api.lifecyclePolicy.update(await requireOrgId(req), param(req, "policyId"), validate(UpdateLifecyclePolicySchema, req.body)))
+  );
+  v1.delete(
+    "/businesses/:businessId/lifecycle-policies/:policyId",
+    wrap(async (req) => {
+      await api.lifecyclePolicy.delete(await requireOrgId(req), param(req, "policyId"));
+      return { deleted: true };
+    })
+  );
+
   // ── Analytics routes ──────────────────────────────────────────────────────
   v1.get(
     "/businesses/:businessId/analytics",
     wrap(async (req) => api.analytics.getBusinessAnalytics(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  // ── Search Platform routes ─────────────────────────────────────────────────
+  v1.post(
+    "/search",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { entity, businessId, q, filters, sort, cursor, limit } = req.body as {
+        entity: string;
+        businessId?: string;
+        q?: string;
+        filters?: unknown[];
+        sort?: unknown[];
+        cursor?: string;
+        limit?: number;
+      };
+      return api.search.search({ orgId, entity, businessId, q, filters: filters as never, sort: sort as never, cursor, limit });
+    })
+  );
+  v1.get(
+    "/search/entities",
+    wrap(async (_req) => ({ entities: api.search.registeredEntities() }))
+  );
+  v1.post(
+    "/search/saved",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(SaveSearchSchema, req.body);
+      return api.search.saveSearch({ ...body, orgId } as Parameters<typeof api.search.saveSearch>[0]);
+    })
+  );
+  v1.get(
+    "/search/saved",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { businessId, entity } = req.query as { businessId: string; entity: string };
+      return api.search.listSavedSearches(orgId, businessId, entity);
+    })
+  );
+  v1.post(
+    "/search/saved/:savedSearchId/run",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { businessId, cursor } = req.query as { businessId: string; cursor?: string };
+      return api.search.runSavedSearch(param(req, "savedSearchId"), orgId, businessId, cursor);
+    })
+  );
+
+  // ── Communication Platform routes ─────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/notifications/send",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const errors = validateSafe(SendNotificationSchema, req.body);
+      if (errors) throw new ApiError(400, "validation_error", errors.join("; "));
+      const body = validate(SendNotificationSchema, req.body);
+      return api.communication.send({ orgId, businessId: param(req, "businessId"), recipient: body.recipient, channel: body.channel as never, templateKey: body.templateKey, subject: body.subject, body: body.body });
+    })
+  );
+  v1.post(
+    "/businesses/:businessId/notifications/send-template",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { templateKey, recipient, vars } = req.body as { templateKey: string; recipient: string; vars: Record<string, unknown> };
+      return api.communication.sendTemplate(templateKey, orgId, param(req, "businessId"), recipient, vars ?? {});
+    })
+  );
+  v1.get(
+    "/businesses/:businessId/notifications/history",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const limit = req.query["limit"] ? Number(req.query["limit"]) : 50;
+      return api.communication.deliveryHistory(orgId, param(req, "businessId"), limit);
+    })
+  );
+  v1.get(
+    "/notifications/templates",
+    wrap(async (_req) => ({ templates: api.communication.listTemplates() }))
+  );
+
+  // ── Wave 2: Estimate enhancements ─────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/estimates/:estimateId/view",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.estimate.markViewed(orgId, param(req, "estimateId"));
+    })
+  );
+
+  // ── Wave 2: Invoice enhancements ──────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/view",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.invoice.markViewed(orgId, param(req, "invoiceId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/cancel",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { reason } = req.body as { reason?: string };
+      return api.invoice.cancel(orgId, param(req, "invoiceId"), reason);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/invoices/:invoiceId/refund",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { amountCents, reason } = req.body as { amountCents: number; reason?: string };
+      if (typeof amountCents !== "number") throw new ApiError(400, "missing_amount", "amountCents is required");
+      return api.invoice.refund(orgId, param(req, "invoiceId"), amountCents, reason);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/invoices/overdue",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.invoice.listOverdue(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Payment enhancements ──────────────────────────────────────────
+  v1.post(
+    "/businesses/:businessId/payments/:paymentId/refund",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { amountCents, reason } = req.body as { amountCents: number; reason?: string };
+      if (typeof amountCents !== "number") throw new ApiError(400, "missing_amount", "amountCents is required");
+      return api.payment.refundPayment(orgId, param(req, "paymentId"), amountCents, reason);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/invoices/:invoiceId/payments",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.payment.listByInvoice(orgId, param(req, "invoiceId"));
+    })
+  );
+
+  // ── Wave 2: Collections routes ─────────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/collections",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.listCases(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/remind",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.sendReminder(orgId, param(req, "caseId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/escalate",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { notes } = req.body as { notes?: string };
+      return api.collections.escalate(orgId, param(req, "caseId"), notes);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/payment-plan",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { installmentCents, frequencyDays } = req.body as { installmentCents: number; frequencyDays: number };
+      if (typeof installmentCents !== "number") throw new ApiError(400, "missing_installment", "installmentCents is required");
+      if (typeof frequencyDays !== "number") throw new ApiError(400, "missing_frequency", "frequencyDays is required");
+      return api.collections.createPaymentPlan(orgId, param(req, "caseId"), installmentCents, frequencyDays);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/resolve",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.resolve(orgId, param(req, "caseId"));
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/:caseId/write-off",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const { reason } = req.body as { reason: string };
+      if (!reason) throw new ApiError(400, "missing_reason", "reason is required");
+      return api.collections.writeOff(orgId, param(req, "caseId"), reason);
+    })
+  );
+
+  v1.post(
+    "/businesses/:businessId/collections/run-cycle",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.collections.runCollectionsCycle(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Revenue Intelligence routes ──────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/revenue",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.compute(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/revenue/forecast",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const months = req.query["months"] ? Number(req.query["months"]) : undefined;
+      return api.revenueIntelligence.cashFlowForecast(orgId, param(req, "businessId"), months);
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/revenue/leakage",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.revenueLeakage(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/cashflow",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueIntelligence.cashFlowForecast(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: AI Revenue Intelligence routes ────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/ai/revenue/pricing",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.pricingRecommendation(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/collections-risk",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.collectionsRisk(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/cash-flow-alerts",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.cashFlowAlert(orgId, param(req, "businessId"));
+    })
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai/revenue/cross-sell",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueAi.crossSellOpportunities(orgId, param(req, "businessId"));
+    })
+  );
+
+  // ── Wave 2: Executive Dashboard ───────────────────────────────────────────
+  v1.get(
+    "/businesses/:businessId/revenue-dashboard",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.revenueDashboard.get(orgId, param(req, "businessId"));
+    })
   );
 
   app.use("/api/v1", v1);

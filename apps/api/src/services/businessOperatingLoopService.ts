@@ -178,10 +178,20 @@ export function createBusinessOperatingLoopService(repos: RepositoryContainer): 
             occurredAt: completedAt,
           });
 
+          // Auto-approve the top supporting recommendation to trigger workflow generation
+          const topRecommendationId = generated.supportingRecommendationIds?.[0] ?? null;
+          if (topRecommendationId) {
+            await repos.eventBus.publish({
+              type: "business.recommendation.approved",
+              payload: { orgId, businessId, recommendationId: topRecommendationId },
+              occurredAt: completedAt,
+            });
+          }
+
           phases.push({
             phase: "plan",
             status: "completed",
-            summary: `Created execution plan "${plan.planKey}" (${plan.durationDays} days, ${plan.tasks.length} tasks).`,
+            summary: `Created execution plan "${plan.planKey}" (${plan.durationDays} days, ${plan.tasks.length} tasks). Workflow generation triggered.`,
           });
         } else {
           phases.push({

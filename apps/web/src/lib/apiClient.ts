@@ -367,6 +367,35 @@ export const apiClient = {
       { method: "POST", body: JSON.stringify({}) }
     ),
 
+  cancelWorkflow: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/cancel`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  approveCheckpoint: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/approve-checkpoint`,
+      { method: "POST", body: JSON.stringify({ steps: [] }) }
+    ),
+
+  rejectCheckpoint: (orgId: string, businessId: string, executionId: string) =>
+    request<{ id: string; state: string }>(
+      orgId, `/businesses/${businessId}/workflows/executions/${executionId}/reject-checkpoint`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
+  listDeadLetters: (orgId: string, businessId: string) =>
+    request<Array<{
+      id: string;
+      workflowExecutionId: string;
+      stepKey: string;
+      taskType: string;
+      errorMessage: string;
+      attempts: number;
+      createdAt: string;
+    }>>(orgId, `/businesses/${businessId}/workflows/dead-letters`),
+
   // Scenarios
   listScenarios: (orgId: string, businessId: string) =>
     request<Array<{
@@ -609,4 +638,28 @@ export const apiClient = {
       pendingApprovalsCount: number;
       revenueAtRisk: number;
     }>(orgId, "/dashboard"),
+
+  // AI Workforce
+  listAiEmployees: (orgId: string) =>
+    request<Array<{
+      key: string; label: string; description: string; mission: string;
+      capabilities: string[]; lifecycle: string; kpis: string[];
+    }>>(orgId, "/ai-workforce"),
+
+  promoteEmployee: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: "available"; promotedAt: string }>(
+      orgId, `/ai-workforce/${employeeKey}/promote`,
+      { method: "POST" }
+    ),
+
+  deprecateEmployee: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: "deprecated"; deprecatedAt: string }>(
+      orgId, `/ai-workforce/${employeeKey}/deprecate`,
+      { method: "POST" }
+    ),
+
+  getEmployeeLifecycle: (orgId: string, employeeKey: string) =>
+    request<{ employeeKey: string; lifecycle: string }>(
+      orgId, `/ai-workforce/${employeeKey}/lifecycle`
+    ),
 };

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git log --oneline origin/claude/boss-repo-normalization-n1jdx5 2>/dev/null | grep -qi 'RC6\\|workflow.generat\\|rc6' && echo '{\"continue\": true}' || echo '{\"continue\": false, \"stopReason\": \"Goal not yet met: RC6 Workflow Generation must be complete and pushed before stopping.\"}'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

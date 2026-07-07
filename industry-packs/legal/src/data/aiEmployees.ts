@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 export function seedAiEmployees(): void {
   aiEmployeeRegistry.register({
     key: "legal_managing_partner",
-    label: "Managing Partner AI",
+    label: "MASON",
+    description: "Managing Partner Advisor — oversees firm operations, attorney performance, and strategic direction",
     mission: "Oversee firm operations, attorney performance, and strategic direction",
     responsibilities: [
       "Monitor billable hours and realization rates",
@@ -21,7 +22,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "legal_billing_manager",
-    label: "Billing Manager AI",
+    label: "BEAU",
+    description: "Billing Manager — maximizes revenue collection through disciplined billing and AR management",
     mission: "Maximize revenue collection through disciplined billing and AR management",
     responsibilities: [
       "Generate and review monthly invoices",
@@ -39,7 +41,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "legal_client_relations_manager",
-    label: "Client Relations Manager AI",
+    label: "CLAIRE",
+    description: "Client Relations Manager — ensures client satisfaction and drives retention through proactive communication",
     mission: "Ensure client satisfaction and drive retention through proactive communication",
     responsibilities: [
       "Send matter status updates",
@@ -57,7 +60,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "legal_business_developer",
-    label: "Business Development AI",
+    label: "DEVON",
+    description: "Business Developer — drives new client acquisition through referral networks and targeted marketing",
     mission: "Drive new client acquisition through referral network and marketing",
     responsibilities: [
       "Track referral sources and conversion rates",
@@ -75,7 +79,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "legal_operations_manager",
-    label: "Operations Manager AI",
+    label: "OTTO",
+    description: "Operations Manager — streamlines matter workflows, deadlines, and firm-wide operational efficiency",
     mission: "Streamline matter workflows, deadlines, and firm-wide operational efficiency",
     responsibilities: [
       "Monitor matter deadlines and court dates",
@@ -93,7 +98,8 @@ export function seedAiEmployees(): void {
 
   aiEmployeeRegistry.register({
     key: "legal_intake_coordinator",
-    label: "Intake Coordinator AI",
+    label: "IRIS",
+    description: "Intake Coordinator — converts inquiries into retained clients through responsive and systematic intake",
     mission: "Convert inquiries into retained clients through responsive, systematic intake",
     responsibilities: [
       "Respond to new client inquiries within 24 hours",

@@ -9,6 +9,7 @@
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "test:rls": "vitest run --config vitest.rls.config.ts",
     "clean": "rm -rf dist",
     "migrate": "tsx src/migrate.ts",
     "validate-migrations": "tsx src/validateMigrations.ts"

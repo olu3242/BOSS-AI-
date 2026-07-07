@@ -400,6 +400,7 @@ export interface WorkflowExecutionRepository {
     errorMessage: string | null,
     completedAt: string | null
   ): Promise<WorkflowExecution>;
+  findById(orgId: string, id: string): Promise<WorkflowExecution | null>;
   listByBusinessId(orgId: string, businessId: string): Promise<WorkflowExecution[]>;
 }
 
@@ -596,4 +597,143 @@ export interface EventLogRepository {
   listByOrgId(orgId: string, limit?: number): Promise<EventLogEntry[]>;
   listByCorrelationId(correlationId: string): Promise<EventLogEntry[]>;
   listSince(since: string, limit?: number): Promise<EventLogEntry[]>;
+  /** Delete events older than retentionDays (default 90). Scoped to orgId if provided. Returns deleted row count. */
+  compact(retentionDays?: number, orgId?: string): Promise<number>;
+}
+
+export interface ExecutionMetricsEntry {
+  id: string;
+  orgId: string;
+  workflowId: string;
+  windowStart: string;
+  windowEnd: string;
+  runCount: number;
+  successCount: number;
+  failureCount: number;
+  p50Ms: number | null;
+  p95Ms: number | null;
+  p99Ms: number | null;
+  minMs: number | null;
+  maxMs: number | null;
+  computedAt: string;
+}
+
+export interface ExecutionMetricsRepository {
+  /** Return the latest metrics snapshot for a workflow within the given org. */
+  latestForWorkflow(orgId: string, workflowId: string): Promise<ExecutionMetricsEntry | null>;
+  /** Return all metrics entries for an org ordered by window_start desc. */
+  listByOrg(orgId: string, limit?: number): Promise<ExecutionMetricsEntry[]>;
+  /** Upsert a metrics entry (used by in-memory and test helpers). */
+  upsert(entry: Omit<ExecutionMetricsEntry, "id" | "computedAt">): Promise<ExecutionMetricsEntry>;
+  /** Call the DB refresh function; returns number of rows upserted. */
+  refresh(windowHours?: number): Promise<number>;
+}
+
+export interface LeadRepository {
+  create(input: Omit<import('@boss/types').Lead, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>): Promise<import('@boss/types').Lead>;
+  findById(orgId: string, id: string): Promise<import('@boss/types').Lead | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<import('@boss/types').Lead, 'id' | 'orgId' | 'businessId' | 'createdAt' | 'updatedAt' | 'deletedAt'>>): Promise<import('@boss/types').Lead>;
+  updateStatus(orgId: string, id: string, status: import('@boss/types').LeadStatus): Promise<import('@boss/types').Lead>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<import('@boss/types').Lead[]>;
+  listByStatus(orgId: string, businessId: string, status: import('@boss/types').LeadStatus): Promise<import('@boss/types').Lead[]>;
+  search(orgId: string, businessId: string, query: string): Promise<import('@boss/types').Lead[]>;
+}
+
+// ─── RC3 Batch 1 Repository Interfaces ───────────────────────────────────────
+
+import type {
+  StaffMember,
+  Opportunity,
+  OpportunityStage,
+  Conversation,
+  StandaloneTask,
+  Document,
+  Estimate,
+} from "@boss/types";
+
+export interface StaffRepository {
+  create(input: Omit<StaffMember, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<StaffMember>;
+  findById(orgId: string, id: string): Promise<StaffMember | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<StaffMember, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<StaffMember>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<StaffMember[]>;
+  findByUserId(orgId: string, userId: string): Promise<StaffMember | null>;
+}
+
+export interface OpportunityRepository {
+  create(input: Omit<Opportunity, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Opportunity>;
+  findById(orgId: string, id: string): Promise<Opportunity | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Opportunity, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Opportunity>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Opportunity[]>;
+  listByStage(orgId: string, businessId: string, stage: OpportunityStage): Promise<Opportunity[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Opportunity[]>;
+}
+
+export interface ConversationRepository {
+  create(input: Omit<Conversation, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Conversation>;
+  findById(orgId: string, id: string): Promise<Conversation | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Conversation, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Conversation>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string, limit?: number): Promise<Conversation[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Conversation[]>;
+}
+
+export interface TaskRepository {
+  create(input: Omit<StandaloneTask, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<StandaloneTask>;
+  findById(orgId: string, id: string): Promise<StandaloneTask | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<StandaloneTask, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<StandaloneTask>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<StandaloneTask[]>;
+  listChildren(orgId: string, parentTaskId: string): Promise<StandaloneTask[]>;
+}
+
+export interface DocumentRepository {
+  create(input: Omit<Document, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Document>;
+  findById(orgId: string, id: string): Promise<Document | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Document, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Document>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Document[]>;
+}
+
+export interface EstimateRepository {
+  create(input: Omit<Estimate, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Estimate>;
+  findById(orgId: string, id: string): Promise<Estimate | null>;
+  findByNumber(orgId: string, estimateNumber: string): Promise<Estimate | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Estimate, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Estimate>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Estimate[]>;
+  listByCustomer(orgId: string, customerId: string): Promise<Estimate[]>;
+}
+
+// ─── Wave 1A: Business Operating Loop ────────────────────────────────────────
+
+import type { Workflow, WorkflowRun, LifecyclePolicy } from "@boss/types";
+
+export interface WorkflowRepository {
+  create(input: Omit<Workflow, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<Workflow>;
+  findById(orgId: string, id: string): Promise<Workflow | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<Workflow, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<Workflow>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<Workflow[]>;
+  listByTriggerEvent(orgId: string, triggerEvent: string): Promise<Workflow[]>;
+}
+
+export interface WorkflowRunRepository {
+  create(input: Omit<WorkflowRun, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<WorkflowRun>;
+  findById(orgId: string, id: string): Promise<WorkflowRun | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<WorkflowRun, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<WorkflowRun>;
+  listByBusinessId(orgId: string, businessId: string): Promise<WorkflowRun[]>;
+  listByWorkflow(orgId: string, workflowId: string): Promise<WorkflowRun[]>;
+  listByObject(orgId: string, businessObjectType: string, businessObjectId: string): Promise<WorkflowRun[]>;
+}
+
+export interface LifecyclePolicyRepository {
+  create(input: Omit<LifecyclePolicy, "id" | "createdAt" | "updatedAt" | "deletedAt">): Promise<LifecyclePolicy>;
+  findById(orgId: string, id: string): Promise<LifecyclePolicy | null>;
+  update(orgId: string, id: string, patch: Partial<Omit<LifecyclePolicy, "id" | "orgId" | "businessId" | "createdAt" | "updatedAt" | "deletedAt">>): Promise<LifecyclePolicy>;
+  delete(orgId: string, id: string): Promise<void>;
+  listByBusinessId(orgId: string, businessId: string): Promise<LifecyclePolicy[]>;
+  listByEvent(orgId: string, businessId: string, fromEvent: string): Promise<LifecyclePolicy[]>;
 }

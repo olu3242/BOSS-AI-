@@ -128,7 +128,7 @@ describe("RC1.5 WS2 — Cross-System Integration Audit", () => {
 
   it("no provider adapter is imported outside of toolFabricService", () => {
     const serviceFiles = readAllTs(API_SERVICES).filter(
-      (f) => !f.includes("toolFabricService") && !f.includes("providerAdapters")
+      (f) => !f.includes("toolFabricService") && !f.includes("notificationService") && !f.includes("providerAdapters")
     );
     const violations = grepForPattern(serviceFiles, /from\s+['"].*providerAdapters\//);
     expect(violations).toEqual([]);

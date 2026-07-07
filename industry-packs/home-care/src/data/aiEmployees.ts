@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "hcare_care_coordinator",
-    label: "Care Coordinator",
+    label: "CADE",
+    description: "Care Coordinator — manages client care plans, caregiver matching, and satisfaction monitoring",
     mission: "Oversee the full client care journey from intake through ongoing service delivery, ensuring every client receives the right level of care from a matched caregiver.",
     responsibilities: [
       "Conduct client assessments and develop individualized care plans",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "hcare_caregiver_manager",
-    label: "Caregiver Manager",
+    label: "GAEL",
+    description: "Caregiver Manager — recruits, develops, and retains caregivers to maintain a skilled and reliable workforce",
     mission: "Recruit, develop, and retain high-quality caregivers to ensure a reliable and skilled workforce that meets client care demands.",
     responsibilities: [
       "Monitor caregiver attendance and reliability metrics",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "hcare_client_relations_manager",
-    label: "Client Relations Manager",
+    label: "CLAIRE",
+    description: "Client Relations Manager — builds lasting relationships with clients and families, resolves concerns proactively",
     mission: "Build lasting relationships with clients and their families, resolve concerns proactively, and ensure high satisfaction that drives retention and referrals.",
     responsibilities: [
       "Conduct routine client and family satisfaction check-ins",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "hcare_scheduling_coordinator",
-    label: "Scheduling Coordinator",
+    label: "SKYE",
+    description: "Scheduling Coordinator — maximizes caregiver utilization and ensures every scheduled visit is covered",
     mission: "Maximize caregiver utilization and ensure every scheduled visit is covered by maintaining an optimized, conflict-free care schedule.",
     responsibilities: [
       "Build and maintain weekly caregiver schedules",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "hcare_billing_coordinator",
-    label: "Billing Coordinator",
+    label: "BRETT",
+    description: "Billing Coordinator — ensures accurate and timely invoicing for all completed visits",
     mission: "Ensure accurate and timely invoicing for all completed visits, minimizing billing errors and maximizing revenue capture.",
     responsibilities: [
       "Generate invoices from verified completed visit records",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "hcare_quality_assurance_manager",
-    label: "Quality Assurance Manager",
+    label: "QUINN",
+    description: "Quality Assurance Manager — upholds care quality and regulatory compliance through audits and incident reviews",
     mission: "Uphold the highest standards of care quality and regulatory compliance by conducting regular audits, incident reviews, and caregiver quality checks.",
     responsibilities: [
       "Audit visit documentation for completeness and accuracy",

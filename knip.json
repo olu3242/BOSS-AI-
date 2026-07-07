@@ -12,6 +12,10 @@
       "entry": ["eslint.base.js"],
       "project": ["*.js"]
     },
+    "packages/db": {
+      "entry": ["src/index.ts", "src/migrate.ts", "src/validateMigrations.ts", "src/__tests__/*.test.ts", "src/__tests__/rlsSetup.ts"],
+      "project": ["src/**/*.ts", "vitest.*.config.ts"]
+    },
     "packages/*": {
       "project": ["src/**/*.ts"]
     },

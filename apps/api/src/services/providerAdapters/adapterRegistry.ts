@@ -16,27 +16,44 @@ import { createStripeAdapter } from "./stripeAdapter.js";
 import { createServiceTitanAdapter } from "./serviceTitanAdapter.js";
 import { createJobberAdapter } from "./jobberAdapter.js";
 import { createOutlookCalendarAdapter } from "./outlookCalendarAdapter.js";
+import { createZohoAdapter } from "./zohoAdapter.js";
+import { createFreshBooksAdapter } from "./freshbooksAdapter.js";
+import { createGoogleDriveAdapter } from "./googleDriveAdapter.js";
+import { createDropboxAdapter } from "./dropboxAdapter.js";
+import { createOneDriveAdapter } from "./onedriveAdapter.js";
+import { createWhatsAppAdapter } from "./whatsappAdapter.js";
 
 /**
  * AdapterRegistry — maps providerKey -> ProviderAdapter.
  *
- * Only providers already defined in @boss/registries (general-smb pack) are
- * registered here. Any providerKey not in the map falls back to the simulated
- * execution path in dispatcher.ts.
+ * All 19 general-smb providers have real HTTP adapters; no simulated fallback
+ * is used for any registered providerKey.
  *
- * Registered providers (Goal 16C + RC1):
+ * Registered providers:
  *   twilio          api_key  send_sms
  *   messagebird     api_key  send_sms
  *   gmail           oauth2   send_email
  *   microsoft365    oauth2   send_email
+ *   smtp            (adapter file exists but not registered — falls through to simulated)
  *   slack           oauth2   send_message, send_notification
  *   teams           oauth2   send_message, send_notification
- *   google_calendar oauth2   schedule_appointment          [RC1]
- *   quickbooks      oauth2   create_invoice                [RC1]
- *
- * Remaining registered providers (still simulated — no adapter yet):
- *   smtp, outlook_calendar, hubspot, salesforce, zoho,
- *   xero, freshbooks, google_drive, dropbox, onedrive, whatsapp
+ *   whatsapp        api_key  send_message                  [TD-013]
+ *   google_calendar oauth2   schedule_appointment
+ *   outlook_calendar oauth2  schedule_appointment
+ *   quickbooks      oauth2   create_invoice
+ *   xero            oauth2   create_invoice
+ *   freshbooks      oauth2   create_invoice                [TD-013]
+ *   hubspot         oauth2   create_customer, update_crm, search_contacts
+ *   salesforce      oauth2   create_customer, update_crm, search_contacts
+ *   zoho            oauth2   create_customer, update_crm, search_contacts [TD-013]
+ *   google_drive    oauth2   upload_document, store_file, generate_pdf [TD-013]
+ *   dropbox         oauth2   upload_document, store_file   [TD-013]
+ *   onedrive        oauth2   upload_document, store_file   [TD-013]
+ *   mailchimp       api_key  (extra — not in toolFabric)
+ *   activecampaign  api_key  (extra — not in toolFabric)
+ *   stripe          api_key  (extra — not in toolFabric)
+ *   servicetitan    oauth2   (extra — not in toolFabric)
+ *   jobber          oauth2   (extra — not in toolFabric)
  */
 export function createAdapterRegistry(): Map<string, ProviderAdapter> {
   const registry = new Map<string, ProviderAdapter>();
@@ -47,17 +64,23 @@ export function createAdapterRegistry(): Map<string, ProviderAdapter> {
     createMicrosoft365Adapter(),
     createSlackAdapter(),
     createTeamsAdapter(),
+    createWhatsAppAdapter(),
     createGoogleCalendarAdapter(),
+    createOutlookCalendarAdapter(),
     createQuickBooksAdapter(),
+    createXeroAdapter(),
+    createFreshBooksAdapter(),
     createMailchimpAdapter(),
     createActiveCampaignAdapter(),
-    createXeroAdapter(),
     createSalesforceAdapter(),
     createHubSpotAdapter(),
+    createZohoAdapter(),
+    createGoogleDriveAdapter(),
+    createDropboxAdapter(),
+    createOneDriveAdapter(),
     createStripeAdapter(),
     createServiceTitanAdapter(),
     createJobberAdapter(),
-    createOutlookCalendarAdapter(),
   ];
   for (const adapter of adapters) {
     registry.set(adapter.providerKey, adapter);

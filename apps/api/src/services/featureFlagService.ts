@@ -1,19 +1,17 @@
 /**
- * Feature flags — environment-variable-driven, no external service required.
+ * Feature flags — DB-backed with env-var fallback.
  *
- * Flags are read at startup from process.env. Changing a flag requires
- * redeployment (or env var update via Doppler/Vercel). This is sufficient
- * for RC1 — a runtime flag service can be added in RC3 if needed.
- *
- * Usage:
- *   if (flags.isEnabled("ai_workforce")) { ... }
+ * Resolution order: DB row (org-scoped) → DB row (global) → env var → default.
+ * Falls back gracefully to env-only when DB is unavailable.
  *
  * Flag env var convention: BOSS_FLAG_<UPPERCASE_FLAG_KEY>=true|false
  * Example: BOSS_FLAG_AI_WORKFORCE=true
  */
+import { query } from "@boss/db";
 
 export interface FeatureFlagService {
-  isEnabled(flag: FeatureFlag): boolean;
+  isEnabled(flag: FeatureFlag, orgId?: string): Promise<boolean>;
+  isEnabledSync(flag: FeatureFlag): boolean;
   getAll(): Record<FeatureFlag, boolean>;
 }
 
@@ -36,19 +34,45 @@ const FLAG_DEFAULTS: Record<FeatureFlag, boolean> = {
   executive_briefs: true,
 };
 
+function fromEnv(flag: FeatureFlag): boolean | undefined {
+  const envKey = `BOSS_FLAG_${flag.toUpperCase()}`;
+  const envValue = process.env[envKey];
+  if (envValue === undefined) return undefined;
+  return envValue === "true" || envValue === "1";
+}
+
 export function createFeatureFlagService(): FeatureFlagService {
-  function isEnabled(flag: FeatureFlag): boolean {
-    const envKey = `BOSS_FLAG_${flag.toUpperCase()}`;
-    const envValue = process.env[envKey];
-    if (envValue === undefined) return FLAG_DEFAULTS[flag];
-    return envValue === "true" || envValue === "1";
+  function isEnabledSync(flag: FeatureFlag): boolean {
+    const env = fromEnv(flag);
+    return env !== undefined ? env : FLAG_DEFAULTS[flag];
+  }
+
+  async function isEnabled(flag: FeatureFlag, orgId?: string): Promise<boolean> {
+    try {
+      if (orgId) {
+        const rows = await query<{ enabled: boolean }>(
+          `SELECT enabled FROM feature_flags WHERE flag_key = $1 AND org_id = $2 AND deleted_at IS NULL LIMIT 1`,
+          [flag, orgId]
+        );
+        if (rows[0]) return rows[0].enabled;
+      }
+      const rows = await query<{ enabled: boolean }>(
+        `SELECT enabled FROM feature_flags WHERE flag_key = $1 AND org_id IS NULL AND deleted_at IS NULL LIMIT 1`,
+        [flag]
+      );
+      if (rows[0]) return rows[0].enabled;
+    } catch {
+      // DB unavailable — fall through to env/default
+    }
+    return isEnabledSync(flag);
   }
 
   return {
     isEnabled,
+    isEnabledSync,
     getAll() {
       return Object.fromEntries(
-        (Object.keys(FLAG_DEFAULTS) as FeatureFlag[]).map((f) => [f, isEnabled(f)])
+        (Object.keys(FLAG_DEFAULTS) as FeatureFlag[]).map((f) => [f, isEnabledSync(f)])
       ) as Record<FeatureFlag, boolean>;
     },
   };

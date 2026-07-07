@@ -92,6 +92,8 @@ import {
   type KpiReadingRepository,
   type BusinessGoalRepository,
   type ExecutiveBriefingRepository,
+  type ExecutionMetricsRepository,
+  type ExecutionMetricsEntry,
 } from "../types.js";
 
 function stamp(): Pick<Business, "createdAt" | "updatedAt" | "deletedAt"> {
@@ -656,6 +658,10 @@ export function createInMemoryWorkflowExecutionRepository(): WorkflowExecutionRe
       executions.set(id, updated);
       return updated;
     },
+    async findById(orgId, id) {
+      const e = executions.get(id);
+      return e && e.orgId === orgId && !e.deletedAt ? e : null;
+    },
     async listByBusinessId(orgId, businessId) {
       return Array.from(executions.values())
         .filter((e) => e.orgId === orgId && e.businessId === businessId && !e.deletedAt)
@@ -947,6 +953,18 @@ export function createInMemoryEventLogRepository(): EventLogRepository {
     },
     async listSince(since, limit = 500) {
       return entries.filter((e) => e.occurredAt >= since).slice(0, limit);
+    },
+    async compact(retentionDays = 90, orgId) {
+      const cutoff = new Date(Date.now() - retentionDays * 86_400_000).toISOString();
+      let deleted = 0;
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const e = entries[i]!;
+        if (e.occurredAt < cutoff && (orgId === undefined || e.orgId === orgId)) {
+          entries.splice(i, 1);
+          deleted++;
+        }
+      }
+      return deleted;
     },
   };
 }
@@ -1492,3 +1510,43 @@ export function createInMemoryExecutiveBriefingRepository(): ExecutiveBriefingRe
     },
   };
 }
+
+export function createInMemoryExecutionMetricsRepository(): ExecutionMetricsRepository {
+  const store = new Map<string, ExecutionMetricsEntry>();
+
+  function key(orgId: string, workflowId: string, windowStart: string, windowEnd: string) {
+    return `${orgId}:${workflowId}:${windowStart}:${windowEnd}`;
+  }
+
+  return {
+    async latestForWorkflow(orgId, workflowId) {
+      return Array.from(store.values())
+        .filter((e) => e.orgId === orgId && e.workflowId === workflowId)
+        .sort((a, b) => b.windowStart.localeCompare(a.windowStart))[0] ?? null;
+    },
+
+    async listByOrg(orgId, limit = 100) {
+      return Array.from(store.values())
+        .filter((e) => e.orgId === orgId)
+        .sort((a, b) => b.windowStart.localeCompare(a.windowStart))
+        .slice(0, limit);
+    },
+
+    async upsert(entry) {
+      const existing = store.get(key(entry.orgId, entry.workflowId, entry.windowStart, entry.windowEnd));
+      const record: ExecutionMetricsEntry = {
+        id: existing?.id ?? randomUUID(),
+        ...entry,
+        computedAt: new Date().toISOString(),
+      };
+      store.set(key(entry.orgId, entry.workflowId, entry.windowStart, entry.windowEnd), record);
+      return record;
+    },
+
+    async refresh(_windowHours = 24) {
+      // In-memory: no workflow_runs source to aggregate from — return 0 (noop)
+      return 0;
+    },
+  };
+}
+

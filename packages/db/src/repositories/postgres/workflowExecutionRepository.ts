@@ -70,6 +70,13 @@ export function createPostgresWorkflowExecutionRepository(): WorkflowExecutionRe
       );
       return toExecution(firstRow(rows));
     },
+    async findById(orgId, id) {
+      const rows = await query<Row>(
+        `SELECT * FROM workflow_executions WHERE org_id = $1 AND id = $2 AND deleted_at IS NULL`,
+        [orgId, id]
+      );
+      return rows[0] ? toExecution(rows[0]) : null;
+    },
     async listByBusinessId(orgId, businessId) {
       const rows = await query<Row>(
         `SELECT * FROM workflow_executions WHERE org_id = $1 AND business_id = $2 AND deleted_at IS NULL ORDER BY started_at DESC`,

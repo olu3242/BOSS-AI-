@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "rest_general_manager",
-    label: "General Manager",
+    label: "GRAY",
+    description: "General Manager — owns restaurant profitability, team performance, and guest experience",
     mission: "Own overall restaurant performance: profitability, team, guest experience, and compliance.",
     responsibilities: [
       "Review prime cost % weekly and set corrective action targets",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "rest_kitchen_manager",
-    label: "Kitchen Manager",
+    label: "KNOX",
+    description: "Kitchen Manager — controls food cost, maintains quality, and runs a safe and efficient back-of-house",
     mission: "Control food cost, maintain food quality, and run a safe and efficient back-of-house operation.",
     responsibilities: [
       "Track food cost % daily and weekly against target",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "rest_floor_manager",
-    label: "Floor Manager",
+    label: "FLORA",
+    description: "Floor Manager — delivers exceptional guest experience, maximizes table turns, and drives upsell revenue",
     mission: "Deliver an exceptional guest experience, maximize table turns, and drive revenue through upsell excellence.",
     responsibilities: [
       "Manage seating, waitlist, and table assignment during service",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "rest_reservations_coordinator",
-    label: "Reservations Coordinator",
+    label: "ROSA",
+    description: "Reservations Coordinator — maximizes dining room occupancy by managing reservations and filling cancellations",
     mission: "Maximize dining room occupancy by managing reservations, minimizing no-shows, and filling cancellations.",
     responsibilities: [
       "Accept and confirm reservations across all channels",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "rest_revenue_manager",
-    label: "Revenue Manager",
+    label: "ROMAN",
+    description: "Revenue Manager — optimizes revenue across dining room, bar, private events, and delivery to maximize RevPASH",
     mission: "Optimize revenue across dining room, bar, private events, and delivery channels to maximize RevPASH.",
     responsibilities: [
       "Analyze RevPASH by service period and day part",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "rest_guest_experience_coordinator",
-    label: "Guest Experience Coordinator",
+    label: "GRACE",
+    description: "Guest Experience Coordinator — builds guest loyalty through reputation management, feedback, and VIP recognition",
     mission: "Build long-term guest loyalty through proactive reputation management, feedback collection, and VIP recognition.",
     responsibilities: [
       "Monitor and respond to all online reviews within 24 hours",

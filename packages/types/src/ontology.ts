@@ -131,8 +131,19 @@ export type LeadStatus = "new" | "contacted" | "qualified" | "converted" | "lost
 export interface Lead extends TenantScoped, Timestamped {
   id: ID;
   businessId: ID;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
   source: string;
   status: LeadStatus;
+  assignedTo: string | null;
+  notes: string | null;
+  tags: string[];
+  estimatedValue: number | null;
+  convertedCustomerId: string | null;
+  qualifiedAt: string | null;
+  convertedAt: string | null;
 }
 
 export interface Vendor extends TenantScoped, Timestamped {
@@ -694,7 +705,15 @@ export type ExecutionState =
   | "rolled_back"
   | "timed_out";
 
-export type TaskType = "ai" | "manual" | "scheduled" | "tool";
+export type TaskType =
+  | "ai"
+  | "manual"
+  | "scheduled"
+  | "tool"
+  | "notification.send_sms"
+  | "notification.send_email"
+  | "notification.send_internal"
+  | "audit.record";
 
 export interface WorkflowExecution extends TenantScoped, Timestamped {
   id: ID;
@@ -1123,4 +1142,355 @@ export interface ExecutiveBriefingRecord extends TenantScoped, Timestamped {
   periodStart: string;
   periodEnd: string;
   generatedAt: string;
+}
+
+// ─── Staff ────────────────────────────────────────────────────────────────────
+
+export type StaffStatus = 'active' | 'inactive' | 'on_leave';
+
+export interface StaffMember extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  role: string;
+  department: string | null;
+  status: StaffStatus;
+  hireDate: string | null;
+  tags: string[];
+  notes: string | null;
+}
+
+// ─── Opportunities ────────────────────────────────────────────────────────────
+
+export type OpportunityStage =
+  | 'prospecting'
+  | 'qualification'
+  | 'proposal'
+  | 'negotiation'
+  | 'closed_won'
+  | 'closed_lost';
+
+export interface Opportunity extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  leadId: ID | null;
+  title: string;
+  stage: OpportunityStage;
+  valueCents: number;
+  currency: string;
+  probability: number;
+  expectedCloseDate: string | null;
+  assignedTo: string | null;
+  source: string | null;
+  notes: string | null;
+  tags: string[];
+}
+
+// ─── Conversations ────────────────────────────────────────────────────────────
+
+export type ConversationChannel = 'email' | 'sms' | 'phone' | 'chat' | 'in_person' | 'other';
+export type ConversationDirection = 'inbound' | 'outbound';
+export type ConversationStatus = 'open' | 'resolved' | 'archived';
+export type ConversationSentiment = 'positive' | 'neutral' | 'negative';
+
+export interface Conversation extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  channel: ConversationChannel;
+  direction: ConversationDirection;
+  subject: string | null;
+  body: string;
+  status: ConversationStatus;
+  assignedTo: string | null;
+  sentiment: ConversationSentiment | null;
+  occurredAt: string;
+}
+
+// ─── Tasks (Standalone, enriched) ────────────────────────────────────────────
+
+export type StandaloneTaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done' | 'cancelled';
+export type StandaloneTaskPriority = 'low' | 'normal' | 'high' | 'urgent';
+
+export interface StandaloneTask extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  description: string | null;
+  status: StandaloneTaskStatus;
+  priority: StandaloneTaskPriority;
+  assignedTo: string | null;
+  dueAt: string | null;
+  completedAt: string | null;
+  parentTaskId: ID | null;
+  tags: string[];
+}
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+export type DocumentType = 'contract' | 'proposal' | 'report' | 'template' | 'other';
+export type DocumentStatus = 'draft' | 'review' | 'approved' | 'signed' | 'archived';
+
+export interface Document extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  documentType: DocumentType;
+  status: DocumentStatus;
+  storagePath: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  version: number;
+  tags: string[];
+}
+
+// ─── Estimates ────────────────────────────────────────────────────────────────
+
+export type EstimateStatus =
+  | 'draft'
+  | 'sent'
+  | 'viewed'
+  | 'accepted'
+  | 'declined'
+  | 'expired'
+  | 'converted';
+
+export interface Estimate extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  customerId: ID | null;
+  estimateNumber: string;
+  status: EstimateStatus;
+  lineItems: Array<{
+    description: string;
+    quantity: number;
+    unitPriceCents: number;
+    totalCents: number;
+  }>;
+  subtotalCents: number;
+  taxCents: number;
+  discountCents: number;
+  totalCents: number;
+  currency: string;
+  validUntil: string | null;
+  convertedInvoiceId: ID | null;
+  notes: string | null;
+}
+
+// ─── Wave 1A: Business Operating Loop ────────────────────────────────────────
+
+export type WorkflowStatus = 'draft' | 'published' | 'archived';
+
+export interface Workflow extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  name: string;
+  description: string | null;
+  triggerEvent: string;
+  status: WorkflowStatus;
+  version: number;
+  configuration: Record<string, unknown>;
+  ownerId: string | null;
+  tags: string[];
+}
+
+export type WorkflowRunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface WorkflowRun extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  workflowId: string;
+  status: WorkflowRunStatus;
+  triggeredBy: string;
+  businessObjectType: string | null;
+  businessObjectId: string | null;
+  runtimeExecutionId: string | null;
+  result: Record<string, unknown> | null;
+  errorMessage: string | null;
+  durationMs: number | null;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
+export type LifecyclePolicyMode = 'automatic' | 'approval_required' | 'manual';
+
+export interface LifecyclePolicyAction {
+  type: 'create_entity' | 'trigger_workflow' | 'notify';
+  entity?: string;
+  workflowKey?: string;
+  defaults?: Record<string, unknown>;
+  notificationTemplate?: string;
+}
+
+export interface LifecyclePolicy extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: string;
+  name: string;
+  fromEvent: string;
+  mode: LifecyclePolicyMode;
+  action: LifecyclePolicyAction;
+  conditions: Record<string, unknown>;
+  approvalRoles: string[];
+  priority: number;
+  isActive: boolean;
+}
+
+// ─── Wave 1C: Intelligence Convergence ───────────────────────────────────────
+
+// Business Objectives (OKR layer)
+
+export type ObjectiveStatus = "draft" | "active" | "at_risk" | "achieved" | "missed" | "cancelled";
+export type ObjectivePriority = "critical" | "high" | "medium" | "low";
+
+export interface KeyResult extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  objectiveId: ID;
+  title: string;
+  description: string | null;
+  kpiKey: string | null;
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+  confidence: number;
+  dueDate: string;
+  completedAt: string | null;
+  owner: string | null;
+}
+
+export interface BusinessObjective extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  title: string;
+  description: string;
+  status: ObjectiveStatus;
+  priority: ObjectivePriority;
+  owner: string | null;
+  dueDate: string | null;
+  completedAt: string | null;
+  progress: number;
+  confidence: number;
+  dependencies: ID[];
+  linkedKpis: string[];
+  linkedRecommendationIds: ID[];
+  keyResults: KeyResult[];
+}
+
+// Canonical KPI Platform
+
+export type KpiTrend = "improving" | "stable" | "declining" | "unknown";
+export type KpiStatus = "on_track" | "at_risk" | "critical" | "unknown";
+
+export interface KpiDataPoint {
+  value: number;
+  measuredAt: string;
+}
+
+export interface KpiForecast {
+  period: string;
+  predictedValue: number;
+  confidence: number;
+  low: number;
+  high: number;
+}
+
+export interface CanonicalKpi extends TenantScoped {
+  businessId: ID;
+  kpiKey: string;
+  label: string;
+  unit: string;
+  owner: string | null;
+  source: string;
+  currentValue: number | null;
+  previousValue: number | null;
+  targetValue: number | null;
+  trend: KpiTrend;
+  status: KpiStatus;
+  confidence: number;
+  history: KpiDataPoint[];
+  forecasts: KpiForecast[];
+  linkedObjectiveIds: ID[];
+  measuredAt: string | null;
+}
+
+// Decision Engine
+
+export type DecisionEngineOutputType = "recommendation" | "risk" | "forecast" | "root_cause" | "priority";
+
+export interface DecisionEngineOutput {
+  id: ID;
+  orgId: ID;
+  businessId: ID;
+  type: DecisionEngineOutputType;
+  title: string;
+  summary: string;
+  priority: ObjectivePriority;
+  expectedImpact: string;
+  confidence: number;
+  riskScore: number;
+  linkedKpis: string[];
+  linkedObjectiveIds: ID[];
+  linkedRecommendationId: ID | null;
+  source: string;
+  createdAt: string;
+  expiresAt: string | null;
+}
+
+export interface DecisionEngineResult {
+  orgId: ID;
+  businessId: ID;
+  runAt: string;
+  outputs: DecisionEngineOutput[];
+  topPriority: DecisionEngineOutput | null;
+  riskProfile: "low" | "medium" | "high" | "critical";
+  healthSummary: string;
+}
+
+// Learning Platform
+
+export type LearningSignalType =
+  | "recommendation.accepted"
+  | "recommendation.rejected"
+  | "recommendation.deferred"
+  | "workflow.outcome.positive"
+  | "workflow.outcome.negative"
+  | "forecast.accurate"
+  | "forecast.inaccurate"
+  | "decision.roi_positive"
+  | "decision.roi_negative";
+
+export interface LearningSignal extends TenantScoped, Timestamped {
+  id: ID;
+  businessId: ID;
+  type: LearningSignalType;
+  entityId: ID;
+  entityType: string;
+  feedback: string | null;
+  magnitude: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface LearningInsight {
+  kpiKey: string | null;
+  category: string;
+  pattern: string;
+  confidence: number;
+  sampleSize: number;
+  recommendation: string;
+}
+
+export interface LearningReport {
+  orgId: ID;
+  businessId: ID;
+  generatedAt: string;
+  totalSignals: number;
+  acceptanceRate: number;
+  forecastAccuracy: number;
+  positiveWorkflowRate: number;
+  insights: LearningInsight[];
 }

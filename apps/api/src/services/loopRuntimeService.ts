@@ -1,20 +1,15 @@
-import { createLoopRuntime, createTaskHandlerRegistry, type LoopRuntime, type StepEntry } from "@boss/loop";
-import { decideAiEmployeeAction, runAiEmployeeInference } from "@boss/mcp";
-import { aiEmployeeRegistry } from "@boss/registries";
+import { createLoopRuntime, createTaskHandlerRegistry, CHECKPOINT_SENTINEL, type LoopRuntime, type StepEntry } from "@boss/loop";
+import { decideAiEmployeeAction } from "@boss/mcp";
 import { nowIso } from "@boss/shared";
 import type { WorkflowExecution } from "@boss/types";
 import type { RepositoryContainer } from "../container.js";
 import type { ToolFabricService } from "./toolFabricService.js";
+import { createAiEmployeeExecutionService } from "./aiEmployeeExecutionService.js";
+import { createNotificationService } from "./notificationService.js";
 
 export interface LoopRuntimeService {
   execute(orgId: string, businessId: string, workflowKey: string, steps: StepEntry[]): Promise<WorkflowExecution>;
-}
-
-function notImplementedHandler(taskType: string) {
-  return async () => ({
-    output: null,
-    errorMessage: `No handler implemented yet for task type "${taskType}"`,
-  });
+  resume(orgId: string, businessId: string, executionId: string, steps: StepEntry[]): Promise<WorkflowExecution>;
 }
 
 export function createLoopRuntimeService(
@@ -22,6 +17,7 @@ export function createLoopRuntimeService(
   toolFabric: ToolFabricService
 ): LoopRuntimeService {
   const handlers = createTaskHandlerRegistry();
+  const aiEmployeeExecution = createAiEmployeeExecutionService(repos);
 
   handlers.register("tool", async (input) => {
     const { orgId, businessId, capabilityKey, roleKey, requestedBy, ...rest } = input as {
@@ -56,6 +52,7 @@ export function createLoopRuntimeService(
     } & Record<string, unknown>;
 
     try {
+      // Pre-flight: policy decision (escalate before inference if policy says so)
       const decision = decideAiEmployeeAction({ employeeKey, capabilityKey, requestedBy, input: rest });
 
       if (decision.kind === "escalate") {
@@ -67,43 +64,23 @@ export function createLoopRuntimeService(
         return { output: null, errorMessage: decision.reason };
       }
 
-      // Run LLM inference to enrich the tool input with AI reasoning (TD-024)
-      const employee = aiEmployeeRegistry.get(employeeKey);
-      let toolInput = decision.toolRequest.input;
-      let inferenceReasoning: string | undefined;
-      if (employee && process.env.ANTHROPIC_API_KEY) {
-        const inference = await runAiEmployeeInference({
-          employeeKey,
-          employeeRole: employee.label,
-          employeeMission: employee.mission ?? "",
-          capabilityKey,
-          taskInput: rest,
-        }).catch(() => null);
-        if (inference) {
-          toolInput = inference.enrichedInput;
-          inferenceReasoning = inference.reasoning;
-        }
-      }
-
-      await repos.eventBus.publish({
-        type: "ai_employee.inference.completed",
-        payload: { orgId, businessId, employeeKey, capabilityKey, reasoning: inferenceReasoning ?? null },
-        occurredAt: nowIso(),
+      // Full execution pipeline: prompt resolution + memory + LLM inference + escalation eval
+      const result = await aiEmployeeExecution.execute({
+        orgId,
+        businessId,
+        employeeKey,
+        capabilityKey,
+        requestedBy,
+        taskInput: rest,
       });
+
+      if (result.escalated) {
+        return { output: null, errorMessage: result.escalationReason ?? "Escalated by AI employee" };
+      }
 
       const execution = await toolFabric.requestTool(orgId, businessId, {
         ...decision.toolRequest,
-        input: toolInput,
-      });
-
-      await repos.memoryRecords.upsert({
-        orgId,
-        businessId,
-        ownerType: "agent",
-        ownerId: employeeKey,
-        key: `last_execution:${capabilityKey}`,
-        value: { toolExecutionId: execution.id, status: execution.status, occurredAt: nowIso() },
-        expiresAt: null,
+        input: result.enrichedInput,
       });
 
       await repos.eventBus.publish({
@@ -118,8 +95,94 @@ export function createLoopRuntimeService(
     }
   });
 
-  handlers.register("manual", notImplementedHandler("manual"));
-  handlers.register("scheduled", notImplementedHandler("scheduled"));
+  handlers.register("manual", async (input) => {
+    const { orgId, businessId, workflowExecutionId, stepKey, description } = input as {
+      orgId: string; businessId?: string; workflowExecutionId?: string; stepKey?: string; description?: string;
+    };
+    await repos.eventBus.publish({
+      type: "workflow.approval.requested",
+      payload: {
+        orgId,
+        businessId: businessId ?? "",
+        workflowExecutionId: workflowExecutionId ?? "",
+        stepKey: stepKey ?? "",
+        description: description ?? "Human approval required",
+        requestedAt: nowIso(),
+      },
+      occurredAt: nowIso(),
+    });
+    return { output: null, errorMessage: CHECKPOINT_SENTINEL };
+  });
+  handlers.register("scheduled", async (input) => {
+    const { orgId, businessId, scheduleKey, cronExpression, description } = input as {
+      orgId: string; businessId?: string; scheduleKey: string; cronExpression?: string; description?: string;
+    };
+    await repos.eventBus.publish({
+      type: "workflow.scheduled",
+      payload: {
+        orgId,
+        businessId: businessId ?? "",
+        scheduleKey,
+        cronExpression: cronExpression ?? "",
+        description: description ?? "",
+        scheduledAt: nowIso(),
+      },
+      occurredAt: nowIso(),
+    });
+    return { output: { scheduleKey, scheduledAt: nowIso() }, errorMessage: null };
+  });
+
+  // ── Notification action handlers ──────────────────────────────────────────
+  const notifications = createNotificationService(repos);
+
+  handlers.register("notification.send_sms", async (input) => {
+    const { orgId, businessId, recipient, body, templateKey } = input as {
+      orgId: string; businessId?: string; recipient: string; body: string; templateKey?: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "sms", recipient, body, templateKey });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: result.status === "failed" ? result.errorMessage : null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  handlers.register("notification.send_email", async (input) => {
+    const { orgId, businessId, recipient, subject, body, templateKey } = input as {
+      orgId: string; businessId?: string; recipient: string; subject?: string; body: string; templateKey?: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "email", recipient, subject, body, templateKey });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: result.status === "failed" ? result.errorMessage : null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  handlers.register("notification.send_internal", async (input) => {
+    const { orgId, businessId, recipient, body } = input as {
+      orgId: string; businessId?: string; recipient: string; body: string;
+    };
+    try {
+      const result = await notifications.send({ orgId, businessId, channel: "internal", recipient, body });
+      return { output: { deliveryId: result.deliveryId, status: result.status }, errorMessage: null };
+    } catch (error) {
+      return { output: null, errorMessage: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  // ── Audit/measurement handlers ────────────────────────────────────────────
+  handlers.register("audit.record", async (input) => {
+    const { orgId, businessId, action, actor, resourceType, resourceId } = input as {
+      orgId: string; businessId?: string; action: string; actor: string; resourceType: string; resourceId: string;
+    };
+    await repos.eventBus.publish({
+      type: "platform.audit.recorded",
+      payload: { orgId, businessId, action, actor, resourceType, resourceId, occurredAt: nowIso() },
+      occurredAt: nowIso(),
+    });
+    return { output: { recorded: true }, errorMessage: null };
+  });
 
   const runtime: LoopRuntime = createLoopRuntime(
     {
@@ -135,6 +198,9 @@ export function createLoopRuntimeService(
   return {
     execute(orgId, businessId, workflowKey, steps) {
       return runtime.execute(orgId, businessId, workflowKey, steps);
+    },
+    resume(orgId, businessId, executionId, steps) {
+      return runtime.resume(orgId, businessId, executionId, steps);
     },
   };
 }

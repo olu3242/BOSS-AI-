@@ -1,3 +1,10 @@
+/**
+ * @owner   Business Context (user-initiated diagnostic sessions)
+ * @trigger Manual — user initiates from workspace UI or MRI completion
+ * @output  Structured BusinessDiagnosticReport across areas (marketing, ops, finance, …)
+ * @note    Distinct from rootCauseEngine: this produces a full diagnostic report.
+ *          rootCauseEngine produces a causal chain for BTE automated loop use only.
+ */
 import type {
   BusinessDiagnosticReport,
   DiagnosticAnalysisInput,

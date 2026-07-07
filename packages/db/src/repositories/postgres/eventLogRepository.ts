@@ -68,5 +68,13 @@ export function createPostgresEventLogRepository(): EventLogRepository {
       );
       return rows.map(toEntry);
     },
+
+    async compact(retentionDays = 90, orgId) {
+      const rows = await query<{ compact_event_log: number }>(
+        `SELECT compact_event_log($1, $2) AS compact_event_log`,
+        [retentionDays, orgId ?? null]
+      );
+      return rows[0]?.compact_event_log ?? 0;
+    },
   };
 }

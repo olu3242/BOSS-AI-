@@ -131,3 +131,294 @@ export const UpdateGoalStatusSchema = z.object({
   status: z.enum(["active", "paused", "completed", "cancelled"]),
 });
 
+// ══════════════════════════════════════════════════════════════════════════════
+// VALIDATION PLATFORM — Canonical entity schemas
+// Every entity's create/update/patch input is validated here.
+// Controllers import from this module — never define schemas inline.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Shared primitives ─────────────────────────────────────────────────────────
+
+const uuid = z.string().uuid();
+const isoDate = z.string().datetime({ offset: true });
+const money = z.number().int().nonnegative(); // cents
+const phone = z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number");
+const email = z.string().email();
+const nonEmpty = z.string().min(1);
+
+// ── Customer ──────────────────────────────────────────────────────────────────
+
+export const CreateCustomerSchema = z.object({
+  name: z.string().min(1).max(200),
+  email: email.optional().nullable(),
+  phone: phone.optional().nullable(),
+  address: z.string().max(500).optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  metadata: z.record(z.unknown()).default({}),
+});
+
+export const UpdateCustomerSchema = CreateCustomerSchema.partial();
+
+// ── Lead ──────────────────────────────────────────────────────────────────────
+
+export const CreateLeadSchema = z.object({
+  name: z.string().min(1).max(200),
+  email: email.optional().nullable(),
+  phone: phone.optional().nullable(),
+  source: z.string().min(1).max(100).optional().nullable(),
+  estimatedValue: money.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+  metadata: z.record(z.unknown()).default({}),
+  userId: uuid.optional(),
+});
+
+export const UpdateLeadSchema = CreateLeadSchema.omit({ userId: true }).partial();
+
+// ── Opportunity ───────────────────────────────────────────────────────────────
+
+export const CreateOpportunitySchema = z.object({
+  customerId: uuid.optional().nullable(),
+  leadId: uuid.optional().nullable(),
+  title: z.string().min(1).max(300),
+  value: money.optional().nullable(),
+  probability: z.number().min(0).max(100).optional().nullable(),
+  expectedCloseDate: isoDate.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});
+
+export const UpdateOpportunitySchema = CreateOpportunitySchema.partial();
+
+// ── Estimate ──────────────────────────────────────────────────────────────────
+
+export const CreateEstimateSchema = z.object({
+  customerId: uuid,
+  title: z.string().min(1).max(300),
+  lineItems: z.array(z.object({
+    description: z.string().min(1).max(500),
+    quantity: z.number().positive(),
+    unitPriceCents: money,
+  })).min(1),
+  validUntil: isoDate.optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+});
+
+export const UpdateEstimateSchema = CreateEstimateSchema.partial();
+
+// ── Appointment ───────────────────────────────────────────────────────────────
+
+export const CreateAppointmentSchema = z.object({
+  customerId: uuid,
+  title: z.string().min(1).max(300),
+  scheduledAt: isoDate,
+  durationMinutes: z.number().int().positive().default(60),
+  location: z.string().max(500).optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+  assignedTo: uuid.optional().nullable(),
+});
+
+export const UpdateAppointmentSchema = CreateAppointmentSchema.partial();
+
+// ── Job ────────────────────────────────────────────────────────────────────────
+
+export const CreateJobSchema = z.object({
+  customerId: uuid,
+  title: z.string().min(1).max(300),
+  description: z.string().max(2000).optional().nullable(),
+  scheduledAt: isoDate.optional().nullable(),
+  estimatedDurationHours: z.number().positive().optional().nullable(),
+  assignedTo: uuid.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});
+
+export const UpdateJobSchema = CreateJobSchema.partial();
+
+// ── Invoice ───────────────────────────────────────────────────────────────────
+
+export const CreateInvoiceSchema = z.object({
+  customerId: uuid,
+  jobId: uuid.optional().nullable(),
+  lineItems: z.array(z.object({
+    description: z.string().min(1).max(500),
+    quantity: z.number().positive(),
+    unitPriceCents: money,
+  })).min(1),
+  dueDate: isoDate.optional().nullable(),
+  notes: z.string().max(2000).optional().nullable(),
+});
+
+export const UpdateInvoiceSchema = CreateInvoiceSchema.partial();
+
+// ── Payment ───────────────────────────────────────────────────────────────────
+
+export const CreatePaymentSchema = z.object({
+  invoiceId: uuid,
+  amountCents: money,
+  method: z.enum(["cash", "card", "bank_transfer", "check", "other"]),
+  reference: z.string().max(200).optional().nullable(),
+  paidAt: isoDate.optional(),
+});
+
+// ── Review ────────────────────────────────────────────────────────────────────
+
+export const CreateReviewSchema = z.object({
+  customerId: uuid,
+  jobId: uuid.optional().nullable(),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().max(2000).optional().nullable(),
+  platform: z.string().max(100).optional().nullable(),
+});
+
+// ── Staff ─────────────────────────────────────────────────────────────────────
+
+export const CreateStaffSchema = z.object({
+  userId: uuid,
+  name: z.string().min(1).max(200),
+  role: z.string().min(1).max(100),
+  email: email.optional().nullable(),
+  phone: phone.optional().nullable(),
+  skills: z.array(z.string()).default([]),
+});
+
+export const UpdateStaffSchema = CreateStaffSchema.omit({ userId: true }).partial();
+
+// ── Task ──────────────────────────────────────────────────────────────────────
+
+export const CreateTaskSchema = z.object({
+  title: z.string().min(1).max(300),
+  description: z.string().max(2000).optional().nullable(),
+  assignedTo: uuid.optional().nullable(),
+  dueAt: isoDate.optional().nullable(),
+  priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+  relatedEntityType: z.string().max(100).optional().nullable(),
+  relatedEntityId: uuid.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});
+
+export const UpdateTaskSchema = CreateTaskSchema.partial();
+
+// ── Document ─────────────────────────────────────────────────────────────────
+
+export const CreateDocumentSchema = z.object({
+  title: z.string().min(1).max(300),
+  type: z.string().min(1).max(100),
+  content: z.string().optional().nullable(),
+  relatedEntityType: z.string().max(100).optional().nullable(),
+  relatedEntityId: uuid.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});
+
+export const UpdateDocumentSchema = CreateDocumentSchema.partial();
+
+// ── Conversation ──────────────────────────────────────────────────────────────
+
+export const CreateConversationSchema = z.object({
+  customerId: uuid.optional().nullable(),
+  channel: z.enum(["sms", "email", "chat", "voice", "internal"]),
+  subject: z.string().max(300).optional().nullable(),
+  participants: z.array(uuid).default([]),
+});
+
+export const AddMessageSchema = z.object({
+  body: nonEmpty,
+  senderId: uuid,
+  metadata: z.record(z.unknown()).default({}),
+});
+
+// ── Workflow ──────────────────────────────────────────────────────────────────
+
+export const CreateWorkflowSchema = z.object({
+  name: z.string().min(1).max(300),
+  description: z.string().max(2000).optional().nullable(),
+  triggerEvent: nonEmpty,
+  configuration: z.record(z.unknown()).default({}),
+  ownerId: uuid.optional().nullable(),
+  tags: z.array(z.string()).default([]),
+});
+
+export const UpdateWorkflowSchema = CreateWorkflowSchema.partial();
+
+// ── LifecyclePolicy ───────────────────────────────────────────────────────────
+
+export const LifecyclePolicyActionSchema = z.object({
+  type: z.enum(["create_entity", "trigger_workflow", "notify"]),
+  entity: z.string().optional(),
+  workflowKey: z.string().optional(),
+  defaults: z.record(z.unknown()).optional(),
+  notificationTemplate: z.string().optional(),
+});
+
+export const CreateLifecyclePolicySchema = z.object({
+  name: z.string().min(1).max(300),
+  fromEvent: nonEmpty,
+  mode: z.enum(["automatic", "approval_required", "manual"]),
+  action: LifecyclePolicyActionSchema,
+  conditions: z.record(z.unknown()).default({}),
+  approvalRoles: z.array(z.string()).default([]),
+  priority: z.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+});
+
+export const UpdateLifecyclePolicySchema = CreateLifecyclePolicySchema.partial();
+
+// ── Search ────────────────────────────────────────────────────────────────────
+
+export const SearchQuerySchema = z.object({
+  entity: nonEmpty,
+  businessId: uuid.optional(),
+  q: z.string().optional(),
+  filters: z.array(z.object({
+    field: nonEmpty,
+    operator: z.enum(["eq", "neq", "gt", "gte", "lt", "lte", "in", "contains", "startsWith"]),
+    value: z.unknown(),
+  })).optional(),
+  sort: z.array(z.object({
+    field: nonEmpty,
+    direction: z.enum(["asc", "desc"]),
+  })).optional(),
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+});
+
+export const SaveSearchSchema = z.object({
+  businessId: uuid.optional(),
+  entity: nonEmpty,
+  name: z.string().min(1).max(200),
+  query: SearchQuerySchema.omit({ entity: true }),
+  createdBy: uuid,
+});
+
+// ── Notification ──────────────────────────────────────────────────────────────
+
+export const SendNotificationSchema = z.object({
+  businessId: uuid.optional(),
+  channel: z.enum(["sms", "email", "slack", "teams", "push", "voice", "internal"]),
+  recipient: nonEmpty,
+  subject: z.string().max(500).optional(),
+  body: nonEmpty,
+  templateKey: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+// ── Validation helpers ────────────────────────────────────────────────────────
+
+/** Validate arbitrary data against a schema (non-HTTP context). */
+export function validateData<S extends z.ZodTypeAny>(schema: S, data: unknown): z.infer<S> {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    const msg = result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; ");
+    throw Object.assign(new Error(`Validation failed: ${msg}`), { code: "VALIDATION_ERROR", statusCode: 400 });
+  }
+  return result.data as z.infer<S>;
+}
+
+/** Check without throwing — returns error messages or null. */
+export function validateSafe<S extends z.ZodTypeAny>(schema: S, data: unknown): string[] | null {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`);
+  }
+  return null;
+}
+
+// Re-export z for consumers
+export { z };

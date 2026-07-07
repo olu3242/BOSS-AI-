@@ -101,7 +101,7 @@ describe("AiWorkforceService", () => {
 
   it("getEmployee returns correct entry", () => {
     const e = svc.getEmployee("bte_orchestrator");
-    expect(e?.label).toBe("BTE Orchestrator");
+    expect(e?.label).toBe("ORION");
   });
 
   it("getEmployee returns null for unknown key", () => {

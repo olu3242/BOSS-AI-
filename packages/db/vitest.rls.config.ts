@@ -1,0 +1,15 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    include: ["src/__tests__/rls.test.ts"],
+    globalSetup: ["src/__tests__/rlsSetup.ts"],
+    testTimeout: 120_000,
+    hookTimeout: 120_000,
+    pool: "forks",
+    poolOptions: {
+      forks: { singleFork: true },
+    },
+    reporter: "verbose",
+  },
+});

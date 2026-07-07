@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "clean_operations_manager",
-    label: "Operations Manager",
+    label: "OSCAR",
+    description: "Operations Manager — monitors cleaner utilization, job completion, and daily scheduling",
     mission: "Oversee daily cleaning operations, monitor KPIs, optimize routes, and ensure every job is completed to the highest standard.",
     responsibilities: [
       "Monitor cleaner utilization and job completion rates daily",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "clean_scheduling_coordinator",
-    label: "Scheduling Coordinator",
+    label: "SCOUT",
+    description: "Scheduling Coordinator — maximizes cleaner productivity by building optimal routes and filling gaps",
     mission: "Maximize cleaner productivity by building optimal schedules, managing recurring bookings, and filling gaps quickly.",
     responsibilities: [
       "Build and optimize daily cleaner routes",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "clean_quality_inspector",
-    label: "Quality Inspector",
+    label: "QUINN",
+    description: "Quality Inspector — conducts inspections, scores performance, and drives continuous improvement",
     mission: "Ensure every job meets quality standards by conducting inspections, scoring performance, and driving continuous improvement.",
     responsibilities: [
       "Conduct post-job quality inspections",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "clean_customer_relations_manager",
-    label: "Customer Relations Manager",
+    label: "CLEO",
+    description: "Customer Relations Manager — resolves complaints, requests reviews, and re-engages at-risk clients",
     mission: "Build lasting client relationships by delivering exceptional communication, resolving complaints, and proactively re-engaging at-risk clients.",
     responsibilities: [
       "Send booking confirmations and day-before reminders",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "clean_supply_coordinator",
-    label: "Supply Coordinator",
+    label: "SAM",
+    description: "Supply Coordinator — monitors inventory levels and manages procurement to keep teams stocked",
     mission: "Ensure cleaning teams always have the supplies they need by monitoring inventory and managing procurement efficiently.",
     responsibilities: [
       "Track supply inventory levels across teams and locations",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "clean_team_supervisor",
-    label: "Team Supervisor",
+    label: "THEO",
+    description: "Team Supervisor — monitors cleaner performance, provides coaching, and enforces quality standards",
     mission: "Lead and support cleaning teams by monitoring performance, providing coaching, and ensuring standards are met on every job.",
     responsibilities: [
       "Monitor individual cleaner performance scores",

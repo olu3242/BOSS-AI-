@@ -10,6 +10,7 @@ import { seedSemanticViewRegistry } from "../registries/semanticView.js";
 import { seedBusinessQueryRegistry } from "../registries/businessQuery.js";
 
 export { seedEventRegistry } from "./events.js";
+export { seedAiEmployees } from "./aiEmployees.js";
 export { seedPolicyRegistry } from "./policies.js";
 export {
   seedGovernanceRegistry,

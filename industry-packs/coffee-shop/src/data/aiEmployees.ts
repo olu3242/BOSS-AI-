@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "cafe_cafe_manager",
-    label: "Café Manager",
+    label: "CORA",
+    description: "Café Manager — monitors daily throughput, labor cost, and operational KPIs",
     mission: "Oversee all café operations, monitor daily performance KPIs, and ensure the team delivers an exceptional customer experience at full throughput.",
     responsibilities: [
       "Monitor daily transactions, labor cost, and waste metrics",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "cafe_head_barista",
-    label: "Head Barista",
+    label: "BRIX",
+    description: "Head Barista — maintains beverage quality, coaches barista staff, and minimizes waste",
     mission: "Maintain beverage quality standards, coach barista staff, and optimize preparation workflows to maximize throughput and minimize waste.",
     responsibilities: [
       "Set and enforce recipe and quality standards for all beverages",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "cafe_inventory_coordinator",
-    label: "Inventory Coordinator",
+    label: "IVO",
+    description: "Inventory Coordinator — manages par levels, purchase orders, and supplier deliveries",
     mission: "Ensure the café never runs out of key ingredients by managing par levels, generating purchase orders, and tracking supplier deliveries.",
     responsibilities: [
       "Check stock levels against par thresholds each morning",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "cafe_customer_experience_manager",
-    label: "Customer Experience Manager",
+    label: "CLEM",
+    description: "Customer Experience Manager — monitors satisfaction, responds to reviews, and drives loyalty program adoption",
     mission: "Build lasting customer loyalty by monitoring satisfaction signals, responding to reviews, and driving loyalty program adoption.",
     responsibilities: [
       "Monitor online review ratings across all platforms daily",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "cafe_marketing_coordinator",
-    label: "Marketing Coordinator",
+    label: "MACE",
+    description: "Marketing Coordinator — drives traffic and average ticket size through promotions and loyalty campaigns",
     mission: "Drive customer traffic and increase average ticket size through targeted promotions, seasonal campaigns, and loyalty incentives.",
     responsibilities: [
       "Plan and execute monthly promotional campaigns",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "cafe_shift_supervisor",
-    label: "Shift Supervisor",
+    label: "SHAW",
+    description: "Shift Supervisor — manages staff assignments, monitors throughput, and handles customer escalations",
     mission: "Ensure each shift runs smoothly by managing staff assignments, maintaining quality during peak periods, and closing the till accurately.",
     responsibilities: [
       "Brief staff on daily targets and promotions at shift start",

@@ -3,7 +3,8 @@ import { aiEmployeeRegistry } from "@boss/registries";
 const aiEmployees = [
   {
     key: "lscape_operations_manager",
-    label: "Operations Manager",
+    label: "LANCE",
+    description: "Operations Manager — monitors crew performance, job completion, and daily field operations",
     mission: "Oversee daily field operations, monitor crew performance, and ensure all jobs are completed on time and to standard.",
     responsibilities: [
       "Monitor daily job completion status across all crews",
@@ -25,7 +26,8 @@ const aiEmployees = [
   },
   {
     key: "lscape_estimator",
-    label: "Estimator",
+    label: "EVAN",
+    description: "Estimator — converts inbound leads into booked jobs through fast, accurate, competitively priced estimates",
     mission: "Convert inbound leads into booked jobs by delivering fast, accurate, and competitively priced estimates.",
     responsibilities: [
       "Review inbound estimate requests within 24 hours",
@@ -47,7 +49,8 @@ const aiEmployees = [
   },
   {
     key: "lscape_crew_dispatcher",
-    label: "Crew Dispatcher",
+    label: "COLE",
+    description: "Crew Dispatcher — optimizes daily crew routes and job assignments to maximize revenue per crew hour",
     mission: "Optimize daily crew routes and job assignments to maximize revenue per crew hour and minimize drive time.",
     responsibilities: [
       "Build daily job schedules and assign crews before 6am",
@@ -69,7 +72,8 @@ const aiEmployees = [
   },
   {
     key: "lscape_customer_relations_manager",
-    label: "Customer Relations Manager",
+    label: "CAMI",
+    description: "Customer Relations Manager — builds loyalty through proactive communication and resolves issues before churn",
     mission: "Build long-term customer loyalty by delivering proactive communication, gathering feedback, and resolving issues before they cause churn.",
     responsibilities: [
       "Send job confirmation messages to customers before scheduled service",
@@ -91,7 +95,8 @@ const aiEmployees = [
   },
   {
     key: "lscape_equipment_coordinator",
-    label: "Equipment Coordinator",
+    label: "ELI",
+    description: "Equipment Coordinator — maintains all equipment, tracks utilization, and prevents job-day breakdowns",
     mission: "Ensure all equipment is maintained, tracked, and available for deployment so crews never lose a job day to a breakdown.",
     responsibilities: [
       "Track maintenance schedules for all equipment",
@@ -113,7 +118,8 @@ const aiEmployees = [
   },
   {
     key: "lscape_seasonal_planner",
-    label: "Seasonal Planner",
+    label: "SAGE",
+    description: "Seasonal Planner — forecasts seasonal demand, optimizes staffing, and identifies off-season revenue opportunities",
     mission: "Prepare the business for each season by forecasting demand, optimizing staffing levels, and identifying off-season revenue opportunities.",
     responsibilities: [
       "Generate seasonal revenue forecasts based on prior-year data",

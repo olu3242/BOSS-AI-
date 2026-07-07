@@ -20,6 +20,14 @@ describe("AI Employee runtime", () => {
       permissions: [],
       escalationRules: [],
       lifecycle: "available",
+      readModels: [],
+      writeModels: [],
+      allowedActions: ["send_communication"],
+      decisionAuthority: "execute",
+      promptTemplateKey: "test.follow-up",
+      memory: { shortTermTtlMinutes: 30, longTermEnabled: false, contextKeys: [] },
+      businessObjectives: [],
+      lifecycleStages: [],
     });
 
     const repos = createInMemoryContainer();
@@ -95,6 +103,14 @@ describe("AI Employee runtime", () => {
       permissions: [],
       escalationRules: [],
       lifecycle: "available",
+      readModels: [],
+      writeModels: [],
+      allowedActions: [],
+      decisionAuthority: "none",
+      promptTemplateKey: "test.phone",
+      memory: { shortTermTtlMinutes: 15, longTermEnabled: false, contextKeys: [] },
+      businessObjectives: [],
+      lifecycleStages: [],
     });
 
     const repos = createInMemoryContainer();

@@ -1,10 +1,23 @@
 import { aiEmployeeRegistry } from "@boss/registries";
 import type { AiEmployeeEntry } from "@boss/registries";
 
-export const aiEmployees = [
+const baseContract = {
+  readModels: [] as string[],
+  writeModels: [] as string[],
+  allowedActions: ["generate_recommendation"] as string[],
+  decisionAuthority: "recommend" as const,
+  promptTemplateKey: "",
+  memory: { shortTermTtlMinutes: 60, longTermEnabled: false, contextKeys: [] as string[] },
+  businessObjectives: [] as string[],
+  lifecycleStages: [] as string[],
+};
+
+export const aiEmployees: AiEmployeeEntry[] = [
   {
+    ...baseContract,
     key: "ceo_advisor",
-    label: "CEO Advisor",
+    label: "APEX",
+    description: "CEO Advisor — surfaces top constraints, recommends priorities, and tracks goal progress",
     mission: "Keep the owner focused on what moves the business forward.",
     responsibilities: ["Surface top constraints", "Recommend priorities", "Track goal progress"],
     capabilities: ["reporting", "operations"],
@@ -12,11 +25,14 @@ export const aiEmployees = [
     kpis: ["business_health_score", "business_growth_score"],
     permissions: ["read:business_health", "read:recommendations"],
     escalationRules: ["escalate_to_owner_on_critical_constraint"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ceo_advisor.advisory",
   },
   {
+    ...baseContract,
     key: "ai_front_desk",
-    label: "AI Front Desk",
+    label: "FAYE",
+    description: "Front Desk Agent — greets and triages every inbound customer interaction, captures leads, and routes to scheduling",
     mission: "Greet and triage every inbound customer interaction.",
     responsibilities: ["Answer inbound messages", "Capture lead details", "Route to scheduling"],
     capabilities: ["communication", "lead_management"],
@@ -24,11 +40,15 @@ export const aiEmployees = [
     kpis: ["lead_response_time"],
     permissions: ["read:leads", "write:leads"],
     escalationRules: ["escalate_to_owner_on_complaint"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_front_desk.triage",
+    decisionAuthority: "execute",
   },
   {
+    ...baseContract,
     key: "ai_follow_up_assistant",
-    label: "AI Follow-Up Assistant",
+    label: "FELIX",
+    description: "Follow-Up Agent — ensures no lead or customer goes without a timely follow-up, re-engages cold pipeline",
     mission: "Ensure no lead or customer goes without a timely follow-up.",
     responsibilities: ["Send follow-up messages", "Re-engage cold leads", "Log outcomes"],
     capabilities: ["lead_management", "communication"],
@@ -36,11 +56,15 @@ export const aiEmployees = [
     kpis: ["lead_response_time", "lead_conversion_rate"],
     permissions: ["read:leads", "write:notifications"],
     escalationRules: ["escalate_after_three_failed_attempts"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_follow_up_assistant.nurture",
+    decisionAuthority: "execute",
   },
   {
+    ...baseContract,
     key: "ai_operations_coordinator",
-    label: "AI Operations Coordinator",
+    label: "OAK",
+    description: "Operations Coordinator — keeps day-to-day operations running without owner intervention",
     mission: "Keep day-to-day operations running without owner intervention.",
     responsibilities: ["Coordinate scheduling", "Track task completion", "Flag bottlenecks"],
     capabilities: ["operations", "scheduling", "task_management"],
@@ -48,11 +72,14 @@ export const aiEmployees = [
     kpis: ["administrative_hours"],
     permissions: ["read:tasks", "write:tasks"],
     escalationRules: ["escalate_on_missed_appointment"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_operations_coordinator.ops",
   },
   {
+    ...baseContract,
     key: "ai_review_manager",
-    label: "AI Review Manager",
+    label: "ROSE",
+    description: "Reputation Agent — grows and protects the business's online reputation through review management",
     mission: "Grow and protect the business's reputation.",
     responsibilities: ["Request reviews", "Monitor review sentiment", "Draft responses"],
     capabilities: ["reviews"],
@@ -60,11 +87,14 @@ export const aiEmployees = [
     kpis: ["review_rating"],
     permissions: ["read:reviews", "write:notifications"],
     escalationRules: ["escalate_on_negative_review"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_review_manager.reputation",
   },
   {
+    ...baseContract,
     key: "ai_collections_assistant",
-    label: "AI Collections Assistant",
+    label: "COLE",
+    description: "Collections Agent — keeps cash flow healthy by chasing outstanding invoices and flagging chronic late payers",
     mission: "Keep cash flow healthy by chasing outstanding invoices.",
     responsibilities: ["Send payment reminders", "Track invoice aging", "Flag chronic late payers"],
     capabilities: ["billing", "finance"],
@@ -72,11 +102,14 @@ export const aiEmployees = [
     kpis: ["outstanding_invoices"],
     permissions: ["read:invoices", "write:notifications"],
     escalationRules: ["escalate_after_30_days_overdue"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_collections_assistant.collections",
   },
   {
+    ...baseContract,
     key: "ai_reporting_analyst",
-    label: "AI Reporting Analyst",
+    label: "REECE",
+    description: "Reporting Analyst — turns raw business data into clear, actionable KPI reports and highlights anomalies",
     mission: "Turn raw business data into clear, actionable reporting.",
     responsibilities: ["Compile KPI reports", "Highlight anomalies", "Maintain business timeline"],
     capabilities: ["reporting"],
@@ -84,11 +117,14 @@ export const aiEmployees = [
     kpis: ["business_health_score"],
     permissions: ["read:kpis", "write:reports"],
     escalationRules: ["escalate_on_kpi_anomaly"],
-    lifecycle: "draft",
+    lifecycle: "available",
+    promptTemplateKey: "ai_reporting_analyst.reporting",
   },
   {
+    ...baseContract,
     key: "bte_orchestrator",
-    label: "BTE Orchestrator",
+    label: "ORION",
+    description: "BTE Orchestrator — runs the daily Business Transformation Engine cycle for every active business",
     mission: "Run the daily Business Transformation Engine cycle for every active business.",
     responsibilities: [
       "Trigger daily health analysis per business",
@@ -102,10 +138,14 @@ export const aiEmployees = [
     permissions: ["read:business_health", "read:recommendations", "write:workflows", "write:audit_log"],
     escalationRules: ["escalate_on_bte_cycle_failure", "escalate_on_three_consecutive_score_drops"],
     lifecycle: "available",
+    promptTemplateKey: "bte_orchestrator.cycle",
+    decisionAuthority: "approve",
   },
   {
+    ...baseContract,
     key: "marketplace_advisor",
-    label: "Marketplace Advisor",
+    label: "MARS",
+    description: "Marketplace Advisor — recommends the right industry packs based on business profile and growth stage",
     mission: "Recommend the right industry packs based on each business's profile and growth stage.",
     responsibilities: [
       "Analyze business DNA and MRI responses",
@@ -119,10 +159,13 @@ export const aiEmployees = [
     permissions: ["read:business_profile", "read:marketplace", "write:recommendations"],
     escalationRules: ["escalate_on_pack_install_failure"],
     lifecycle: "available",
+    promptTemplateKey: "marketplace_advisor.recommendation",
   },
   {
+    ...baseContract,
     key: "onboarding_coach",
-    label: "Onboarding Coach",
+    label: "ONYX",
+    description: "Onboarding Coach — guides every new business through BOSS setup and first value in under 7 days",
     mission: "Guide every new business through BOSS setup and first value in under 7 days.",
     responsibilities: [
       "Prompt completion of MRI questionnaire",
@@ -136,8 +179,9 @@ export const aiEmployees = [
     permissions: ["read:business_profile", "write:notifications", "read:onboarding_status"],
     escalationRules: ["escalate_if_mri_incomplete_after_72h", "escalate_if_no_login_after_48h"],
     lifecycle: "available",
+    promptTemplateKey: "onboarding_coach.setup",
   },
-] as const satisfies readonly AiEmployeeEntry[];
+];
 
 export function seedAiEmployees(): void {
   for (const employee of aiEmployees) {

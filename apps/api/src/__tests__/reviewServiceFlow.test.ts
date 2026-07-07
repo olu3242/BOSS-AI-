@@ -38,9 +38,9 @@ describe("Phase B — Review Service Flow", () => {
     expect(review.status).toBe("pending");
   });
 
-  it("emits review.created event", async () => {
+  it("emits review.received event", async () => {
     const seen: BossEvent[] = [];
-    c.eventBus.subscribe("review.created", (e) => seen.push(e as BossEvent));
+    c.eventBus.subscribe("review.received", (e) => seen.push(e as BossEvent));
 
     const svc = createReviewService(c);
     const review = await svc.createReview(ORG_A, BIZ_A, {

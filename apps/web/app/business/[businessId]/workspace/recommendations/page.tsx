@@ -116,6 +116,7 @@ export default async function RecommendationsPage({ params }: Props) {
                   priority={priority}
                   showActions
                   orgId={orgId}
+                  businessId={businessId}
                 />
               );
             })}
@@ -171,11 +172,13 @@ function RecommendationCard({
   priority,
   showActions = false,
   orgId = "",
+  businessId = "",
 }: {
   rec: RecType;
   priority?: { priority: string; rank: number };
   showActions?: boolean;
   orgId?: string;
+  businessId?: string;
 }) {
   return (
     <Card>
@@ -240,8 +243,8 @@ function RecommendationCard({
           )}
 
           {showActions && (
-            <div className="mt-4 border-t border-border pt-4">
-              <RecommendationActions recommendationId={rec.id} orgId={orgId} />
+            <div className="mt-4 border-t border-neutral-800 pt-4">
+              <RecommendationActions recommendationId={rec.id} orgId={orgId} businessId={businessId} />
             </div>
           )}
         </div>

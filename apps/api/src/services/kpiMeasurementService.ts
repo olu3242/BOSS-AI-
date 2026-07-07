@@ -79,6 +79,26 @@ export function createKpiMeasurementService(repos: RepositoryContainer): KpiMeas
         occurredAt: measuredAt,
       });
 
+      // Emit threshold alerts for any KPI below critical threshold
+      const CRITICAL_THRESHOLD = 30;
+      for (const reading of readings) {
+        if (typeof reading.value === "number" && reading.value < CRITICAL_THRESHOLD) {
+          await repos.eventBus.publish({
+            type: "kpi.threshold.exceeded",
+            payload: {
+              orgId,
+              businessId,
+              kpiKey: reading.kpiKey,
+              label: reading.label,
+              value: reading.value,
+              threshold: CRITICAL_THRESHOLD,
+              measuredAt,
+            },
+            occurredAt: measuredAt,
+          });
+        }
+      }
+
       return { readings, persisted, measuredAt, kpiHealthScore, kpiRecommendations };
     },
 

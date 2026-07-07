@@ -10,6 +10,9 @@ export interface AiWorkforceService {
   activateEmployee(orgId: string, employeeKey: string): Promise<{ employeeKey: string; orgId: string; activatedAt: string }>;
   deactivateEmployee(orgId: string, employeeKey: string): Promise<void>;
   listActiveForOrg(orgId: string): Promise<AiEmployeeEntry[]>;
+  promoteEmployee(orgId: string, employeeKey: string): Promise<{ employeeKey: string; lifecycle: "available"; promotedAt: string }>;
+  deprecateEmployee(orgId: string, employeeKey: string): Promise<{ employeeKey: string; lifecycle: "deprecated"; deprecatedAt: string }>;
+  getEffectiveLifecycle(orgId: string, employeeKey: string): Promise<AiEmployeeEntry["lifecycle"]>;
 }
 
 export function createAiWorkforceService(repos: RepositoryContainer): AiWorkforceService {
@@ -53,6 +56,55 @@ export function createAiWorkforceService(repos: RepositoryContainer): AiWorkforc
         payload: { orgId, employeeKey },
         occurredAt: new Date().toISOString(),
       });
+    },
+
+    async promoteEmployee(orgId: string, employeeKey: string) {
+      const employee = aiEmployeeRegistry.get(employeeKey);
+      if (!employee) throw new Error(`Unknown AI employee: ${employeeKey}`);
+      if (employee.lifecycle === "deprecated") throw new Error(`AI employee '${employeeKey}' is deprecated and cannot be promoted`);
+      const promotedAt = new Date().toISOString();
+      await repos.eventBus.publish({
+        type: "ai_workforce.employee.promoted",
+        payload: { orgId, employeeKey, lifecycle: "available" },
+        occurredAt: promotedAt,
+      });
+      return { employeeKey, lifecycle: "available" as const, promotedAt };
+    },
+
+    async deprecateEmployee(orgId: string, employeeKey: string) {
+      const employee = aiEmployeeRegistry.get(employeeKey);
+      if (!employee) throw new Error(`Unknown AI employee: ${employeeKey}`);
+      const deprecatedAt = new Date().toISOString();
+      await repos.eventBus.publish({
+        type: "ai_workforce.employee.deprecated",
+        payload: { orgId, employeeKey, lifecycle: "deprecated" },
+        occurredAt: deprecatedAt,
+      });
+      return { employeeKey, lifecycle: "deprecated" as const, deprecatedAt };
+    },
+
+    async getEffectiveLifecycle(orgId: string, employeeKey: string) {
+      const employee = aiEmployeeRegistry.get(employeeKey);
+      if (!employee) throw new Error(`Unknown AI employee: ${employeeKey}`);
+
+      const [promoted, deprecated] = await Promise.all([
+        repos.eventLog.listByType("ai_workforce.employee.promoted", 500),
+        repos.eventLog.listByType("ai_workforce.employee.deprecated", 500),
+      ]);
+
+      const forEmployee = (events: typeof promoted) =>
+        events.filter(
+          (e) =>
+            (e.payload as { orgId?: string; employeeKey?: string }).orgId === orgId &&
+            (e.payload as { employeeKey?: string }).employeeKey === employeeKey,
+        );
+
+      const wasPromoted = forEmployee(promoted).length > 0;
+      const wasDeprecated = forEmployee(deprecated).length > 0;
+
+      if (wasDeprecated) return "deprecated";
+      if (wasPromoted) return "available";
+      return employee.lifecycle;
     },
 
     async listActiveForOrg(orgId: string) {

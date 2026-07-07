@@ -1,5 +1,34 @@
 # BOSS Implementation Memory
 
+## RC3 — Intelligence Convergence & Revenue OS (complete)
+
+**Status:** CERTIFIED. 616 API tests passing (78 files). 0 type errors. 0 lint warnings. 0 arch violations.
+
+**Branch:** `claude/boss-repo-normalization-n1jdx5` (PR #7)
+
+**Wave 1B — TypeScript Hardening:** Validation schemas wired, HTTP server routes complete, search platform `_T` type param removed, industry pack `AiEmployeeRegistration[]` migration.
+
+**Wave 1C — Intelligence Convergence:**
+- `kpiPlatformService.ts` — canonical KPI read path, history, forecasts, threshold alerts
+- `decisionEngineService.ts` — converges KPI + recommendations + RCA + forecasts
+- `businessObjectiveService.ts` — OKR layer with KeyResult progress tracking
+- `learningPlatformService.ts` — acceptance rate, forecast accuracy, insights
+- 8 canonical AI employees seeded (ALICE, MAX, REX, NOVA, FINN, LENA, TESS, GABRIEL)
+- New ontology types: `CanonicalKpi`, `DecisionEngineResult`, `BusinessObjective`, `LearningReport`
+
+**Wave 2 — Revenue OS (12 phases):**
+- Estimate, Invoice, Payment platform enhancements
+- `pricingEngineService.ts` — price/discount/tax rules, coupons
+- `collectionsService.ts` — risk scoring, auto-remind/escalate cycle
+- `revenueIntelligenceService.ts` — collection rate, cash flow forecast
+- `revenueCommunicationService.ts` — event→notification wiring
+- `revenueAiService.ts` — pricing recs, cross-sell, cash flow alerts
+- `revenueDashboardService.ts` — executive revenue snapshot
+- 17 domain events emitted
+- See `RC3_CERTIFICATION.md` and `RC3_WAVE2_CERTIFICATION.md`
+
+**Next milestone:** RC4 — AI Workforce Activation (TD-024: real LLM inference in AI Employee handler)
+
 ## RC2 Phase A — Project Renaissance: Landing Page (complete as of 2026-07-03)
 
 **Status:** Landing page complete. All sections present. Narrative arc complete.

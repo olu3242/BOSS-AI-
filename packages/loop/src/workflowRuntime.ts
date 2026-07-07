@@ -1,3 +1,11 @@
+/**
+ * WorkflowRuntime — high-level orchestration layer.
+ * @layer    orchestration (registry-aware, context-guarded, event-emitting)
+ * @relation Delegates step execution to createLoopRuntime (runtime.ts).
+ *           All new automations should use WorkflowRuntime. Direct use of
+ *           createLoopRuntime is reserved for loopRuntimeService (API wire-up).
+ * @owner    @boss/loop
+ */
 import { randomUUID } from "node:crypto";
 import { createBossEvent, type EventBus } from "@boss/events";
 import { workflowRegistry } from "@boss/registries";
