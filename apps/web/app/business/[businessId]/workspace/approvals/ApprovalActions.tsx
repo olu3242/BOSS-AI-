@@ -63,14 +63,12 @@ interface RecommendationActionsProps {
 
 export function RecommendationActions({ recommendationId, orgId, businessId }: RecommendationActionsProps) {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
-  const [approved, setApproved] = useState(false);
-
   const [pending, setPending] = useState<"approve" | null>(null);
+  const [approved, setApproved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function approve() {
-    setPending(true);
+    setPending("approve");
     setError(null);
     try {
       await apiClient.approveRecommendation(orgId, recommendationId);
@@ -78,7 +76,7 @@ export function RecommendationActions({ recommendationId, orgId, businessId }: R
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiClientError ? err.body.message : "Failed to approve.");
-      setPending(false);
+      setPending(null);
     }
   }
 
@@ -110,15 +108,11 @@ export function RecommendationActions({ recommendationId, orgId, businessId }: R
         <button
           type="button"
           onClick={approve}
-          disabled={pending}
+          disabled={pending !== null}
           className="rounded bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {pending ? "Approving…" : "Approve & Run"}
+          {pending === "approve" ? "Approving…" : "Approve & Run"}
         </button>
-
-        <Button size="sm" onClick={approve} disabled={pending !== null} loading={pending === "approve"}>
-          Approve
-        </Button>
       </div>
       {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
     </div>

@@ -299,11 +299,8 @@ export function WorkflowsClient({ orgId, businessId, initialExecutions, initialE
                         {cancelling === ex.id ? "Cancelling…" : "Cancel"}
                       </button>
                     )}
-                    <span className={`rounded px-2 py-0.5 text-xs ${statusStyle(ex.status)}`}>{ex.status}</span>
-                    <span className="text-neutral-600 text-xs">{selectedId === ex.id ? "▲" : "▼"}</span>
-
                     <Badge color={workflowStatusColor(ex.status)}>{ex.status}</Badge>
-                    <span className="text-text-muted text-xs">{selectedId === ex.id ? "▲" : "▼"}</span>
+                    <span className="text-neutral-600 text-xs">{selectedId === ex.id ? "▲" : "▼"}</span>
                   </div>
                 </div>
               </button>
