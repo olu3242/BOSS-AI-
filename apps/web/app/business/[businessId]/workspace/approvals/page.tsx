@@ -86,9 +86,6 @@ export default async function ApprovalsPage({ params }: Props) {
                       <Badge color="neutral">{r.status}</Badge>
                     </div>
                     <RecommendationActions recommendationId={r.id} orgId={orgId} businessId={businessId} />
-                  </div>
-
-                    <RecommendationActions recommendationId={r.id} orgId={orgId} />
                   </Card>
                 ))}
               </div>

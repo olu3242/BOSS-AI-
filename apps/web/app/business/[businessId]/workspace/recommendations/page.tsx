@@ -245,9 +245,6 @@ function RecommendationCard({
           {showActions && (
             <div className="mt-4 border-t border-neutral-800 pt-4">
               <RecommendationActions recommendationId={rec.id} orgId={orgId} businessId={businessId} />
-
-            <div className="mt-4 border-t border-border pt-4">
-              <RecommendationActions recommendationId={rec.id} orgId={orgId} />
             </div>
           )}
         </div>
