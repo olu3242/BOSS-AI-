@@ -7,7 +7,7 @@ const syne = { variable: "--font-syne" };
 const dmSans = { variable: "--font-dm-sans" };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://getboss.ai"),
+  metadataBase: new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://boss-ai-two.vercel.app"),
   title: {
     default: "BOSS — Business Operating System for Small Business",
     template: "%s | BOSS",
