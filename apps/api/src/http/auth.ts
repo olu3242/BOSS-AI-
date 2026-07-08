@@ -1,4 +1,4 @@
-import { jwtVerify, SignJWT } from "jose";
+import { createRemoteJWKSet, jwtVerify, SignJWT, type JWTVerifyGetKey } from "jose";
 import { ApiError } from "./apiError.js";
 
 export type UserRole = "owner" | "admin" | "member" | "viewer";
@@ -7,12 +7,23 @@ const ROLE_LEVELS: Record<UserRole, number> = { owner: 4, admin: 3, member: 2, v
 
 const encoder = new TextEncoder();
 
-function jwtSecret(): Uint8Array {
-  const secret = process.env.SUPABASE_JWT_SECRET;
-  if (!secret) {
-    throw new ApiError(500, "missing_jwt_secret", "SUPABASE_JWT_SECRET is not configured");
-  }
+// Prefer remote JWKS (ES256 — Supabase default for new projects, handles key rotation).
+// Fall back to symmetric HS256 secret for local dev / older projects.
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const JWKS: JWTVerifyGetKey | null = supabaseUrl
+  ? createRemoteJWKSet(new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`))
+  : null;
+
+function symmetricSecret(): Uint8Array {
+  const secret = process.env.SUPABASE_JWT_SECRET ?? "dev-only-insecure-secret-do-not-use-in-production";
   return encoder.encode(secret);
+}
+
+async function verifyToken(token: string): Promise<Record<string, unknown>> {
+  if (JWKS) {
+    return (await jwtVerify(token, JWKS)).payload as Record<string, unknown>;
+  }
+  return (await jwtVerify(token, symmetricSecret())).payload as Record<string, unknown>;
 }
 
 /**
@@ -31,7 +42,7 @@ export async function requireOrgId(req: { header(name: string): string | undefin
 
   let payload: Record<string, unknown>;
   try {
-    payload = (await jwtVerify(token, jwtSecret())).payload;
+    payload = await verifyToken(token);
   } catch {
     throw new ApiError(401, "invalid_token", "Token signature is invalid or expired");
   }
@@ -59,7 +70,7 @@ export async function requireRole(
 
   let payload: Record<string, unknown>;
   try {
-    payload = (await jwtVerify(token, jwtSecret())).payload;
+    payload = await verifyToken(token);
   } catch {
     throw new ApiError(401, "invalid_token", "Token signature is invalid or expired");
   }
@@ -84,10 +95,11 @@ export async function requireRole(
  * the API/web flow has a token to use without faking the verification step.
  */
 export async function mintDevToken(orgId: string, role: UserRole = "owner"): Promise<string> {
+  const secret = process.env.SUPABASE_JWT_SECRET ?? "dev-only-insecure-secret-do-not-use-in-production";
   return new SignJWT({ org_id: orgId, role })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject("dev-user")
     .setIssuedAt()
     .setExpirationTime("24h")
-    .sign(jwtSecret());
+    .sign(encoder.encode(secret));
 }
