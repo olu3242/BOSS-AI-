@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createBrowserIdentityServices, writeSessionCookies } from "../../../../src/server/auth";
+import {
+  createBrowserIdentityServices,
+  safeNextPath,
+  writeSessionCookies,
+} from "../../../../src/server/auth";
 
 export const runtime = "nodejs";
 
@@ -7,7 +11,10 @@ export async function POST(request: NextRequest) {
   const form = await request.formData();
   const email = String(form.get("email") ?? "").trim();
   const password = String(form.get("password") ?? "");
-  const next = String(form.get("next") ?? "/onboarding/organization");
+  const next = safeNextPath(
+    String(form.get("next") ?? ""),
+    "/onboarding/organization",
+  );
   try {
     const { identity } = createBrowserIdentityServices();
     const result = await identity.signUp(email, password);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { AuthShell } from "../../../src/components/auth/AuthShell";
 import { getSupabaseBrowser } from "../../../src/lib/supabaseBrowser";
 
 export default function AuthCallbackPage() {
@@ -72,11 +73,14 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <main className="auth-shell">
-      <section className="auth-panel" aria-live="polite">
-        <p className="eyebrow">Secure verification</p>
-        <h1>{message}</h1>
-      </section>
-    </main>
+    <AuthShell
+      eyebrow="Secure verification"
+      title={message}
+      subtitle="Keep this tab open while BOSS confirms your session."
+      titleId="auth-callback-title"
+      live
+    >
+      <div className="auth-loading-bar" aria-hidden="true" />
+    </AuthShell>
   );
 }

@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "projects": [
-    {
-      "name": "boss-web",
-      "src": "apps/web"
-    }
-  ]
+  "version": 2
 }

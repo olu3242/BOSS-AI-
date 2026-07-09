@@ -49,7 +49,7 @@ export function BusinessOutcomes() {
   return (
     <section
       style={{
-        padding: "100px 48px",
+        padding: "76px 48px",
         background: "#0a0a0b",
       }}
       id="outcomes"
@@ -68,7 +68,7 @@ export function BusinessOutcomes() {
         >
           Measurable transformation
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", alignItems: "end", marginBottom: "64px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", alignItems: "end", marginBottom: "44px" }}>
           <h2
             id="outcomes-title"
             style={{

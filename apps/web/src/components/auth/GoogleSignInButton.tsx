@@ -34,22 +34,22 @@ export function GoogleSignInButton({ next }: { next?: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="auth-oauth">
       <button
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-3 rounded border border-border bg-surface px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-elevated disabled:opacity-60"
+        className="auth-google-button"
         aria-label="Sign in with Google"
       >
         {loading ? (
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent" aria-hidden="true" />
+          <span className="auth-spinner" aria-hidden="true" />
         ) : (
           <GoogleIcon />
         )}
         {loading ? "Redirecting…" : "Continue with Google"}
       </button>
-      {error && <p className="text-center text-xs text-status-danger">{error}</p>}
+      {error && <p className="auth-oauth-error">{error}</p>}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { GoogleSignInButton } from "../../../src/components/auth/GoogleSignInButton";
+import { AuthShell } from "../../../src/components/auth/AuthShell";
 
 interface SignUpPageProps {
   readonly searchParams: Promise<{ readonly error?: string }>;
@@ -7,13 +8,12 @@ interface SignUpPageProps {
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const query = await searchParams;
   return (
-    <main className="auth-shell">
-      <a className="brand-link" href="/">BOSS</a>
-      <section className="auth-panel" aria-labelledby="sign-up-title">
-        <p className="eyebrow">Create your workspace</p>
-        <h1 id="sign-up-title">Get started</h1>
-        <p className="subtle">Your business data stays isolated to your organization.</p>
-
+    <AuthShell
+      eyebrow="Create your workspace"
+      title="Get your free Health Report"
+      subtitle="Start with a clear view of what is costing time and money. No credit card required."
+      titleId="sign-up-title"
+    >
         {query.error ? <p className="form-error" role="alert">{query.error}</p> : null}
 
         {/* Google OAuth */}
@@ -35,7 +35,6 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           <button type="submit">Create account</button>
         </form>
         <p className="auth-footer">Already have an account? <a href="/auth/sign-in">Sign in</a></p>
-      </section>
-    </main>
+    </AuthShell>
   );
 }
