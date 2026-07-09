@@ -57,13 +57,26 @@ export default function AuthCallbackPage() {
 
   async function persistSession(accessToken: string, refreshToken: string, redirectTo: string) {
     try {
+      const traceId = crypto.randomUUID();
       const response = await fetch("/api/auth/session", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          "x-boss-auth-trace-id": traceId,
+        },
         body: JSON.stringify({ accessToken, refreshToken }),
       });
       if (!response.ok) {
-        setMessage("We could not establish your session. Please try signing in again.");
+        let referenceId = traceId;
+        try {
+          const payload = (await response.json()) as { traceId?: string };
+          referenceId = payload.traceId ?? traceId;
+        } catch {
+          // Keep the client-generated trace ID if the server did not return JSON.
+        }
+        setMessage(
+          `Your Google account was verified, but BOSS could not finish setting up your session. Reference ID: ${referenceId}`,
+        );
         return;
       }
       window.location.replace(redirectTo);
