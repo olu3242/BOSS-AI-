@@ -8,9 +8,14 @@ export async function POST(request: NextRequest) {
   const email = String(form.get("email") ?? "").trim();
   const password = String(form.get("password") ?? "");
   const next = String(form.get("next") ?? "/onboarding/organization");
+  // Derive callback URL from env var if set, else from the current request origin.
+  // The callback URL must be in Supabase's allowed redirect URL list.
+  const callbackUrl =
+    process.env.BOSS_AUTH_CALLBACK_URL ??
+    new URL("/auth/callback", request.url).toString();
   try {
     const { identity } = createBrowserIdentityServices();
-    const result = await identity.signUp(email, password);
+    const result = await identity.signUp(email, password, callbackUrl);
     if (!result.session) {
       return NextResponse.redirect(
         new URL(`/auth/verify?email=${encodeURIComponent(email)}`, request.url),
