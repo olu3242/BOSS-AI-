@@ -55,8 +55,8 @@ export class SupabaseIdentityProvider implements IdentityProvider {
   ) {}
 
   static fromEnvironment(env: NodeJS.ProcessEnv = process.env): SupabaseIdentityProvider {
-    const url = env.SUPABASE_URL;
-    const anonKey = env.SUPABASE_ANON_KEY;
+    const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = env.SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!url || !anonKey) {
       throw new AuthenticationError(
         "SUPABASE_URL and SUPABASE_ANON_KEY are required for the identity runtime.",

@@ -91,7 +91,9 @@ export async function readBrowserIdentity(): Promise<{
     const { provider } = createBrowserIdentityServices();
     const session = await provider.verify(accessToken);
     return { identity: session.identity, accessToken };
-  } catch {
+  } catch (err) {
+    // Log so Vercel function logs surface the real error (config vs. expired token).
+    console.error("[auth] readBrowserIdentity failed:", err instanceof Error ? err.message : err);
     return null;
   }
 }
