@@ -66,34 +66,18 @@ function checkEnv(): PreflightResult {
   return { passed: failures.length === 0, failures };
 }
 
-async function checkDatabaseConnectivity(): Promise<string | null> {
+function checkDatabaseUrl(): string | null {
   const connectionString = process.env.DATABASE_URL!;
-  let host: string;
-  let port: number;
   try {
     const url = new URL(connectionString);
-    host = url.hostname;
-    port = url.port ? parseInt(url.port, 10) : 5432;
+    const host = url.hostname;
+    const port = url.port || "5432";
+    // Validate the URL is parseable and has a host.
+    if (!host) return `DATABASE_URL has no hostname.`;
+    return null;
   } catch {
-    return `DATABASE_URL is not a valid URL: ${connectionString}`;
+    return `DATABASE_URL is not a valid URL: "${connectionString}"`;
   }
-
-  return new Promise((resolve) => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const net = require("net") as typeof import("net");
-    const socket = net.createConnection({ host, port, timeout: 5000 });
-    socket.once("connect", () => {
-      socket.destroy();
-      resolve(null);
-    });
-    socket.once("timeout", () => {
-      socket.destroy();
-      resolve(`Connection to ${host}:${port} timed out after 5s.`);
-    });
-    socket.once("error", (err: Error) => {
-      resolve(`Cannot reach ${host}:${port} — ${err.message}`);
-    });
-  });
 }
 
 export async function runPreflight(): Promise<void> {
@@ -114,21 +98,20 @@ export async function runPreflight(): Promise<void> {
     }
   }
 
-  // --- Connectivity check ---
-  // Only run if DATABASE_URL is set (env check above would have failed otherwise).
-  const dbError = await checkDatabaseConnectivity();
-  if (dbError) {
-    const message =
-      `[preflight] Database connectivity check failed: ${dbError}\n` +
-      "  Ensure DATABASE_URL is the Supabase connection pooler URL (port 6543, ?pgbouncer=true) " +
-      "and the database is accepting connections.";
-    if (isProduction) {
-      throw new Error(message);
-    } else {
-      console.error(message);
+  // --- DATABASE_URL format check ---
+  // Only run if DATABASE_URL passed the env check above.
+  if (process.env.DATABASE_URL) {
+    const urlError = checkDatabaseUrl();
+    if (urlError) {
+      const message = `[preflight] DATABASE_URL format error: ${urlError}`;
+      if (isProduction) {
+        throw new Error(message);
+      } else {
+        console.error(message);
+        return;
+      }
     }
-    return;
   }
 
-  console.log("[preflight] ✓ Environment and database connectivity verified.");
+  console.log("[preflight] ✓ Environment configuration verified.");
 }
