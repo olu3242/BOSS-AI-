@@ -4,8 +4,13 @@ let pool: Pool | undefined;
 
 export function getPool(): Pool {
   if (!pool) {
+    const connectionString =
+      process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/boss_dev";
+    const isLocal =
+      connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/boss_dev",
+      connectionString,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
     });
   }
   return pool;
