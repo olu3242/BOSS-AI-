@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@boss/api": "workspace:*",
+    "@boss/config": "workspace:*",
     "@boss/shared": "workspace:*",
     "@boss/types": "workspace:*",
     "@boss/ui": "workspace:*",

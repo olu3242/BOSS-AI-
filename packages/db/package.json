@@ -21,6 +21,7 @@
     "@types/pg": "^8.11.0"
   },
   "dependencies": {
+    "@boss/config": "workspace:*",
     "@boss/types": "workspace:*",
     "@boss/shared": "workspace:*",
     "pg": "^8.12.0"
