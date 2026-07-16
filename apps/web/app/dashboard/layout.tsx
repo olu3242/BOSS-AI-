@@ -1,10 +1,34 @@
 import Link from "next/link";
 import { requireBrowserIdentity } from "../../src/server/auth";
 
+function isNextInternalThrow(err: unknown): boolean {
+  const digest = (err as { digest?: string })?.digest ?? "";
+  return digest.startsWith("NEXT_REDIRECT") || digest === "NEXT_NOT_FOUND";
+}
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { identity } = await requireBrowserIdentity("/dashboard");
+  let identity: Awaited<ReturnType<typeof requireBrowserIdentity>>["identity"];
+  const traceId = crypto.randomUUID();
+
+  console.log(`[dashboard/layout] start trace=${traceId}`);
+  try {
+    const session = await requireBrowserIdentity("/dashboard");
+    identity = session.identity;
+    console.log(`[dashboard/layout] identity_loaded trace=${traceId} userId=${identity.userId.slice(0, 8)}...`);
+  } catch (err) {
+    if (isNextInternalThrow(err)) {
+      // Next.js redirect/not-found — let the framework handle it.
+      throw err;
+    }
+    console.error(`[dashboard/layout] FATAL trace=${traceId}`, {
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      digest: (err as { digest?: string })?.digest,
+    });
+    throw err; // Re-throw so dashboard/error.tsx can surface the message.
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
