@@ -653,6 +653,7 @@ export * from "./controllers/businessDiagnosticController.js";
 export * from "./security.js";
 export * from "./observability.js";
 export * from "./health.js";
+export * from "./platformAdministration.js";
 export * from "./identity.js";
 export * from "./supabaseIdentityProvider.js";
 export * from "./runtimePersistence.js";

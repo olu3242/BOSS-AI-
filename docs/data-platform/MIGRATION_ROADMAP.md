@@ -229,17 +229,40 @@ CREATE INDEX idx_estimates_status ON estimates(org_id, status) WHERE deleted_at 
 
 ---
 
+## Migration 0046 — Secure Platform Super Administration
+
+**Status**: Implemented; production verification pending
+**Purpose**: Add cross-tenant platform roles, explicit permission catalog,
+role-permission assignments, one-time founder bootstrap assignment, immutable
+platform audit events, and RLS-protected read access.
+**Risk**: High — introduces the platform control plane and founder bootstrap.
+**Zero-downtime**: Yes for schema creation; bootstrap remains disabled until
+the API deployment and production security gates pass.
+
+Security requirements:
+
+- Bootstrap identity comes from a verified Supabase session, never request-body
+  `userId`.
+- A verified email and active organization-owner relationship are required.
+- Bootstrap uses a database advisory lock and rejects all duplicate attempts.
+- Grant and success audit are committed in one transaction.
+- Permissions are explicit database records; no wildcard permission exists.
+- Direct authenticated-role mutation is revoked; the trusted API service owns
+  mutations.
+
+---
+
 ## Future Migrations (Post-RC3)
 
 | Migration | Purpose | Priority |
 |-----------|---------|---------|
 | 0044 | Notifications table (in-app) | High |
 | 0045 | Review responses (threaded) | Medium |
-| 0046 | Customer segments (AI-computed cohorts) | Medium |
-| 0047 | Subscription / billing tables | High |
-| 0048 | Partition event_log by month | High (> 100M rows) |
-| 0049 | Partition kpi_readings by month | Medium (> 50M rows) |
-| 0050 | Materialized views (mv_business_health_summary) | Medium |
+| 0047 | Customer segments (AI-computed cohorts) | Medium |
+| 0048 | Subscription / billing tables | High |
+| 0049 | Partition event_log by month | High (> 100M rows) |
+| 0050 | Partition kpi_readings by month | Medium (> 50M rows) |
+| 0051 | Materialized views (mv_business_health_summary) | Medium |
 
 ---
 

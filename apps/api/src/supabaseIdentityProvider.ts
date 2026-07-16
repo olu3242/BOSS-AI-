@@ -120,6 +120,33 @@ export class SupabaseIdentityProvider implements IdentityProvider {
     };
   }
 
+  async verifyPlatformUser(userId: string): Promise<Identity> {
+    if (!this.adminClient) {
+      throw new AuthenticationError(
+        "SUPABASE_SERVICE_ROLE_KEY is required for privileged identity verification.",
+      );
+    }
+    const { data, error } = await this.adminClient.auth.admin.getUserById(userId);
+    if (error || !data.user || data.user.id !== userId) {
+      throw new AuthenticationError(
+        error?.message ?? "The privileged identity does not exist.",
+      );
+    }
+    const privilegedUser = data.user as User & {
+      banned_until?: string | null;
+      deleted_at?: string | null;
+    };
+    const bannedUntil = privilegedUser.banned_until
+      ? Date.parse(privilegedUser.banned_until)
+      : 0;
+    if (privilegedUser.deleted_at || bannedUntil > Date.now()) {
+      throw new AuthenticationError(
+        "The privileged identity is deleted or suspended.",
+      );
+    }
+    return identity(privilegedUser);
+  }
+
   async refresh(refreshToken: string): Promise<ProviderSession> {
     const { data, error } = await this.client.auth.refreshSession({
       refresh_token: refreshToken,

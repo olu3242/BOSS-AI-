@@ -6,6 +6,7 @@ import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
 import { createRateLimiter } from "./rateLimiter.js";
 import { snapshotToPrometheus } from "./prometheusFormat.js";
+import { createPlatformRouter } from "./platformRoutes.js";
 import {
   validate,
   validateData,
@@ -1834,6 +1835,7 @@ export function createHttpServer(api: Api): Express {
   );
 
   app.use("/api/v1", v1);
+  app.use("/api/v1/platform", createPlatformRouter());
 
   app.use((req, res) => {
     res.status(404).json({

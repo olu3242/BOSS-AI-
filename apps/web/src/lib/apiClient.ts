@@ -16,15 +16,10 @@ export class ApiClientError extends Error {
 /**
  * Returns a bearer token for API calls.
  *
- * In development/demo environments the API exposes a /auth/dev-token route
- * that mints a signed JWT from an org_id (TD-030: no real auth UI yet).
- * In production that route is disabled; set NEXT_PUBLIC_STATIC_TOKEN to a
- * pre-minted service token issued by the real Supabase project instead.
+ * Browser calls use the HttpOnly session-cookie exchange. No bearer token is
+ * embedded in the client bundle or read from a NEXT_PUBLIC environment value.
  */
 async function getBearerToken(orgId: string): Promise<string> {
-  const staticToken = process.env.NEXT_PUBLIC_STATIC_TOKEN;
-  if (staticToken) return staticToken;
-
   // In browser context, exchange the session cookie for a BOSS JWT via the
   // Next.js proxy route which reads requireActiveTenant() server-side.
   if (typeof window !== "undefined") {

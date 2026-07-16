@@ -4,8 +4,6 @@ import {
   PostgresAuditSink,
   SupabaseIdentityProvider,
   createPostgresOrganizationRuntime,
-  type AuditEvent,
-  type AuditSink,
   type Identity,
   type ProviderSession,
 } from "@boss/api";
@@ -66,30 +64,13 @@ export function logAuthPipelineFailure(
   });
 }
 
-export class NonBlockingAuditSink implements AuditSink {
-  constructor(private readonly sink: AuditSink) {}
-
-  async record(event: AuditEvent): Promise<void> {
-    try {
-      await this.sink.record(event);
-    } catch (error) {
-      authLog("warn", event.traceId, "AUTH_AUDIT_WRITE_FAILED", {
-        action: event.action,
-        outcome: event.outcome,
-        actorId: event.actorId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-}
-
 export function createBrowserIdentityServices() {
   const provider = SupabaseIdentityProvider.fromEnvironment();
   const { organizations, memberships } = createPostgresOrganizationRuntime();
   const identity = new IdentityRuntime(
     provider,
     memberships,
-    new NonBlockingAuditSink(new PostgresAuditSink()),
+    new PostgresAuditSink(),
   );
   return { provider, identity, organizations };
 }

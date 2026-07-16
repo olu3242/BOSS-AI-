@@ -70,3 +70,4 @@ export * from "./repositories/inMemory/workflowRunRepository.js";
 export * from "./repositories/postgres/lifecyclePolicyRepository.js";
 export * from "./repositories/inMemory/lifecyclePolicyRepository.js";
 export * from "./repositories/postgres/executionMetricsRepository.js";
+export * from "./repositories/postgres/platformAdministrationRepository.js";
