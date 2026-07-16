@@ -5,6 +5,8 @@
  */
 
 const BLOCKED_HOSTNAMES = ["localhost", "127.0.0.1", "host.docker.internal", "0.0.0.0"];
+// Bare words that pg-connection-string silently treats as hostnames — always config errors.
+const PLACEHOLDER_HOSTNAMES = new Set(["base", "placeholder", "example", "change-me", "undefined", "null"]);
 
 function extractHostname(url: string): string {
   try {
@@ -56,11 +58,21 @@ function checkEnv(): PreflightResult {
   const databaseUrl = process.env.DATABASE_URL ?? "";
   if (!databaseUrl) {
     failures.push("DATABASE_URL is not set. Organization lookup and all Postgres queries will fail.");
-  } else if (isProduction && isLocalhost(databaseUrl)) {
-    failures.push(
-      `DATABASE_URL points to a local host (${extractHostname(databaseUrl)}) in production. ` +
-        "Set it to the Supabase connection pooler URL (port 6543, ?pgbouncer=true).",
-    );
+  } else {
+    // extractHostname falls back to the raw string when URL parsing fails (e.g. DATABASE_URL=base).
+    const host = extractHostname(databaseUrl).toLowerCase();
+    if (PLACEHOLDER_HOSTNAMES.has(host)) {
+      failures.push(
+        `DATABASE_URL resolves to placeholder hostname "${host}". ` +
+          "Set it to the Supabase Transaction Pooler URL " +
+          "(Supabase Dashboard → Project Settings → Database → Transaction mode, port 6543).",
+      );
+    } else if (isProduction && isLocalhost(databaseUrl)) {
+      failures.push(
+        `DATABASE_URL points to a local host (${extractHostname(databaseUrl)}) in production. ` +
+          "Set it to the Supabase connection pooler URL (port 6543, ?pgbouncer=true).",
+      );
+    }
   }
 
   return { passed: failures.length === 0, failures };
