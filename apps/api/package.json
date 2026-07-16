@@ -13,6 +13,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@boss/config": "workspace:*",
     "@boss/db": "workspace:*",
     "@boss/events": "workspace:*",
     "@boss/industry-pack-general-smb": "workspace:*",

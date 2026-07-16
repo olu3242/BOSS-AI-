@@ -52,6 +52,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@boss/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@boss/db':
         specifier: workspace:*
         version: link:../../packages/db

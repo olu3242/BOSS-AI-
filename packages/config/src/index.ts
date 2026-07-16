@@ -290,10 +290,25 @@ export function getConfigDiagnostics(): ConfigDiagnostics {
 }
 
 // Named sub-config accessors — convenience for packages that only need one slice.
+// These call getConfig() so the full validation runs on first use.
+// For pages that need only an API URL at build time without DB validation,
+// use NEXT_PUBLIC_API_BASE_URL directly.
 export const getDatabaseConfig = (): DatabaseConfig => getConfig().database;
 export const getSupabaseConfig = (): SupabaseConfig => getConfig().supabase;
 export const getAuthConfig = (): AuthConfig => getConfig().auth;
 export const getApiConfig = (): ApiConfig => getConfig().api;
+
+/**
+ * Returns the API base URL without triggering full config validation.
+ * Safe to call from pages/components that don't access the database.
+ */
+export function getApiBaseUrl(): string {
+  return (
+    process.env["NEXT_PUBLIC_API_BASE_URL"] ??
+    process.env["API_BASE_URL"] ??
+    "http://localhost:4000"
+  );
+}
 
 // Reset singleton — test use only.
 export function _resetConfigForTest(): void {

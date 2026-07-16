@@ -1,4 +1,6 @@
+import { createPostgresPlatformSuperAdminRepository } from "@boss/db";
 import { jwtVerify, SignJWT } from "jose";
+import type { SuperAdminSession } from "../security.js";
 import { ApiError } from "./apiError.js";
 
 export type UserRole = "owner" | "admin" | "member" | "viewer";
@@ -90,4 +92,56 @@ export async function mintDevToken(orgId: string, role: UserRole = "owner"): Pro
     .setIssuedAt()
     .setExpirationTime("24h")
     .sign(jwtSecret());
+}
+
+/**
+ * Verifies a JWT and checks that the sub (user_id) is an active platform super
+ * admin. Throws 401/403 like the other requireX helpers — never returns null.
+ */
+export async function requireSuperAdmin(
+  req: { header(name: string): string | undefined },
+): Promise<SuperAdminSession> {
+  const authHeader = req.header("authorization");
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : undefined;
+  if (!token) {
+    throw new ApiError(401, "missing_token", "Authorization: Bearer <token> header is required");
+  }
+
+  let payload: Record<string, unknown>;
+  try {
+    payload = (await jwtVerify(token, jwtSecret())).payload;
+  } catch {
+    throw new ApiError(401, "invalid_token", "Token signature is invalid or expired");
+  }
+
+  const userId = typeof payload.sub === "string" ? payload.sub : undefined;
+  if (!userId) {
+    throw new ApiError(403, "missing_sub_claim", "Token does not carry a sub (user_id) claim");
+  }
+
+  const repo = createPostgresPlatformSuperAdminRepository();
+  const isActive = await repo.isActive(userId);
+  if (!isActive) {
+    throw new ApiError(403, "not_super_admin", "This action requires platform super admin access");
+  }
+
+  return { userId, isSuperAdmin: true };
+}
+
+/**
+ * Grants super admin status. Requires `CRON_SECRET` in the Authorization
+ * header — allows bootstrapping before any super admin exists.
+ */
+export function requireCronSecret(
+  req: { header(name: string): string | undefined },
+): void {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    throw new ApiError(503, "cron_secret_not_configured", "CRON_SECRET is not configured on this server");
+  }
+  const auth = req.header("authorization");
+  const provided = auth?.startsWith("Bearer ") ? auth.slice("Bearer ".length) : undefined;
+  if (provided !== cronSecret) {
+    throw new ApiError(401, "invalid_cron_secret", "Invalid CRON_SECRET");
+  }
 }

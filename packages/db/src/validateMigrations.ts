@@ -1,3 +1,4 @@
+import { getDatabaseConfig } from "@boss/config";
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -33,8 +34,8 @@ function validateNamingAndSequence(files: string[]): void {
 
 async function validateApplyCleanly(files: string[]): Promise<void> {
   const schema = `validate_migrations_${Date.now()}`;
-  const adminUrl = process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/boss_dev";
-  const pool = new Pool({ connectionString: adminUrl });
+  const { url, isLocal } = getDatabaseConfig();
+  const pool = new Pool({ connectionString: url, ssl: isLocal ? false : { rejectUnauthorized: false } });
 
   try {
     await pool.query(`CREATE SCHEMA "${schema}"`);
