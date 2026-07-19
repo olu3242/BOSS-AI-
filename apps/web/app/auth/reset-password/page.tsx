@@ -1,3 +1,5 @@
+import { AuthShell } from "../../../src/components/auth/AuthShell";
+
 interface ResetPasswordPageProps {
   readonly searchParams: Promise<{ readonly error?: string }>;
 }
@@ -7,11 +9,12 @@ export default async function ResetPasswordPage({
 }: ResetPasswordPageProps) {
   const query = await searchParams;
   return (
-    <main className="auth-shell">
-      <a className="brand-link" href="/">BOSS</a>
-      <section className="auth-panel" aria-labelledby="reset-password-title">
-        <p className="eyebrow">Secure recovery</p>
-        <h1 id="reset-password-title">Choose a new password</h1>
+    <AuthShell
+      eyebrow="Secure recovery"
+      title="Choose a new password"
+      subtitle="Create a new password, then return to your BOSS workspace."
+      titleId="reset-password-title"
+    >
         {query.error ? (
           <p className="form-error" role="alert">
             The passwords did not match, the link expired, or the update failed.
@@ -40,7 +43,6 @@ export default async function ResetPasswordPage({
           </label>
           <button type="submit">Update password</button>
         </form>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

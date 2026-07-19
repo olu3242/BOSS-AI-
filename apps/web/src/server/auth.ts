@@ -1,8 +1,11 @@
 import {
+  createTraceId,
   IdentityRuntime,
   PostgresAuditSink,
   SupabaseIdentityProvider,
   createPostgresOrganizationRuntime,
+  type AuditEvent,
+  type AuditSink,
   type Identity,
   type ProviderSession,
 } from "@boss/api";
@@ -18,15 +21,81 @@ import {
 
 export { ACCESS_COOKIE, PERSIST_COOKIE, REFRESH_COOKIE };
 
+function authLog(
+  level: "info" | "warn" | "error",
+  traceId: string,
+  stage: string,
+  context: Record<string, unknown> = {},
+): void {
+  const payload = {
+    level,
+    traceId,
+    stage,
+    context,
+    occurredAt: new Date().toISOString(),
+  };
+  const line = JSON.stringify(payload);
+  if (level === "error") {
+    console.error(line);
+    return;
+  }
+  if (level === "warn") {
+    console.warn(line);
+    return;
+  }
+  console.info(line);
+}
+
+export function logAuthPipeline(
+  traceId: string,
+  stage: string,
+  context: Record<string, unknown> = {},
+): void {
+  authLog("info", traceId, stage, context);
+}
+
+export function logAuthPipelineFailure(
+  traceId: string,
+  stage: string,
+  error: unknown,
+  context: Record<string, unknown> = {},
+): void {
+  authLog("error", traceId, stage, {
+    ...context,
+    error: error instanceof Error ? error.message : String(error),
+  });
+}
+
+export class NonBlockingAuditSink implements AuditSink {
+  constructor(private readonly sink: AuditSink) {}
+
+  async record(event: AuditEvent): Promise<void> {
+    try {
+      await this.sink.record(event);
+    } catch (error) {
+      authLog("warn", event.traceId, "AUTH_AUDIT_WRITE_FAILED", {
+        action: event.action,
+        outcome: event.outcome,
+        actorId: event.actorId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+}
+
 export function createBrowserIdentityServices() {
   const provider = SupabaseIdentityProvider.fromEnvironment();
   const { organizations, memberships } = createPostgresOrganizationRuntime();
   const identity = new IdentityRuntime(
     provider,
     memberships,
-    new PostgresAuditSink(),
+    new NonBlockingAuditSink(new PostgresAuditSink()),
   );
   return { provider, identity, organizations };
+}
+
+export function createAuthTraceId(): string {
+  return createTraceId();
 }
 
 export function sessionCookieSecurity(

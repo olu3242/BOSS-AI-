@@ -1,5 +1,6 @@
 import { safeNextPath } from "../../../src/server/auth";
 import { GoogleSignInButton } from "../../../src/components/auth/GoogleSignInButton";
+import { AuthShell } from "../../../src/components/auth/AuthShell";
 
 interface SignInPageProps {
   readonly searchParams: Promise<{
@@ -18,13 +19,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     : query.error;
 
   return (
-    <main className="auth-shell">
-      <a className="brand-link" href="/">BOSS</a>
-      <section className="auth-panel" aria-labelledby="sign-in-title">
-        <p className="eyebrow">Welcome back</p>
-        <h1 id="sign-in-title">Sign in</h1>
-        <p className="subtle">Continue managing your business in BOSS.</p>
-
+    <AuthShell
+      eyebrow="Welcome back"
+      title="Sign in"
+      subtitle="Continue to your daily brief, health report, and owner actions."
+      titleId="sign-in-title"
+    >
         {query.reset ? (
           <p className="form-success" role="status">
             Your password was updated. Sign in with the new password.
@@ -59,7 +59,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           Forgot your password?
         </a>
         <p className="auth-footer">New to BOSS? <a href="/auth/sign-up">Create an account</a></p>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

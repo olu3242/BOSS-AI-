@@ -3,16 +3,13 @@ import Link from "next/link";
 import { MarketingNav } from "../src/components/ui/MarketingNav";
 import { HeroSection } from "../src/components/ui/HeroSection";
 import { BusinessOutcomes } from "../src/components/ui/BusinessOutcomes";
-import { IntelligencePreview } from "../src/components/ui/IntelligencePreview";
-import { AiWorkforceSection } from "../src/components/ui/AiWorkforceSection";
-import { EnterpriseTrust } from "../src/components/ui/EnterpriseTrust";
-import { WorkspacePreview } from "../src/components/ui/WorkspacePreview";
+import { CircularWorkflow } from "../src/components/ui/CircularWorkflow";
 import "./landing.css";
 
 export const metadata: Metadata = {
-  title: "BOSS — Your Business Operating System | AI Team for Small Business",
+  title: "BOSS — Know What Your Business Needs Today",
   description:
-    "Stop drowning in paperwork. BOSS is your AI team that handles bookings, follow-ups, payments, and reviews — 24/7 — so you can focus on what you built this for.",
+    "Get a free Business Health Report that shows what is costing time, cash, bookings, and follow-up momentum in your business.",
   alternates: { canonical: "/" },
 };
 
@@ -29,11 +26,7 @@ export default function LandingPage() {
             name: "BOSS",
             applicationCategory: "BusinessApplication",
             description:
-              "Business Operating System Suite — AI team for small business owners.",
-            offers: [
-              { "@type": "Offer", price: "99", priceCurrency: "USD", name: "Starter" },
-              { "@type": "Offer", price: "299", priceCurrency: "USD", name: "Growth" },
-            ],
+              "BOSS gives small business owners a daily health report and clear next actions.",
           }),
         }}
       />
@@ -46,7 +39,7 @@ export default function LandingPage() {
 
       {/* ── TRUST BAR ─────────────────────────────────────────── */}
       <div className="l-trust-bar" role="list" aria-label="Trusted by industries">
-        <span className="l-trust-label">Trusted by</span>
+        <span className="l-trust-label">Built for</span>
         <div className="l-trust-items">
           {[
             "Dental practices", "Law firms", "Home service companies",
@@ -84,60 +77,24 @@ export default function LandingPage() {
       <section className="l-section l-bg-card" id="how" aria-labelledby="how-title">
         <p className="l-section-label">How it works</p>
         <h2 id="how-title" className="l-section-title">
-          Set up once.<br />Let BOSS run it.
+          Tell us.<br />Analyze. Activate.
         </h2>
         <p className="l-section-sub">
-          No complicated software to learn. BOSS asks you a few questions
-          about your business and gets to work.
+          No complicated software to learn. BOSS starts with a quick health
+          report, then helps you act on the highest-impact fixes first.
         </p>
-        <div className="l-steps" role="list">
-          {HOW_STEPS.map((s, i) => (
-            <div key={s.title} className="l-step" role="listitem">
-              <div className="l-step-num" aria-hidden="true">{i + 1}</div>
-              <div className="l-step-title">{s.title}</div>
-              <p className="l-step-desc">{s.desc}</p>
-              <div className="l-step-time">{s.time}</div>
-            </div>
-          ))}
-        </div>
+        <CircularWorkflow />
       </section>
-
-      {/* ── INTELLIGENCE PREVIEW ──────────────────────────────── */}
-      <IntelligencePreview />
-
-      {/* ── AI TEAM ───────────────────────────────────────────── */}
-      <section className="l-section" id="team" aria-labelledby="team-title">
-        <p className="l-section-label">Your AI team</p>
-        <h2 id="team-title" className="l-section-title">
-          Like hiring a full team —<br />for less than one employee.
-        </h2>
-        <p className="l-section-sub">
-          Each team member has a clear job. They work around the clock, learn
-          your business, and never call in sick.
-        </p>
-        <div className="l-employee-grid">
-          {AI_TEAM.map((member) => (
-            <article key={member.name} className="l-employee-card">
-              <div className="l-emp-avatar" aria-hidden="true">{member.emoji}</div>
-              <div className="l-emp-name">{member.name}</div>
-              <p className="l-emp-handles">{member.handles}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* ── AI WORKFORCE ──────────────────────────────────────── */}
-      <AiWorkforceSection />
 
       {/* ── DAILY WATCH ───────────────────────────────────────── */}
       <section className="l-section l-bg-card" aria-labelledby="daily-title">
-        <p className="l-section-label">Every single day</p>
+        <p className="l-section-label">The daily payoff</p>
         <h2 id="daily-title" className="l-section-title">
-          BOSS checks in on<br />your business overnight.
+          Your morning brief,<br />ready before coffee.
         </h2>
         <p className="l-section-sub">
-          While you sleep, BOSS reviews everything — and in the morning, it
-          tells you what needs your attention and what it already handled.
+          Instead of digging through calls, invoices, calendars, and messages,
+          you get the few actions that will actually move the business today.
         </p>
         <div className="l-watch-card">
           <div className="l-watch-header">
@@ -162,64 +119,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── WORKSPACE PREVIEW ─────────────────────────────────── */}
-      <WorkspacePreview />
-
-      {/* ── INDUSTRIES ────────────────────────────────────────── */}
-      <section className="l-section" aria-labelledby="industries-title">
-        <p className="l-section-label">Built for your industry</p>
-        <h2 id="industries-title" className="l-section-title">
-          BOSS knows your business<br />before you even explain it.
-        </h2>
-        <p className="l-section-sub">
-          Every industry runs differently. BOSS comes pre-loaded with the
-          knowledge and routines that actually match how your business works.
-        </p>
-        <div className="l-industry-row" role="list">
-          {INDUSTRIES.map((ind, i) => (
-            <span
-              key={ind}
-              className="l-industry-chip"
-              role="listitem"
-              {...(i === 0 ? { "data-active": "" } : {})}
-            >
-              {ind}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* ── PRICING ───────────────────────────────────────────── */}
-      <section className="l-section l-bg-card" id="pricing" aria-labelledby="pricing-title">
-        <p className="l-section-label">Simple pricing</p>
-        <h2 id="pricing-title" className="l-section-title">
-          Pay less than a part-time hire.<br />Get a full team.
-        </h2>
-        <p className="l-section-sub">No setup fees. No long contracts. Cancel any time.</p>
-        <div className="l-pricing-grid">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className={`l-plan${plan.popular ? " l-plan-popular" : ""}`}
-            >
-              <div className="l-plan-name">{plan.name}</div>
-              <div className="l-plan-price">
-                {plan.price}<span>{plan.period}</span>
-              </div>
-              <p className="l-plan-tagline">{plan.tagline}</p>
-              <ul className="l-plan-features">
-                {plan.features.map((f) => <li key={f}>{f}</li>)}
-              </ul>
-              <Link href={plan.cta === "Talk to our team" ? "/waitlist" : "/auth/sign-up"} className="l-plan-btn">
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* ── TESTIMONIALS ──────────────────────────────────────── */}
-      <section className="l-section" aria-labelledby="testimonials-title">
+      <section className="l-section" id="proof" aria-labelledby="testimonials-title">
         <p className="l-section-label">Real customers</p>
         <h2 id="testimonials-title" className="l-section-title">
           They stopped running.<br />Their business started.
@@ -238,28 +139,6 @@ export default function LandingPage() {
                 </div>
               </figcaption>
             </figure>
-          ))}
-        </div>
-      </section>
-
-      {/* ── ENTERPRISE TRUST ──────────────────────────────────── */}
-      <EnterpriseTrust />
-
-      {/* ── FAQ ───────────────────────────────────────────────── */}
-      <section className="l-section l-bg-card" aria-labelledby="faq-title">
-        <p className="l-section-label">Questions</p>
-        <h2 id="faq-title" className="l-section-title">
-          Things people ask<br />before they sign up.
-        </h2>
-        <div className="l-faq-list">
-          {FAQS.map((faq) => (
-            <details key={faq.q} className="l-faq-item">
-              <summary>
-                {faq.q}
-                <span className="l-faq-icon" aria-hidden="true">+</span>
-              </summary>
-              <p className="l-faq-answer">{faq.a}</p>
-            </details>
           ))}
         </div>
       </section>
@@ -298,9 +177,9 @@ export default function LandingPage() {
           <p className="l-footer-col-title">Product</p>
           <ul className="l-footer-links">
             <li><a href="#how">How it works</a></li>
-            <li><a href="#team">Your AI team</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#pain">Industries</a></li>
+            <li><a href="#outcomes">Results</a></li>
+            <li><a href="#proof">Proof</a></li>
+            <li><a href="#pain">Problem</a></li>
           </ul>
         </nav>
         <nav aria-label="Company links">
@@ -352,40 +231,6 @@ const PAIN_POINTS = [
   },
 ];
 
-const HOW_STEPS = [
-  {
-    title: "Tell BOSS about your business",
-    desc: "Answer a short questionnaire about how your business runs — what you sell, who your customers are, what you're struggling with.",
-    time: "10 minutes to complete",
-  },
-  {
-    title: "Get your Business Health Report",
-    desc: "BOSS immediately shows you where your business is losing time and money, ranked by impact. You'll see things you suspected — and things you didn't.",
-    time: "Ready in seconds",
-  },
-  {
-    title: "Switch on your AI team",
-    desc: "Pick from a roster of AI team members — a receptionist, a bookkeeper, a sales helper — and turn them on with one click.",
-    time: "Live in under 5 minutes",
-  },
-  {
-    title: "Watch your business improve",
-    desc: "BOSS handles the daily tasks and reports what it's doing. You approve anything important and stay in control of every decision that matters.",
-    time: "Results from day one",
-  },
-];
-
-const AI_TEAM = [
-  { emoji: "☎️", name: "Receptionist", handles: "Answers enquiries, books appointments, recovers missed calls — 24/7." },
-  { emoji: "📈", name: "Sales Helper", handles: "Follows up with leads, sends quotes, and nudges warm prospects before they go cold." },
-  { emoji: "📒", name: "Bookkeeper", handles: "Keeps your numbers current, spots cash flow issues early, chases unpaid invoices." },
-  { emoji: "⭐", name: "Review Manager", handles: "Asks happy customers for reviews, responds to feedback, monitors your reputation." },
-  { emoji: "🗓️", name: "Scheduler", handles: "Fills gaps in your calendar, sends reminders, and recovers no-shows automatically." },
-  { emoji: "🤝", name: "Customer Manager", handles: "Checks in with past customers, re-engages people who went quiet, builds loyalty." },
-  { emoji: "✍️", name: "Proposal Writer", handles: "Turns a quick brief into a professional quote or proposal, ready to send in minutes." },
-  { emoji: "📊", name: "Business Advisor", handles: "Gives you a weekly plain-English summary of how your business is actually doing." },
-];
-
 const DAILY_ITEMS = [
   {
     icon: "💬",
@@ -417,69 +262,6 @@ const DAILY_ITEMS = [
   },
 ];
 
-const INDUSTRIES = [
-  "🦷 Dental practices",
-  "⚖️ Law firms",
-  "🔧 Plumbing & HVAC",
-  "🏋️ Gyms & fitness studios",
-  "🏠 Real estate",
-  "🍽️ Restaurants & cafés",
-  "💇 Salons & spas",
-  "🏡 Cleaning services",
-  "🐾 Veterinary clinics",
-  "📐 Contractors",
-  "👓 Optometry",
-  "+ many more",
-];
-
-const PLANS = [
-  {
-    name: "Starter",
-    price: "$99",
-    period: "/mo",
-    tagline: "For solo owners just getting started with AI.",
-    features: [
-      "3 AI team members of your choice",
-      "Business Health Report",
-      "Daily morning briefing",
-      "Up to 5 automations running",
-      "Email support",
-    ],
-    popular: false,
-    cta: "Start 14-day free trial",
-  },
-  {
-    name: "Growth",
-    price: "$299",
-    period: "/mo",
-    tagline: "For businesses ready to run like a well-oiled machine.",
-    features: [
-      "All 8 AI team members",
-      "Unlimited automations",
-      "Daily & real-time briefings",
-      "Industry-specific playbooks",
-      "Phone & email support",
-    ],
-    popular: true,
-    cta: "Start 14-day free trial",
-  },
-  {
-    name: "Multi-location",
-    price: "Custom",
-    period: "",
-    tagline: "For businesses with multiple locations or franchise setups.",
-    features: [
-      "Everything in Growth",
-      "Per-location dashboards",
-      "Cross-location reporting",
-      "Dedicated account manager",
-      "Custom onboarding & training",
-    ],
-    popular: false,
-    cta: "Talk to our team",
-  },
-];
-
 const TESTIMONIALS = [
   {
     quote: `I used to spend an hour every morning going through missed calls and messages. Now BOSS handles all of it and I just <strong>check my morning report with my coffee.</strong>`,
@@ -501,29 +283,3 @@ const TESTIMONIALS = [
   },
 ];
 
-const FAQS = [
-  {
-    q: "Do I need to be tech-savvy to use BOSS?",
-    a: "Not at all. If you can send a text message, you can use BOSS. Setup is a 10-minute questionnaire about your business — no software to install, no complicated settings. Our onboarding team also walks you through it if you'd like.",
-  },
-  {
-    q: "Will BOSS actually talk to my customers?",
-    a: "Yes, but always in your voice. You review and approve the tone and templates before anything goes out. BOSS learns how you communicate and mirrors it. You can also set it so anything customer-facing gets your approval first.",
-  },
-  {
-    q: "What if BOSS does something I don't want?",
-    a: "BOSS will always ask for your approval before doing anything significant. Routine tasks like sending pre-approved reminders happen automatically. Anything that involves money, a customer complaint, or an unusual decision is always flagged to you first.",
-  },
-  {
-    q: "How long does it take to see results?",
-    a: "Most customers see the first improvement within 48 hours — usually a recovered lead or no-show prevention. Within 30 days, you'll have a clear picture of what BOSS has saved you in time and money.",
-  },
-  {
-    q: "Is my business data safe?",
-    a: "Yes. Your data is encrypted, stored securely, and never shared or sold. BOSS is built for businesses that handle sensitive customer information — including medical and legal practices.",
-  },
-  {
-    q: "Can I cancel if it's not for me?",
-    a: "Absolutely. No long-term contracts, no cancellation fees. Cancel any time from your account settings. We'd also love to hear what wasn't working so we can improve.",
-  },
-];

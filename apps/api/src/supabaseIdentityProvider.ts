@@ -59,7 +59,7 @@ export class SupabaseIdentityProvider implements IdentityProvider {
     const anonKey = env.SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (!url || !anonKey) {
       throw new AuthenticationError(
-        "SUPABASE_URL and SUPABASE_ANON_KEY are required for the identity runtime.",
+        "SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_ANON_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY are required for the identity runtime.",
       );
     }
     const options = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { AuthShell } from "../../../src/components/auth/AuthShell";
 import { getSupabaseBrowser } from "../../../src/lib/supabaseBrowser";
 
 export default function AuthCallbackPage() {
@@ -56,13 +57,26 @@ export default function AuthCallbackPage() {
 
   async function persistSession(accessToken: string, refreshToken: string, redirectTo: string) {
     try {
+      const traceId = crypto.randomUUID();
       const response = await fetch("/api/auth/session", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          "x-boss-auth-trace-id": traceId,
+        },
         body: JSON.stringify({ accessToken, refreshToken }),
       });
       if (!response.ok) {
-        setMessage("We could not establish your session. Please try signing in again.");
+        let referenceId = traceId;
+        try {
+          const payload = (await response.json()) as { traceId?: string };
+          referenceId = payload.traceId ?? traceId;
+        } catch {
+          // Keep the client-generated trace ID if the server did not return JSON.
+        }
+        setMessage(
+          `Your Google account was verified, but BOSS could not finish setting up your session. Reference ID: ${referenceId}`,
+        );
         return;
       }
       window.location.replace(redirectTo);
@@ -72,11 +86,14 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <main className="auth-shell">
-      <section className="auth-panel" aria-live="polite">
-        <p className="eyebrow">Secure verification</p>
-        <h1>{message}</h1>
-      </section>
-    </main>
+    <AuthShell
+      eyebrow="Secure verification"
+      title={message}
+      subtitle="Keep this tab open while BOSS confirms your session."
+      titleId="auth-callback-title"
+      live
+    >
+      <div className="auth-loading-bar" aria-hidden="true" />
+    </AuthShell>
   );
 }

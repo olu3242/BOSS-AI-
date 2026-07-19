@@ -48,11 +48,11 @@ export function MarketingNav() {
         <a href="#how" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
           How it works
         </a>
-        <a href="#team" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-          Your team
+        <a href="#outcomes" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+          Results
         </a>
-        <a href="#pricing" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-          Pricing
+        <a href="#proof" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+          Proof
         </a>
         <Link href="/auth/sign-in" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
           Sign in
@@ -71,7 +71,7 @@ export function MarketingNav() {
             alignItems: "center",
           }}
         >
-          Start free — no card needed
+          Get my Health Report
         </Link>
       </div>
 
@@ -112,8 +112,8 @@ export function MarketingNav() {
         >
           {[
             { href: "#how", label: "How it works" },
-            { href: "#team", label: "Your team" },
-            { href: "#pricing", label: "Pricing" },
+            { href: "#outcomes", label: "Results" },
+            { href: "#proof", label: "Proof" },
             { href: "/auth/sign-in", label: "Sign in" },
           ].map(({ href, label }) => (
             <a
@@ -138,7 +138,7 @@ export function MarketingNav() {
               textAlign: "center",
             }}
           >
-            Start free
+            Get my Health Report
           </Link>
         </div>
       )}

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { describe, expect, it } from "vitest";
-import type { ProviderSession } from "@boss/api";
+import { describe, expect, it, vi } from "vitest";
+import type { AuditEvent, ProviderSession } from "@boss/api";
 import {
   clearSessionCookies,
+  NonBlockingAuditSink,
   sessionCookieSecurity,
   writeSessionCookies,
 } from "../server/auth";
@@ -51,5 +52,36 @@ describe("browser session cookies", () => {
     clearSessionCookies(cleared);
     const clearedHeader = cleared.headers.get("set-cookie") ?? "";
     expect(clearedHeader.match(/Max-Age=0/g)).toHaveLength(3);
+  });
+});
+
+describe("auth pipeline audit", () => {
+  const event: AuditEvent = {
+    id: "event-1",
+    traceId: "trace-1",
+    orgId: "platform",
+    actorId: "user-1",
+    action: "identity.verification",
+    resourceType: "identity",
+    resourceId: null,
+    outcome: "success",
+    metadata: {},
+    occurredAt: new Date().toISOString(),
+  };
+
+  it("does not fail authentication when audit persistence is unavailable", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const sink = new NonBlockingAuditSink({
+      async record() {
+        throw new Error("database unavailable");
+      },
+    });
+
+    await expect(sink.record(event)).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("AUTH_AUDIT_WRITE_FAILED"),
+    );
+
+    warn.mockRestore();
   });
 });

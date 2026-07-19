@@ -1,3 +1,5 @@
+import { AuthShell } from "../../../src/components/auth/AuthShell";
+
 interface ForgotPasswordPageProps {
   readonly searchParams: Promise<{
     readonly error?: string;
@@ -10,14 +12,12 @@ export default async function ForgotPasswordPage({
 }: ForgotPasswordPageProps) {
   const query = await searchParams;
   return (
-    <main className="auth-shell">
-      <a className="brand-link" href="/">BOSS</a>
-      <section className="auth-panel" aria-labelledby="forgot-password-title">
-        <p className="eyebrow">Account recovery</p>
-        <h1 id="forgot-password-title">Reset your password</h1>
-        <p className="subtle">
-          Enter your account email and we will send a secure recovery link.
-        </p>
+    <AuthShell
+      eyebrow="Account recovery"
+      title="Reset your password"
+      subtitle="Enter your account email and we will send a secure recovery link."
+      titleId="forgot-password-title"
+    >
         {query.sent ? (
           <p className="form-success" role="status">
             If that account exists, a recovery email is on its way.
@@ -38,7 +38,6 @@ export default async function ForgotPasswordPage({
         <p className="auth-footer">
           <a href="/auth/sign-in">Return to sign in</a>
         </p>
-      </section>
-    </main>
+    </AuthShell>
   );
 }

@@ -10,6 +10,7 @@ import {
 } from "../identity.js";
 import { InMemoryAuditSink } from "../observability.js";
 import { AuthorizationError } from "../security.js";
+import { SupabaseIdentityProvider } from "../supabaseIdentityProvider.js";
 
 class TestIdentityProvider implements IdentityProvider {
   private readonly sessions = new Map<string, ProviderSession>();
@@ -79,6 +80,15 @@ class TestIdentityProvider implements IdentityProvider {
 }
 
 describe("IdentityRuntime", () => {
+  it("creates Supabase identity provider from Next.js public Supabase runtime variables", () => {
+    expect(() =>
+      SupabaseIdentityProvider.fromEnvironment({
+        NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: "public-anon-key",
+      } as NodeJS.ProcessEnv),
+    ).not.toThrow();
+  });
+
   it("supports verification-aware signup, sign-in, refresh, and logout", async () => {
     const audit = new InMemoryAuditSink();
     const runtime = new IdentityRuntime(
