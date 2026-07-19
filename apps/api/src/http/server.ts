@@ -1833,6 +1833,47 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── AI Workforce — Direct Execution Routes (TD-024) ──────────────────────
+  // These routes expose aiEmployeeExecution over HTTP so callers can trigger
+  // AI employee tasks directly without going through the Loop runtime.
+  // org_id comes from the verified JWT only — never from the request body.
+
+  v1.post(
+    "/businesses/:businessId/ai-employees/:employeeKey/execute",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const businessId = param(req, "businessId");
+      const employeeKey = param(req, "employeeKey");
+      const { capabilityKey, requestedBy, taskInput } = req.body as {
+        capabilityKey?: string;
+        requestedBy?: string;
+        taskInput?: Record<string, unknown>;
+      };
+      if (!capabilityKey || typeof capabilityKey !== "string") {
+        throw new ApiError(400, "missing_capability_key", "capabilityKey is required");
+      }
+      return api.aiEmployeeExecution.execute({
+        orgId,
+        businessId,
+        employeeKey,
+        capabilityKey,
+        requestedBy: requestedBy ?? "api:direct",
+        taskInput: taskInput ?? {},
+      });
+    }),
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai-employees/:employeeKey/memory",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const businessId = param(req, "businessId");
+      const employeeKey = param(req, "employeeKey");
+      const context = await api.aiEmployeeExecution.getMemoryContext(orgId, businessId, employeeKey);
+      return { orgId, businessId, employeeKey, context };
+    }),
+  );
+
   app.use("/api/v1", v1);
 
   // ── Platform Super Admin Routes ────────────────────────────────────────────
