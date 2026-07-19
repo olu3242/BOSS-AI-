@@ -52,6 +52,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@boss/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@boss/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -107,6 +110,9 @@ importers:
       '@boss/api':
         specifier: workspace:*
         version: link:../api
+      '@boss/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@boss/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -340,10 +346,20 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@20.19.43)
 
-  packages/config: {}
+  packages/config:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.12.12
+        version: 20.19.43
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
 
   packages/db:
     dependencies:
+      '@boss/config':
+        specifier: workspace:*
+        version: link:../config
       '@boss/shared':
         specifier: workspace:*
         version: link:../shared

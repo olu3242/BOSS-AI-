@@ -1,0 +1,67 @@
+name: Production Certification
+
+on:
+  # Run after every push to main (post-merge)
+  push:
+    branches: [main]
+  # Allow manual trigger with a custom URL (e.g. preview environments)
+  workflow_dispatch:
+    inputs:
+      certification_url:
+        description: "Deployment URL to certify (defaults to production)"
+        required: false
+        default: ""
+
+concurrency:
+  group: certify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify:
+    name: Certify production deployment
+    runs-on: ubuntu-latest
+    # Give Vercel ~3 minutes to finish deploying after the push lands on main.
+    # Adjust if your build + deployment is consistently faster or slower.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wait for Vercel deployment
+        run: sleep 180
+
+      - name: Run production certification
+        env:
+          CERTIFICATION_URL: ${{ inputs.certification_url || vars.PRODUCTION_URL || 'https://boss-ai-two.vercel.app' }}
+          # Optional: set VERCEL_BYPASS_SECRET in GitHub repo secrets to allow certification
+          # through Vercel's Deployment Protection. Get it from:
+          # Vercel Dashboard → Settings → Deployment Protection → Protection Bypass for Automation.
+          VERCEL_BYPASS_SECRET: ${{ secrets.VERCEL_BYPASS_SECRET }}
+        run: |
+          pnpm certify:production
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then
+            echo "::warning::Certification BLOCKED — Vercel Authentication is enabled. Set VERCEL_BYPASS_SECRET secret to enable automated certification."
+            exit 0
+          fi
+          exit $EXIT
+
+      - name: Upload certification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: certification-report-${{ github.sha }}
+          path: |
+            /tmp/cert-*.log
+          if-no-files-found: ignore
+          retention-days: 30

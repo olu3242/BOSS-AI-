@@ -26,7 +26,7 @@ export interface SignUpResult {
 }
 
 export interface IdentityProvider {
-  signUp(email: string, password: string): Promise<SignUpResult>;
+  signUp(email: string, password: string, redirectTo?: string): Promise<SignUpResult>;
   signIn(email: string, password: string): Promise<ProviderSession>;
   verify(accessToken: string): Promise<ProviderSession>;
   refresh(refreshToken: string): Promise<ProviderSession>;
@@ -103,10 +103,15 @@ export class IdentityRuntime {
     private readonly auditSink: AuditSink,
   ) {}
 
-  async signUp(email: string, password: string, traceId = createTraceId()): Promise<SignUpResult> {
+  async signUp(
+    email: string,
+    password: string,
+    redirectTo?: string,
+    traceId = createTraceId(),
+  ): Promise<SignUpResult> {
     let result: SignUpResult;
     try {
-      result = await this.provider.signUp(email, password);
+      result = await this.provider.signUp(email, password, redirectTo);
     } catch (error) {
       await this.audit("identity.signup", "anonymous", "platform", "failure", traceId);
       throw error;

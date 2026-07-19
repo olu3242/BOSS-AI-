@@ -1,11 +1,14 @@
+import { getDatabaseConfig } from "@boss/config";
 import { Pool, type PoolClient, type QueryResultRow } from "pg";
 
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
   if (!pool) {
+    const { url, isLocal } = getDatabaseConfig();
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/boss_dev",
+      connectionString: url,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
     });
   }
   return pool;

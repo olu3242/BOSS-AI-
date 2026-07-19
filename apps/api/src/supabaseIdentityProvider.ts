@@ -78,13 +78,12 @@ export class SupabaseIdentityProvider implements IdentityProvider {
     );
   }
 
-  async signUp(email: string, password: string): Promise<SignUpResult> {
+  async signUp(email: string, password: string, redirectTo?: string): Promise<SignUpResult> {
+    const callbackUrl = redirectTo ?? this.emailRedirectTo;
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
-      options: this.emailRedirectTo
-        ? { emailRedirectTo: this.emailRedirectTo }
-        : undefined,
+      options: callbackUrl ? { emailRedirectTo: callbackUrl } : undefined,
     });
     if (error || !data.user) {
       throw new AuthenticationError(error?.message ?? "Sign-up failed.");

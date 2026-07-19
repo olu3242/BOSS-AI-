@@ -29,7 +29,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "arch:check": "pnpm arch:boundaries && pnpm arch:deadcode",
     "arch:boundaries": "depcruise --config .dependency-cruiser.cjs apps packages industry-packs",
-    "arch:deadcode": "knip"
+    "arch:deadcode": "knip",
+    "certify:production": "node --experimental-strip-types scripts/certify-production.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

@@ -2,7 +2,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import { randomUUID } from "node:crypto";
 import type { createApi } from "../index.js";
 import { ApiError } from "./apiError.js";
-import { mintDevToken, requireOrgId, requireRole } from "./auth.js";
+import { mintDevToken, requireCronSecret, requireOrgId, requireRole, requireSuperAdmin } from "./auth.js";
 import { requestTracing } from "./telemetry.js";
 import { createRateLimiter } from "./rateLimiter.js";
 import { snapshotToPrometheus } from "./prometheusFormat.js";
@@ -1833,7 +1833,206 @@ export function createHttpServer(api: Api): Express {
     })
   );
 
+  // ── AI Workforce — Direct Execution Routes (TD-024) ──────────────────────
+  // These routes expose aiEmployeeExecution over HTTP so callers can trigger
+  // AI employee tasks directly without going through the Loop runtime.
+  // org_id comes from the verified JWT only — never from the request body.
+
+  v1.post(
+    "/businesses/:businessId/ai-employees/:employeeKey/execute",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const businessId = param(req, "businessId");
+      const employeeKey = param(req, "employeeKey");
+      const { capabilityKey, requestedBy, taskInput } = req.body as {
+        capabilityKey?: string;
+        requestedBy?: string;
+        taskInput?: Record<string, unknown>;
+      };
+      if (!capabilityKey || typeof capabilityKey !== "string") {
+        throw new ApiError(400, "missing_capability_key", "capabilityKey is required");
+      }
+      return api.aiEmployeeExecution.execute({
+        orgId,
+        businessId,
+        employeeKey,
+        capabilityKey,
+        requestedBy: requestedBy ?? "api:direct",
+        taskInput: taskInput ?? {},
+      });
+    }),
+  );
+
+  v1.get(
+    "/businesses/:businessId/ai-employees/:employeeKey/memory",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const businessId = param(req, "businessId");
+      const employeeKey = param(req, "employeeKey");
+      const context = await api.aiEmployeeExecution.getMemoryContext(orgId, businessId, employeeKey);
+      return { orgId, businessId, employeeKey, context };
+    }),
+  );
+
   app.use("/api/v1", v1);
+
+  // ── Platform Super Admin Routes ────────────────────────────────────────────
+  // All /api/v1/platform/* routes require either a valid super admin JWT or
+  // CRON_SECRET (for the bootstrap grant-super-admin endpoint).
+  // org_id is never required — these are cross-tenant by design.
+
+  const platform = express.Router();
+
+  // Bootstrap: grant super admin — requires CRON_SECRET, no super admin needed.
+  platform.post(
+    "/super-admins/bootstrap",
+    wrap(async (req) => {
+      requireCronSecret(req);
+      const { createPostgresPlatformSuperAdminRepository } = await import("@boss/db");
+      const { userId, notes } = req.body as { userId?: string; notes?: string };
+      if (!userId || typeof userId !== "string") {
+        throw new ApiError(400, "invalid_body", "userId is required");
+      }
+      const repo = createPostgresPlatformSuperAdminRepository();
+      const record = await repo.grant(userId, "system:bootstrap", notes);
+      return { superAdmin: record };
+    }),
+  );
+
+  // List all super admins — requires super admin.
+  platform.get(
+    "/super-admins",
+    wrap(async (req) => {
+      await requireSuperAdmin(req);
+      const { createPostgresPlatformSuperAdminRepository } = await import("@boss/db");
+      const repo = createPostgresPlatformSuperAdminRepository();
+      return { superAdmins: await repo.list() };
+    }),
+  );
+
+  // Grant super admin to another user.
+  platform.post(
+    "/super-admins/grant",
+    wrap(async (req) => {
+      const session = await requireSuperAdmin(req);
+      const { userId, notes } = req.body as { userId?: string; notes?: string };
+      if (!userId || typeof userId !== "string") {
+        throw new ApiError(400, "invalid_body", "userId is required");
+      }
+      const { createPostgresPlatformSuperAdminRepository } = await import("@boss/db");
+      const repo = createPostgresPlatformSuperAdminRepository();
+      const record = await repo.grant(userId, session.userId, notes);
+      return { superAdmin: record };
+    }),
+  );
+
+  // Revoke super admin.
+  platform.post(
+    "/super-admins/revoke",
+    wrap(async (req) => {
+      const session = await requireSuperAdmin(req);
+      const { userId } = req.body as { userId?: string };
+      if (!userId || typeof userId !== "string") {
+        throw new ApiError(400, "invalid_body", "userId is required");
+      }
+      if (userId === session.userId) {
+        throw new ApiError(409, "cannot_self_revoke", "Super admins cannot revoke their own access");
+      }
+      const { createPostgresPlatformSuperAdminRepository } = await import("@boss/db");
+      const repo = createPostgresPlatformSuperAdminRepository();
+      await repo.revoke(userId, session.userId);
+      return { revoked: true };
+    }),
+  );
+
+  // List all organizations (cross-tenant).
+  platform.get(
+    "/organizations",
+    wrap(async (req) => {
+      await requireSuperAdmin(req);
+      const { query } = await import("@boss/db");
+      const rows = await query<{
+        id: string; name: string; slug: string; plan: string; status: string; created_at: string;
+      }>(
+        `SELECT id, name, slug, plan, status, created_at
+         FROM organizations
+         WHERE deleted_at IS NULL
+         ORDER BY created_at DESC
+         LIMIT 500`,
+        [],
+      );
+      return { organizations: rows, total: rows.length };
+    }),
+  );
+
+  // Suspend an organization.
+  platform.post(
+    "/organizations/:orgId/suspend",
+    wrap(async (req) => {
+      const session = await requireSuperAdmin(req);
+      const orgId = param(req, "orgId");
+      const { query } = await import("@boss/db");
+      await query(
+        `UPDATE organizations SET status = 'suspended', updated_at = now() WHERE id = $1 AND deleted_at IS NULL`,
+        [orgId],
+      );
+      const { query: q2 } = await import("@boss/db");
+      void q2(
+        `INSERT INTO platform_audit_events (actor_id, action, resource_type, resource_id, outcome, trace_id) VALUES ($1,$2,$3,$4,$5,$6)`,
+        [session.userId, "platform:organizations:suspend", "organization", orgId, "success", randomUUID()],
+      ).catch(() => void 0);
+      return { suspended: true, orgId };
+    }),
+  );
+
+  // Restore a suspended organization.
+  platform.post(
+    "/organizations/:orgId/restore",
+    wrap(async (req) => {
+      const session = await requireSuperAdmin(req);
+      const orgId = param(req, "orgId");
+      const { query } = await import("@boss/db");
+      await query(
+        `UPDATE organizations SET status = 'active', updated_at = now() WHERE id = $1 AND deleted_at IS NULL`,
+        [orgId],
+      );
+      const { query: q3 } = await import("@boss/db");
+      void q3(
+        `INSERT INTO platform_audit_events (actor_id, action, resource_type, resource_id, outcome, trace_id) VALUES ($1,$2,$3,$4,$5,$6)`,
+        [session.userId, "platform:organizations:restore", "organization", orgId, "success", randomUUID()],
+      ).catch(() => void 0);
+      return { restored: true, orgId };
+    }),
+  );
+
+  // Platform config diagnostics — sanitized, no secrets.
+  platform.get(
+    "/config",
+    wrap(async (req) => {
+      await requireSuperAdmin(req);
+      const { getConfigDiagnostics } = await import("@boss/config");
+      return getConfigDiagnostics();
+    }),
+  );
+
+  // Platform audit log (most recent 200 events).
+  platform.get(
+    "/audit",
+    wrap(async (req) => {
+      await requireSuperAdmin(req);
+      const { query } = await import("@boss/db");
+      const rows = await query(
+        `SELECT id, actor_id, action, resource_type, resource_id, outcome, trace_id, occurred_at, metadata
+         FROM identity_audit_events
+         ORDER BY occurred_at DESC
+         LIMIT 200`,
+        [],
+      );
+      return { events: rows, total: rows.length };
+    }),
+  );
+
+  app.use("/api/v1/platform", platform);
 
   app.use((req, res) => {
     res.status(404).json({

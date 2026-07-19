@@ -127,7 +127,10 @@ export function createAiEmployeeExecutionService(repos: RepositoryContainer): Ai
           },
           process.env.ANTHROPIC_API_KEY,
           systemPrompt ?? undefined,
-        ).catch(() => null);
+        ).catch((err: unknown) => {
+          console.error(`[ai-employee] inference failed for ${employeeKey}/${capabilityKey}:`, err);
+          return null;
+        });
 
         if (inference) {
           reasoning = inference.reasoning;

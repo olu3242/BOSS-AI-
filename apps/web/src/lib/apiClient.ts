@@ -47,13 +47,14 @@ async function getBearerToken(orgId: string): Promise<string> {
   return (body as { token: string }).token;
 }
 
-async function request<T>(orgId: string, path: string, init?: RequestInit): Promise<T> {
-  const token = await getBearerToken(orgId);
+async function request<T>(orgId: string, path: string, init?: RequestInit, accessToken?: string): Promise<T> {
+  const token = accessToken ?? await getBearerToken(orgId);
   const res = await fetch(`${API_BASE_URL}/api/v1${path}`, {
     ...init,
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${token}`,
+      "x-organization-id": orgId,
       ...init?.headers,
     },
   });
@@ -629,7 +630,7 @@ export const apiClient = {
     }>(orgId, `/businesses/${businessId}/analytics`),
 
   // Org-level dashboard summary
-  getOrgDashboard: (orgId: string) =>
+  getOrgDashboard: (orgId: string, accessToken?: string) =>
     request<{
       businessCount: number;
       healthDistribution: { excellent: number; good: number; needsAttention: number; critical: number };
@@ -637,7 +638,7 @@ export const apiClient = {
       recentDecisions: Array<{ id: string; businessId: string; businessName: string; objective: string; status: string; createdAt: string }>;
       pendingApprovalsCount: number;
       revenueAtRisk: number;
-    }>(orgId, "/dashboard"),
+    }>(orgId, "/dashboard", undefined, accessToken),
 
   // AI Workforce
   listAiEmployees: (orgId: string) =>

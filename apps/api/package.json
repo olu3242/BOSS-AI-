@@ -2,7 +2,7 @@
   "name": "@boss/api",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/devServer.ts",
@@ -13,6 +13,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@boss/config": "workspace:*",
     "@boss/db": "workspace:*",
     "@boss/events": "workspace:*",
     "@boss/industry-pack-general-smb": "workspace:*",
@@ -31,5 +32,12 @@
     "tsx": "^4.16.0",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
-  }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "type": "module"
 }
