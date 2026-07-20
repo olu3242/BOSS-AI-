@@ -10,12 +10,8 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface the full error to the browser console so it appears in
-    // Vercel's function logs and browser devtools simultaneously.
     console.error("[dashboard/error]", {
-      message: error.message,
       digest: error.digest,
-      stack: error.stack,
     });
   }, [error]);
 
@@ -26,15 +22,13 @@ export default function DashboardError({
         <h2 className="mt-1 font-display text-xl font-bold text-white">Dashboard could not load</h2>
       </div>
       <div className="rounded bg-black/40 px-4 py-3 font-mono text-xs text-red-300">
-        <p className="font-semibold">Exception</p>
-        <p className="mt-1 break-all">{error.message || "Unknown error"}</p>
+        <p className="font-semibold">Request reference</p>
         {error.digest && (
           <p className="mt-2 text-red-500">Digest: {error.digest}</p>
         )}
       </div>
       <p className="text-sm text-red-300">
-        Copy the exception and digest above, then search Vercel function logs to find the full
-        server-side stack trace.
+        Retry the request. If it continues to fail, provide the request reference to support.
       </p>
       <button
         onClick={reset}

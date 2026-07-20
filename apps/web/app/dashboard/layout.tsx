@@ -3,7 +3,11 @@ import { requireBrowserIdentity } from "../../src/server/auth";
 
 function isNextInternalThrow(err: unknown): boolean {
   const digest = (err as { digest?: string })?.digest ?? "";
-  return digest.startsWith("NEXT_REDIRECT") || digest === "NEXT_NOT_FOUND";
+  return (
+    digest.startsWith("NEXT_REDIRECT") ||
+    digest === "NEXT_NOT_FOUND" ||
+    digest === "DYNAMIC_SERVER_USAGE"
+  );
 }
 
 export default async function DashboardLayout({

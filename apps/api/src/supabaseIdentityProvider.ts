@@ -10,7 +10,7 @@ import type {
   ProviderSession,
   SignUpResult,
 } from "./identity.js";
-import { AuthenticationError } from "./identity.js";
+import { AuthenticationError, SessionVerificationError } from "./identity.js";
 
 function identity(user: User): Identity {
   return {
@@ -55,8 +55,17 @@ export class SupabaseIdentityProvider implements IdentityProvider {
   ) {}
 
   static fromEnvironment(env: NodeJS.ProcessEnv = process.env): SupabaseIdentityProvider {
-    const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = env.SUPABASE_ANON_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+   console.log("Identity Runtime Environment", {
+  SUPABASE_URL: JSON.stringify(env.SUPABASE_URL),
+  NEXT_PUBLIC_SUPABASE_URL: JSON.stringify(env.NEXT_PUBLIC_SUPABASE_URL),
+  SUPABASE_ANON_KEY_PRESENT: Boolean(env.SUPABASE_ANON_KEY),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY_PRESENT: Boolean(env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
+  NODE_ENV: env.NODE_ENV,
+}); const url =
+  env.SUPABASE_URL?.trim() || env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+
+const anonKey =
+  env.SUPABASE_ANON_KEY?.trim() || env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
     if (!url || !anonKey) {
       throw new AuthenticationError(
         "SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_ANON_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY are required for the identity runtime.",
@@ -109,7 +118,7 @@ export class SupabaseIdentityProvider implements IdentityProvider {
   async verify(accessToken: string): Promise<ProviderSession> {
     const { data: userData, error } = await this.client.auth.getUser(accessToken);
     if (error || !userData.user) {
-      throw new AuthenticationError(error?.message ?? "Session verification failed.");
+      throw new SessionVerificationError(error?.message ?? "Session verification failed.");
     }
     return {
       identity: identity(userData.user),

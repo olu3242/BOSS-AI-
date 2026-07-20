@@ -2,6 +2,7 @@ import {
   createTraceId,
   IdentityRuntime,
   PostgresAuditSink,
+  SessionVerificationError,
   SupabaseIdentityProvider,
   createPostgresOrganizationRuntime,
   type AuditEvent,
@@ -83,15 +84,30 @@ export class NonBlockingAuditSink implements AuditSink {
   }
 }
 
-export function createBrowserIdentityServices() {
-  const provider = SupabaseIdentityProvider.fromEnvironment();
-  const { organizations, memberships } = createPostgresOrganizationRuntime();
+function initializeBrowserIdentityServices() {
+console.log("auth.ts process.env", {
+  SUPABASE_URL: JSON.stringify(process.env.SUPABASE_URL),
+  NEXT_PUBLIC_SUPABASE_URL: JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL),
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? "[present]" : "[missing]",
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "[present]" : "[missing]",
+});
+
+const provider = SupabaseIdentityProvider.fromEnvironment();  const { organizations, memberships } = createPostgresOrganizationRuntime();
   const identity = new IdentityRuntime(
     provider,
     memberships,
     new NonBlockingAuditSink(new PostgresAuditSink()),
   );
   return { provider, identity, organizations };
+}
+
+type BrowserIdentityServices = ReturnType<typeof initializeBrowserIdentityServices>;
+
+let browserIdentityServices: BrowserIdentityServices | undefined;
+
+export function createBrowserIdentityServices(): BrowserIdentityServices {
+  browserIdentityServices ??= initializeBrowserIdentityServices();
+  return browserIdentityServices;
 }
 
 export function createAuthTraceId(): string {
@@ -161,8 +177,12 @@ export async function readBrowserIdentity(): Promise<{
     const session = await provider.verify(accessToken);
     return { identity: session.identity, accessToken };
   } catch (err) {
-    // Log so Vercel function logs surface the real error (config vs. expired token).
-    console.error("[auth] readBrowserIdentity failed:", err instanceof Error ? err.message : err);
+    if (!(err instanceof SessionVerificationError)) {
+      throw err;
+    }
+    authLog("warn", createTraceId(), "AUTH_SESSION_REJECTED", {
+      reason: err.message,
+    });
     return null;
   }
 }

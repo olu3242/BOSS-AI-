@@ -811,6 +811,11 @@ export function createHttpServer(api: Api): Express {
   );
 
   v1.get(
+    "/dashboard",
+    wrap(async (req) => api.orgDashboard.get(await requireOrgId(req)))
+  );
+
+  v1.get(
     "/businesses/:businessId/health-summary",
     wrap(async (req) => api.orgHealth.getBusinessSummary(await requireOrgId(req), param(req, "businessId")))
   );

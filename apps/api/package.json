@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "dev": "tsx watch src/devServer.ts",
+    "dev": "node --env-file-if-exists=.env --watch --import tsx src/server.ts",
     "start": "node dist/server.js",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc -p tsconfig.json --noEmit",

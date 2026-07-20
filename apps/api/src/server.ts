@@ -8,8 +8,9 @@ if (process.env.NODE_ENV === "production" && !process.env.SUPABASE_URL && !proce
 }
 
 const port = Number(process.env.PORT ?? 4000);
+const host = process.env.HOST ?? "127.0.0.1";
 const app = createHttpServer(createApi());
 
-app.listen(port, () => {
-  console.log(`BOSS API listening on :${port}`);
+app.listen(port, host, () => {
+  console.log(`BOSS API listening at http://${host}:${port}`);
 });

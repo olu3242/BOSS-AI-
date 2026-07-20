@@ -124,4 +124,27 @@ describe("HTTP transport", () => {
     expect(snapshot.deadLetters).toEqual([]);
     expect(snapshot.timeline.map((t: { type: string }) => t.type)).toContain("business_created");
   });
+
+  it("serves the authenticated organization dashboard contract", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/dashboard`, {
+      headers: authHeader,
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      businessCount: number;
+      healthDistribution: Record<string, number>;
+      topAlerts: unknown[];
+      recentDecisions: unknown[];
+      pendingApprovalsCount: number;
+      revenueAtRisk: number;
+    };
+    expect(typeof body.businessCount).toBe("number");
+    expect(body.healthDistribution).toEqual(
+      expect.objectContaining({ excellent: 0, good: 0, needsAttention: 0, critical: 0 }),
+    );
+    expect(Array.isArray(body.topAlerts)).toBe(true);
+    expect(Array.isArray(body.recentDecisions)).toBe(true);
+    expect(typeof body.pendingApprovalsCount).toBe("number");
+    expect(typeof body.revenueAtRisk).toBe("number");
+  });
 });

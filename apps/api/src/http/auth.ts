@@ -1,4 +1,7 @@
-import { createPostgresPlatformSuperAdminRepository } from "@boss/db";
+import {
+  createPostgresOrganizationRepository,
+  createPostgresPlatformSuperAdminRepository,
+} from "@boss/db";
 import { createRemoteJWKSet, jwtVerify, SignJWT, type JWTVerifyGetKey } from "jose";
 import type { SuperAdminSession } from "../security.js";
 import { ApiError } from "./apiError.js";
@@ -49,11 +52,32 @@ export async function requireOrgId(req: { header(name: string): string | undefin
     throw new ApiError(401, "invalid_token", "Token signature is invalid or expired");
   }
 
-  const orgId = payload.org_id;
-  if (typeof orgId !== "string" || orgId.length === 0) {
-    throw new ApiError(403, "missing_org_claim", "Token does not carry an org_id claim");
+  const claimedOrgId = payload.org_id;
+  if (typeof claimedOrgId === "string" && claimedOrgId.length > 0) {
+    return claimedOrgId;
   }
-  return orgId;
+
+  // Native Supabase access tokens do not contain BOSS's org_id claim. In that
+  // case the caller must name the tenant and we authorize it against the
+  // durable membership table using the verified token subject.
+  const userId = typeof payload.sub === "string" ? payload.sub : undefined;
+  const requestedOrgId = req.header("x-organization-id");
+  if (!userId || !requestedOrgId) {
+    throw new ApiError(
+      403,
+      "missing_tenant_context",
+      "A verified user token and x-organization-id header are required",
+    );
+  }
+
+  const membership = await createPostgresOrganizationRepository().getMembership(
+    userId,
+    requestedOrgId,
+  );
+  if (!membership || membership.status !== "active") {
+    throw new ApiError(403, "tenant_access_denied", "The user is not an active member of this organization");
+  }
+  return requestedOrgId;
 }
 
 /**
@@ -121,7 +145,7 @@ export async function requireSuperAdmin(
 
   let payload: Record<string, unknown>;
   try {
-    payload = (await jwtVerify(token, jwtSecret())).payload;
+    payload = await verifyToken(token);
   } catch {
     throw new ApiError(401, "invalid_token", "Token signature is invalid or expired");
   }

@@ -96,6 +96,14 @@ export class AuthenticationError extends Error {
   }
 }
 
+/** A presented access token was rejected; configuration/runtime failures use AuthenticationError. */
+export class SessionVerificationError extends AuthenticationError {
+  constructor(message: string) {
+    super(message);
+    this.name = "SessionVerificationError";
+  }
+}
+
 export class IdentityRuntime {
   constructor(
     private readonly provider: IdentityProvider,

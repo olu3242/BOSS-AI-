@@ -70,6 +70,7 @@ import { createBteService } from "./services/bteService.js";
 import { createAiWorkforceService } from "./services/aiWorkforceService.js";
 import { createAiEmployeeExecutionService } from "./services/aiEmployeeExecutionService.js";
 import { createOrgHealthService } from "./services/orgHealthService.js";
+import { createOrgDashboardService } from "./services/orgDashboardService.js";
 import { createInsightService } from "./services/insightService.js";
 import { createCustomerService } from "./services/customerService.js";
 import { createCustomerController } from "./controllers/customerController.js";
@@ -226,6 +227,7 @@ export function createApiFromContainer(
   const aiWorkforce = createAiWorkforceService(repos);
   const aiEmployeeExecution = createAiEmployeeExecutionService(repos);
   const orgHealth = createOrgHealthService(repos, bte, aiWorkforce);
+  const orgDashboard = createOrgDashboardService(repos);
   const insight = createInsightService(repos);
 
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
@@ -479,6 +481,7 @@ export function createApiFromContainer(
     aiWorkforce,
     aiEmployeeExecution,
     orgHealth,
+    orgDashboard,
     insight,
     kpiPlatform,
     businessObjective,
