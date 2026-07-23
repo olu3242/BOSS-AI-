@@ -69,8 +69,8 @@ function wrap(handler: Handler) {
  * Thin HTTP transport over the existing controllers — every route is a
  * direct pass-through, no business logic lives here. org_id comes from a
  * verified Supabase JWT's `org_id` claim (see ./auth.ts) — token minting
- * still has no real login UI behind it (TD-030), so this closes the
- * verification half of TD-006/TD-027, not the issuance half.
+ * org_id and role claims are stamped by the Supabase custom access-token
+ * hook (migration 0047_custom_access_token_hook.sql, TD-030 resolved).
  * All mutating routes validate request bodies via Zod (TD-028 resolved).
  */
 export function createHttpServer(api: Api): Express {
