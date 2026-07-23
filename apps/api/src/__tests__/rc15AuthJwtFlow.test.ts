@@ -78,6 +78,7 @@ describe("RC1.5 — Auth / JWT Validation (Phase 5)", () => {
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("1h")
       .sign(encoder.encode(JWT_SECRET));
-    await expect(requireOrgId(fakeReq(badToken))).rejects.toMatchObject({ code: "missing_org_claim" });
+    // No org_id in token and no x-organization-id header → missing_tenant_context
+    await expect(requireOrgId(fakeReq(badToken))).rejects.toMatchObject({ code: "missing_tenant_context" });
   });
 });
