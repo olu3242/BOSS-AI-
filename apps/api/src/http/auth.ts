@@ -33,10 +33,9 @@ async function verifyToken(token: string): Promise<Record<string, unknown>> {
 
 /**
  * Verifies a Supabase-issued JWT (HS256, `Authorization: Bearer <token>`) and
- * extracts the tenant id from its `org_id` claim. Supabase Auth doesn't carry
- * org_id natively — this assumes a custom access-token hook stamps it onto
- * every issued token (TD-030: that hook doesn't exist yet, so token minting
- * is still a dev placeholder; only verification is real).
+ * extracts the tenant id from its `org_id` claim. The `org_id` and `role`
+ * claims are stamped by the Supabase custom access-token hook defined in
+ * migration 0047_custom_access_token_hook.sql (TD-030 resolved).
  */
 export async function requireOrgId(req: { header(name: string): string | undefined }): Promise<string> {
   const authHeader = req.header("authorization");
@@ -82,9 +81,9 @@ export async function requireOrgId(req: { header(name: string): string | undefin
 
 /**
  * Verifies the token and enforces a minimum role level.
- * Role claim `role` is stamped by the Supabase custom access-token hook (TD-030).
- * Defaults to "owner" when the claim is absent (backwards-compatible with
- * existing dev tokens that only carry org_id).
+ * Role claim `role` is stamped by the Supabase custom access-token hook
+ * (migration 0047_custom_access_token_hook.sql). Defaults to "viewer" when
+ * the claim is absent for backwards compatibility with dev tokens.
  */
 export async function requireRole(
   req: { header(name: string): string | undefined },
@@ -115,10 +114,9 @@ export async function requireRole(
 }
 
 /**
- * Mints a signed JWT carrying an `org_id` claim, standing in for what a
- * Supabase custom access-token hook would produce on real sign-in (TD-030 —
- * no real login UI exists yet). Exposed only via a non-production route so
- * the API/web flow has a token to use without faking the verification step.
+ * Mints a signed JWT carrying `org_id` and `role` claims for local development
+ * and integration tests — mirrors what the production custom access-token hook
+ * (migration 0047) stamps on real Supabase sign-in. Only exposed in non-production.
  */
 export async function mintDevToken(orgId: string, role: UserRole = "owner"): Promise<string> {
   const secret = process.env.SUPABASE_JWT_SECRET ?? "dev-only-insecure-secret-do-not-use-in-production";
