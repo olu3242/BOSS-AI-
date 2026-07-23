@@ -237,6 +237,17 @@ export function createApiFromContainer(
     },
   );
 
+  // Auto-start the first Business MRI so the onboarding promise ("running in the background") is real.
+  const mriService = createBusinessMriService(repos);
+  repos.eventBus.subscribe<{ orgId: string; businessId: string }>(
+    "business.created",
+    (e) => {
+      void mriService.startMri(e.payload.orgId, e.payload.businessId).catch((err: unknown) => {
+        console.error("[business.created] auto-MRI start failed:", err);
+      });
+    },
+  );
+
   repos.eventBus.subscribe<{ orgId: string; businessId: string; industry?: string; employeeCount?: number }>(
     "business.created",
     (e) => {
