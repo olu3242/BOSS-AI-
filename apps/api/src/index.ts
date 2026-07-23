@@ -242,7 +242,7 @@ export function createApiFromContainer(
   repos.eventBus.subscribe<{ orgId: string; businessId: string }>(
     "business.created",
     (e) => {
-      void mriService.start(e.payload.orgId, e.payload.businessId).catch((err: unknown) => {
+      void mriService.startMri(e.payload.orgId, e.payload.businessId).catch((err: unknown) => {
         console.error("[business.created] auto-MRI start failed:", err);
       });
     },
