@@ -495,3 +495,53 @@
 
 .ob-name-input:focus { border-color: var(--red); }
 .ob-name-input::placeholder { color: var(--muted); font-weight: 400; }
+
+/* ─── Validation errors ─────────────────────────────────────────────────────── */
+.ob-field-error {
+  color: #e85555;
+  font-size: 0.8125rem;
+  margin: 0.25rem 0 0.5rem;
+}
+.ob-input-error {
+  border-color: #e85555 !important;
+}
+
+.ob-resume-banner {
+  background: #1a1a2e;
+  border: 1px solid #c8102e44;
+  border-radius: 8px;
+  padding: 0.875rem 1.25rem;
+  margin: 0 auto 1rem;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #ccc;
+}
+.ob-resume-yes {
+  background: #c8102e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.375rem 0.875rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.ob-resume-no {
+  background: transparent;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 0.375rem 0.875rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+.ob-save-status {
+  font-size: 0.75rem;
+  color: #6b6b76;
+  flex: 1;
+  text-align: center;
+}

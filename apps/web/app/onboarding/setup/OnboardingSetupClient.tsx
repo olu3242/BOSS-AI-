@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../src/lib/apiClient";
+import { useWorkflowSession } from "../../../src/hooks/useWorkflowSession";
+import {
+  WizardStep1Schema,
+  WizardStep2Schema,
+  WizardStep3Schema,
+  WizardStep6Schema,
+  allErrors,
+} from "../../../src/lib/validation";
 import "./onboarding.css";
 
 const INDUSTRIES = [
@@ -79,12 +87,40 @@ const INITIAL: WizardData = {
 const TOTAL_STEPS = 7;
 const STEP_LABELS = ["Business", "Profile", "Hours", "Services", "Tools", "AI Setup", "Launch"];
 
-export function OnboardingSetupClient({ orgId }: { orgId: string }) {
+function validateStep(step: number, data: WizardData): Record<string, string> {
+  if (step === 1) return allErrors(WizardStep1Schema, data);
+  if (step === 2) return allErrors(WizardStep2Schema, data);
+  if (step === 3) return allErrors(WizardStep3Schema, data);
+  if (step === 6) return allErrors(WizardStep6Schema, data);
+  return {};
+}
+
+export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId: string }) {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<WizardData>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [businessId, setBusinessId] = useState<string | null>(null);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+
+  const { saveStatus, resumedSession, save, complete } = useWorkflowSession({
+    workflowType: "onboarding",
+    userId,
+    totalSteps: TOTAL_STEPS,
+    onResumed: () => setShowResumePrompt(true),
+  });
+
+  // Auto-save whenever step or data changes (debounced inside save())
+  useEffect(() => {
+    if (step === TOTAL_STEPS) return; // don't save the completion step
+    save({
+      currentStep: step,
+      completedSteps: Array.from({ length: step - 1 }, (_, i) => i + 1),
+      formData: data as unknown as Record<string, unknown>,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, data]);
 
   const update = useCallback(<K extends keyof WizardData>(key: K, value: WizardData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -101,8 +137,14 @@ export function OnboardingSetupClient({ orgId }: { orgId: string }) {
   }, []);
 
   async function handleFinish() {
+    const errs = validateStep(step, data);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
     setSubmitting(true);
     setError(null);
+    setFieldErrors({});
     try {
       const businessHours = `${data.openDays.join(",")} ${data.openTime}-${data.closeTime}`;
       const { business } = await apiClient.createBusiness(orgId, {
@@ -119,15 +161,27 @@ export function OnboardingSetupClient({ orgId }: { orgId: string }) {
         aiAgents: data.aiAgents,
       });
       setBusinessId(business.id);
+      await complete();
       setStep(TOTAL_STEPS);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.body.message : "Something went wrong. Please try again.");
+      if (err instanceof ApiClientError) {
+        setError(err.body.message ?? "Business creation failed. Please try again.");
+      } else {
+        setError("Unable to create your business. Please check your connection and try again.");
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
   function goNext() {
+    const errs = validateStep(step, data);
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+    setFieldErrors({});
+    setError(null);
     if (step === TOTAL_STEPS - 1) {
       handleFinish();
     } else {
@@ -165,16 +219,36 @@ export function OnboardingSetupClient({ orgId }: { orgId: string }) {
         </div>
       </div>
 
+      {showResumePrompt && resumedSession && (
+        <div className="ob-resume-banner" role="status">
+          <span>You have unsaved progress from a previous session. </span>
+          <button
+            className="ob-resume-yes"
+            onClick={() => {
+              const saved = resumedSession.formData as unknown as Partial<WizardData>;
+              setData((prev) => ({ ...prev, ...saved }));
+              setStep(resumedSession.currentStep);
+              setShowResumePrompt(false);
+            }}
+          >
+            Continue where you left off
+          </button>
+          <button className="ob-resume-no" onClick={() => setShowResumePrompt(false)}>
+            Start fresh
+          </button>
+        </div>
+      )}
+
       <div className="ob-panel">
-        {step === 1 && <Step1 data={data} update={update} />}
-        {step === 2 && <Step2 data={data} update={update} />}
-        {step === 3 && <Step3 data={data} update={update} toggleSet={toggleSet} />}
+        {step === 1 && <Step1 data={data} update={update} errors={fieldErrors} />}
+        {step === 2 && <Step2 data={data} update={update} errors={fieldErrors} />}
+        {step === 3 && <Step3 data={data} update={update} toggleSet={toggleSet} errors={fieldErrors} />}
         {step === 4 && <Step4 data={data} update={update} />}
         {step === 5 && <Step5 data={data} toggleSet={toggleSet} />}
-        {step === 6 && <Step6 data={data} toggleSet={toggleSet} />}
+        {step === 6 && <Step6 data={data} toggleSet={toggleSet} errors={fieldErrors} />}
         {step === 7 && <Step7 businessId={businessId} data={data} />}
 
-        {error && <div className="ob-error">{error}</div>}
+        {error && <div className="ob-error" role="alert">{error}</div>}
 
         {step < TOTAL_STEPS && (
           <div className="ob-nav">
@@ -182,10 +256,15 @@ export function OnboardingSetupClient({ orgId }: { orgId: string }) {
               ? <button className="ob-back" onClick={goBack}>← Back</button>
               : <span />
             }
+            <span className="ob-save-status" aria-live="polite">
+              {saveStatus === "saving" && "Saving…"}
+              {saveStatus === "saved" && "Saved"}
+              {saveStatus === "error" && "Save failed — will retry"}
+            </span>
             <button
               className="ob-next"
               onClick={goNext}
-              disabled={submitting || (step === 1 && !data.businessName.trim())}
+              disabled={submitting}
             >
               {submitting
                 ? "Setting up…"
@@ -200,20 +279,27 @@ export function OnboardingSetupClient({ orgId }: { orgId: string }) {
   );
 }
 
-function Step1({ data, update }: { data: WizardData; update: (k: keyof WizardData, v: string) => void }) {
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return <p className="ob-field-error" role="alert">{msg}</p>;
+}
+
+function Step1({ data, update, errors }: { data: WizardData; update: (k: keyof WizardData, v: string) => void; errors: Record<string, string> }) {
   return (
     <>
       <p className="ob-eyebrow">Step 1 — Your business</p>
       <h1 className="ob-title">What&apos;s your business called?</h1>
       <p className="ob-subtitle">Start with your business name, then pick your industry so BOSS can tailor everything for you.</p>
       <input
-        className="ob-name-input"
+        className={`ob-name-input${errors.businessName ? " ob-input-error" : ""}`}
         placeholder="e.g. Downtown Auto Repair"
         value={data.businessName}
         onChange={(e) => update("businessName", e.target.value)}
         autoFocus
         maxLength={100}
+        aria-describedby={errors.businessName ? "err-businessName" : undefined}
       />
+      <FieldError msg={errors.businessName} />
       <p className="ob-eyebrow" style={{ marginBottom: "0.75rem" }}>Select your industry</p>
       <div className="ob-industry-grid">
         {INDUSTRIES.map((ind) => (
@@ -229,11 +315,12 @@ function Step1({ data, update }: { data: WizardData; update: (k: keyof WizardDat
           </button>
         ))}
       </div>
+      <FieldError msg={errors.industry} />
     </>
   );
 }
 
-function Step2({ data, update }: { data: WizardData; update: (k: keyof WizardData, v: string) => void }) {
+function Step2({ data, update, errors }: { data: WizardData; update: (k: keyof WizardData, v: string) => void; errors: Record<string, string> }) {
   return (
     <>
       <p className="ob-eyebrow">Step 2 — Business profile</p>
@@ -251,20 +338,24 @@ function Step2({ data, update }: { data: WizardData; update: (k: keyof WizardDat
         <div className="ob-field">
           <label>Number of employees</label>
           <input type="number" min="1" value={data.employeeCount} onChange={(e) => update("employeeCount", e.target.value)} />
+          <FieldError msg={errors.employeeCount} />
         </div>
         <div className="ob-field">
           <label>Number of locations</label>
           <input type="number" min="1" value={data.locationCount} onChange={(e) => update("locationCount", e.target.value)} />
+          <FieldError msg={errors.locationCount} />
         </div>
       </div>
       <div className="ob-field-row">
         <div className="ob-field">
           <label>Annual revenue ($)</label>
           <input type="number" min="0" placeholder="0" value={data.annualRevenue} onChange={(e) => update("annualRevenue", e.target.value)} />
+          <FieldError msg={errors.annualRevenue} />
         </div>
         <div className="ob-field">
           <label>Years in business</label>
           <input type="number" min="0" placeholder="0" value={data.yearsOperating} onChange={(e) => update("yearsOperating", e.target.value)} />
+          <FieldError msg={errors.yearsOperating} />
         </div>
       </div>
     </>
@@ -272,11 +363,12 @@ function Step2({ data, update }: { data: WizardData; update: (k: keyof WizardDat
 }
 
 function Step3({
-  data, update, toggleSet,
+  data, update, toggleSet, errors,
 }: {
   data: WizardData;
   update: (k: keyof WizardData, v: string) => void;
   toggleSet: (k: "openDays" | "existingTools" | "aiAgents", v: string) => void;
+  errors: Record<string, string>;
 }) {
   return (
     <>
@@ -296,6 +388,7 @@ function Step3({
           </button>
         ))}
       </div>
+      <FieldError msg={errors.openDays} />
       <div className="ob-field-row" style={{ marginTop: "1rem" }}>
         <div className="ob-field">
           <label>Opening time</label>
@@ -355,7 +448,7 @@ function Step5({ data, toggleSet }: { data: WizardData; toggleSet: (k: "openDays
   );
 }
 
-function Step6({ data, toggleSet }: { data: WizardData; toggleSet: (k: "openDays" | "existingTools" | "aiAgents", v: string) => void }) {
+function Step6({ data, toggleSet, errors }: { data: WizardData; toggleSet: (k: "openDays" | "existingTools" | "aiAgents", v: string) => void; errors: Record<string, string> }) {
   return (
     <>
       <p className="ob-eyebrow">Step 6 — Your AI workforce</p>
@@ -380,6 +473,7 @@ function Step6({ data, toggleSet }: { data: WizardData; toggleSet: (k: "openDays
       <p style={{ fontSize: "0.75rem", color: "#6b6b76" }}>
         {data.aiAgents.length === 0 ? "Select at least one AI employee to activate" : `${data.aiAgents.length} AI employee${data.aiAgents.length === 1 ? "" : "s"} selected`}
       </p>
+      <FieldError msg={errors.aiAgents} />
     </>
   );
 }

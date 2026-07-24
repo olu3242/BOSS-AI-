@@ -20,7 +20,8 @@
     "@boss/ui": "workspace:*",
     "next": "^15.5.19",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

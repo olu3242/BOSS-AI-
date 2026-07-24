@@ -12,6 +12,9 @@ export interface CreateBusinessInput {
   yearsOperating?: number;
   locationCount?: number;
   businessHours?: string;
+  services?: string;
+  existingTools?: string[];
+  aiAgents?: string[];
 }
 
 export interface BusinessProfileService {
@@ -40,6 +43,9 @@ export function createBusinessProfileService(repos: RepositoryContainer): Busine
         employeeCount: input.employeeCount,
         locationCount: input.locationCount ?? 1,
         businessHours: input.businessHours ?? "9am-5pm Mon-Fri",
+        services: input.services ?? null,
+        existingTools: input.existingTools ?? [],
+        aiAgents: input.aiAgents ?? [],
       });
 
       await repos.businessTimeline.append({
