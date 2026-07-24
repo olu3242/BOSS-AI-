@@ -2,11 +2,6 @@ import { randomUUID } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
 import type { ObservabilityService } from "../services/observabilityService.js";
 
-/** Extract the correlation ID for the current request from the response header. */
-export function getTraceId(res: Response): string {
-  return (res.getHeader("x-trace-id") as string | undefined) ?? randomUUID();
-}
-
 export function requestTracing(obs: ObservabilityService) {
   return (req: Request, res: Response, next: NextFunction) => {
     const traceId = (req.headers["x-trace-id"] as string | undefined) ?? randomUUID();
