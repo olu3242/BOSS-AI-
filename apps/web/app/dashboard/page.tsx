@@ -46,18 +46,20 @@ export default async function DashboardPage() {
   // ── Stage 2: Dashboard data ───────────────────────────────────────────────
   const t2 = Date.now();
   console.log(`[dashboard/page] api_fetch_start trace=${traceId} orgId=${orgId.slice(0, 8)}...`);
-  let data: Awaited<ReturnType<typeof apiClient.getOrgDashboard>>;
+  let data: Awaited<ReturnType<typeof apiClient.getOrgDashboard>> | null = null;
+  let dataError: string | null = null;
   try {
     data = await apiClient.getOrgDashboard(orgId, tenant.accessToken);
     console.log(`[dashboard/page] api_fetch_ok trace=${traceId} latency=${elapsed(t2)}`);
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error(`[dashboard/page] api_fetch_fail trace=${traceId} latency=${elapsed(t2)}`, {
-      message: err instanceof Error ? err.message : String(err),
+      message: msg,
       stack: err instanceof Error ? err.stack : undefined,
     });
-    throw err;
+    dataError = `Could not load dashboard data (${msg}). The API may be starting up — click Retry in a moment.`;
   }
 
   console.log(`[dashboard/page] render trace=${traceId} total=${elapsed(t0)}`);
-  return <DashboardClient orgId={orgId} data={data} error={null} />;
+  return <DashboardClient orgId={orgId} data={data} error={dataError} />;
 }
