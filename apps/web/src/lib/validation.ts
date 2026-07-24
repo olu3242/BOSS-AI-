@@ -25,20 +25,6 @@ export const SignInSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-export const ForgotPasswordSchema = z.object({
-  email,
-});
-
-export const ResetPasswordSchema = z
-  .object({
-    password,
-    confirmation: z.string().min(1, "Please confirm your password."),
-  })
-  .refine((d) => d.password === d.confirmation, {
-    message: "Passwords do not match.",
-    path: ["confirmation"],
-  });
-
 // ─── Organization ─────────────────────────────────────────────────────────────
 
 export const CreateOrganizationSchema = z.object({
@@ -92,18 +78,6 @@ export const WizardStep6Schema = z.object({
 });
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Returns the first validation error for a field, or null. */
-export function fieldError<T extends z.ZodTypeAny>(
-  schema: T,
-  data: unknown,
-  field: string,
-): string | null {
-  const result = schema.safeParse(data);
-  if (result.success) return null;
-  const err = result.error.errors.find((e) => e.path[0] === field);
-  return err?.message ?? null;
-}
 
 /** Returns a map of field → first error message. */
 export function allErrors<T extends z.ZodTypeAny>(

@@ -5,6 +5,9 @@
       "entry": ["src/server.ts", "src/devServer.ts"],
       "project": ["src/**/*.ts"]
     },
+    "apps/web": {
+      "project": ["src/**/*.ts", "app/**/*.{ts,tsx}"]
+    },
     "apps/*": {
       "project": ["src/**/*.ts"]
     },
