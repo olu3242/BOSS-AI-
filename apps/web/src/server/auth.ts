@@ -85,14 +85,8 @@ export class NonBlockingAuditSink implements AuditSink {
 }
 
 function initializeBrowserIdentityServices() {
-console.log("auth.ts process.env", {
-  SUPABASE_URL: JSON.stringify(process.env.SUPABASE_URL),
-  NEXT_PUBLIC_SUPABASE_URL: JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL),
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? "[present]" : "[missing]",
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "[present]" : "[missing]",
-});
-
-const provider = SupabaseIdentityProvider.fromEnvironment();  const { organizations, memberships } = createPostgresOrganizationRuntime();
+  const provider = SupabaseIdentityProvider.fromEnvironment();
+  const { organizations, memberships } = createPostgresOrganizationRuntime();
   const identity = new IdentityRuntime(
     provider,
     memberships,

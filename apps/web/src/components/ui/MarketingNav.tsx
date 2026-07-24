@@ -45,15 +45,12 @@ export function MarketingNav() {
         className="hidden sm:flex items-center"
         style={{ gap: "28px" }}
       >
-        <a href="#how" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-          How it works
-        </a>
-        <a href="#outcomes" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-          Results
-        </a>
-        <a href="#proof" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
-          Proof
-        </a>
+        <Link href="/features" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+          Features
+        </Link>
+        <Link href="/pricing" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
+          Pricing
+        </Link>
         <Link href="/auth/sign-in" style={{ fontSize: "14px", color: "rgba(255,255,255,0.55)", textDecoration: "none" }}>
           Sign in
         </Link>
@@ -111,9 +108,8 @@ export function MarketingNav() {
           }}
         >
           {[
-            { href: "#how", label: "How it works" },
-            { href: "#outcomes", label: "Results" },
-            { href: "#proof", label: "Proof" },
+            { href: "/features", label: "Features" },
+            { href: "/pricing", label: "Pricing" },
             { href: "/auth/sign-in", label: "Sign in" },
           ].map(({ href, label }) => (
             <a
