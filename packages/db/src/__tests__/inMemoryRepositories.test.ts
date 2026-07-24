@@ -48,6 +48,9 @@ describe("in-memory business intelligence repositories", () => {
       employeeCount: 4,
       locationCount: 1,
       businessHours: "Mon-Fri 7am-6pm",
+      services: null,
+      existingTools: [],
+      aiAgents: [],
     });
     expect(profile.businessId).toBe(business.id);
 

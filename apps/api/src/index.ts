@@ -58,6 +58,7 @@ import { createExecutionPlanService } from "./services/executionPlanService.js";
 import { createOutcomeVerificationService } from "./services/outcomeVerificationService.js";
 import { createBusinessOperatingLoopService } from "./services/businessOperatingLoopService.js";
 import { installLifecycleChain } from "./services/lifecycleChainService.js";
+import { createWorkflowSessionService } from "./services/workflowSessionService.js";
 import { createWorkspaceService } from "./services/workspaceService.js";
 import { createFeatureFlagService } from "./services/featureFlagService.js";
 import { createSupportService } from "./services/supportService.js";
@@ -537,6 +538,7 @@ export function createApiFromContainer(
     contextResolution: new ContextResolutionService(businessSemantic),
     dependencyResolution: new DependencyResolutionService(businessSemantic),
     businessQueries,
+    workflowSession: createWorkflowSessionService(),
   };
 }
 
@@ -699,3 +701,4 @@ export * from "./services/revenueIntelligenceService.js";
 export * from "./services/revenueCommunicationService.js";
 export * from "./services/revenueAiService.js";
 export * from "./services/revenueDashboardService.js";
+export * from "./services/workflowSessionService.js";

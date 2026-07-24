@@ -244,6 +244,9 @@ export interface BusinessProfile extends TenantScoped, Timestamped {
   employeeCount: number;
   locationCount: number;
   businessHours: string;
+  services: string | null;
+  existingTools: string[];
+  aiAgents: string[];
 }
 
 export type MriStatus = "not_started" | "in_progress" | "completed";
@@ -1493,4 +1496,37 @@ export interface LearningReport {
   forecastAccuracy: number;
   positiveWorkflowRate: number;
   insights: LearningInsight[];
+}
+
+
+// ─── Workflow Session (Persistence Engine) ────────────────────────────────────
+
+export type WorkflowSessionStatus =
+  | "in_progress"
+  | "paused"
+  | "waiting"
+  | "retrying"
+  | "completed"
+  | "cancelled"
+  | "expired"
+  | "archived";
+
+export interface WorkflowSession extends TenantScoped, Timestamped {
+  id: ID;
+  userId: string;
+  workflowType: string;
+  status: WorkflowSessionStatus;
+  currentStep: number;
+  completedSteps: number[];
+  totalSteps: number;
+  progressPct: number;
+  formData: Record<string, unknown>;
+  validationState: Record<string, unknown>;
+  metadata: Record<string, unknown>;
+  correlationId: string;
+  version: number;
+  startedAt: string;
+  lastActivityAt: string;
+  expiresAt: string | null;
+  completedAt: string | null;
 }

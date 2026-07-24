@@ -20,11 +20,14 @@ export const CreateBusinessSchema = z.object({
   name: z.string().min(1).max(200),
   industry: z.string().min(1),
   employeeCount: z.number().int().positive(),
-  annualRevenue: z.number().positive(),
+  annualRevenue: z.number().nonnegative(),
   businessType: z.string().min(1),
   yearsOperating: z.number().int().nonnegative(),
   locationCount: z.number().int().positive().default(1),
   businessHours: z.string().default("Mon-Fri 9am-5pm"),
+  services: z.string().max(2000).optional(),
+  existingTools: z.array(z.string()).default([]),
+  aiAgents: z.array(z.string()).default([]),
 });
 
 // ─── MRI ─────────────────────────────────────────────────────────────────────
@@ -397,6 +400,17 @@ export const SendNotificationSchema = z.object({
   body: nonEmpty,
   templateKey: z.string().optional(),
   metadata: z.record(z.unknown()).optional(),
+});
+
+export const UpsertWorkflowSessionSchema = z.object({
+  userId: uuid,
+  currentStep: z.number().int().nonnegative(),
+  completedSteps: z.array(z.number().int().nonnegative()).default([]),
+  totalSteps: z.number().int().positive(),
+  formData: z.record(z.unknown()).default({}),
+  validationState: z.record(z.unknown()).optional(),
+  metadata: z.record(z.unknown()).optional(),
+  expiresAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 // ── Validation helpers ────────────────────────────────────────────────────────

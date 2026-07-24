@@ -42,6 +42,7 @@ import {
   UpdateLifecyclePolicySchema,
   SaveSearchSchema,
   SendNotificationSchema,
+  UpsertWorkflowSessionSchema,
 } from "./validation.js";
 
 
@@ -120,6 +121,38 @@ export function createHttpServer(api: Api): Express {
   v1.get(
     "/businesses/:businessId",
     wrap(async (req) => api.business.getProfile(await requireOrgId(req), param(req, "businessId")))
+  );
+
+  // ── Workflow Sessions ────────────────────────────────────────────────────────
+  v1.get(
+    "/workflow-sessions/:workflowType",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const session = await api.workflowSession.getActive(orgId, param(req, "workflowType"));
+      return { session };
+    })
+  );
+  v1.put(
+    "/workflow-sessions/:workflowType",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      const body = validate(UpsertWorkflowSessionSchema, req);
+      return api.workflowSession.upsert({ ...body, orgId, workflowType: param(req, "workflowType") });
+    })
+  );
+  v1.post(
+    "/workflow-sessions/:workflowType/complete",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.workflowSession.complete(orgId, param(req, "workflowType"));
+    })
+  );
+  v1.post(
+    "/workflow-sessions/:workflowType/cancel",
+    wrap(async (req) => {
+      const orgId = await requireOrgId(req);
+      return api.workflowSession.cancel(orgId, param(req, "workflowType"));
+    })
   );
 
   v1.post(

@@ -176,10 +176,10 @@ export default function LandingPage() {
         <nav aria-label="Product links">
           <p className="l-footer-col-title">Product</p>
           <ul className="l-footer-links">
+            <li><Link href="/features">Features</Link></li>
+            <li><Link href="/pricing">Pricing</Link></li>
             <li><a href="#how">How it works</a></li>
-            <li><a href="#outcomes">Results</a></li>
             <li><a href="#proof">Proof</a></li>
-            <li><a href="#pain">Problem</a></li>
           </ul>
         </nav>
         <nav aria-label="Company links">
@@ -194,8 +194,8 @@ export default function LandingPage() {
       <div className="l-footer-bottom">
         <span className="l-footer-copy">© 2026 BOSS — Business Operating System Suite. All rights reserved.</span>
         <div className="l-footer-legal">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
+          <Link href="/legal/privacy">Privacy Policy</Link>
+          <Link href="/legal/terms">Terms of Service</Link>
         </div>
       </div>
     </div>
