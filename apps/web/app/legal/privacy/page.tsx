@@ -74,7 +74,7 @@ export default function PrivacyPage() {
 const SECTIONS = [
   {
     title: "1. Who We Are",
-    body: "BOSS (Business Operating System Suite) is operated by BOSS Technologies, Inc. ("BOSS," "we," "us," or "our"). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at useboss.ai and related services.",
+    body: "BOSS (Business Operating System Suite) is operated by BOSS Technologies, Inc. (&ldquo;BOSS,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;). This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform at useboss.ai and related services.",
   },
   {
     title: "2. Information We Collect",

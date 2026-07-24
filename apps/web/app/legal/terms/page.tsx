@@ -107,7 +107,7 @@ const SECTIONS = [
   },
   {
     title: "6. Your Data",
-    body: "You retain all rights to the data you input into BOSS ("Customer Data"). You grant BOSS a limited licence to process Customer Data solely to provide the Service. We will not use Customer Data to train AI models without your explicit consent. See our Privacy Policy for full details on how we handle your data.",
+    body: "You retain all rights to the data you input into BOSS (&ldquo;Customer Data&rdquo;). You grant BOSS a limited licence to process Customer Data solely to provide the Service. We will not use Customer Data to train AI models without your explicit consent. See our Privacy Policy for full details on how we handle your data.",
   },
   {
     title: "7. AI Features and Automation",
