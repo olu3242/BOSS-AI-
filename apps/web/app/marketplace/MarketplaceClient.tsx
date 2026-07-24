@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiClient } from "../../src/lib/apiClient";
+import { useFeatureRuntime } from "../../src/lib/featureRuntime";
+import type { FeatureRuntimeError } from "../../src/lib/featureRuntime";
 
 const CATEGORY_LABELS: Record<string, string> = {
   all: "All Packs",
@@ -45,33 +47,64 @@ interface InstalledPack {
   version: string;
 }
 
+interface MarketplaceData {
+  packs: Pack[];
+  installed: Set<string>;
+}
+
 export function MarketplaceClient({ orgId }: { orgId: string }) {
-  const [packs, setPacks] = useState<Pack[]>([]);
-  const [installed, setInstalled] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [installing, setInstalling] = useState<Set<string>>(new Set());
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [installError, setInstallError] = useState<string | null>(null);
+
+  const loader = useCallback(async () => {
+    let packsResult: Pack[] | null = null;
+    let installedResult: InstalledPack[] | null = null;
+
+    // Fetch catalog first — separate try/catch for per-dependency error attribution
+    try {
+      packsResult = await apiClient.getMarketplacePacks(orgId);
+    } catch (err) {
+      // Re-throw with dependency context so classifyError gets the right label
+      const e = err as Error;
+      e.message = `[Industry Pack Catalog] ${e.message}`;
+      throw err;
+    }
+
+    try {
+      installedResult = await apiClient.getInstalledPacks(orgId);
+    } catch (err) {
+      const e = err as Error;
+      e.message = `[Installed Packs] ${e.message}`;
+      throw err;
+    }
+
+    return {
+      data: {
+        packs: packsResult,
+        installed: new Set(installedResult.map((p) => p.packKey)),
+      } satisfies MarketplaceData,
+      dependencies: [
+        { name: "Industry Pack Catalog", status: "healthy" as const },
+        { name: "Installed Packs", status: "healthy" as const },
+      ],
+    };
+  }, [orgId]);
+
+  const [runtimeState, { load, retry, setData }] = useFeatureRuntime<MarketplaceData>(
+    "Marketplace",
+    loader,
+  );
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [allPacks, installedPacks] = await Promise.all([
-          apiClient.getMarketplacePacks(orgId),
-          apiClient.getInstalledPacks(orgId),
-        ]);
-        setPacks(allPacks);
-        setInstalled(new Set(installedPacks.map((p: InstalledPack) => p.packKey)));
-      } catch {
-        setError("Failed to load marketplace.");
-      } finally {
-        setLoading(false);
-      }
-    }
     void load();
-  }, [orgId]);
+  }, [load]);
+
+  const packs = runtimeState.data?.packs ?? [];
+  const installed = runtimeState.data?.installed ?? new Set<string>();
+  const loading = runtimeState.status === "idle" || runtimeState.status === "loading";
 
   const filteredPacks = packs.filter((pack) => {
     const matchesCategory = selectedCategory === "all" || pack.category === selectedCategory;
@@ -90,13 +123,17 @@ export function MarketplaceClient({ orgId }: { orgId: string }) {
 
   async function handleInstall(packKey: string) {
     setInstalling((prev) => new Set([...prev, packKey]));
+    setInstallError(null);
     try {
       await apiClient.installPack(orgId, packKey);
-      setInstalled((prev) => new Set([...prev, packKey]));
-      setSuccessMsg(`Pack installed successfully.`);
+      setData({
+        packs,
+        installed: new Set([...installed, packKey]),
+      });
+      setSuccessMsg("Pack installed successfully.");
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch {
-      setError(`Failed to install pack.`);
+      setInstallError(`Failed to install pack. Please try again.`);
     } finally {
       setInstalling((prev) => {
         const next = new Set(prev);
@@ -116,6 +153,10 @@ export function MarketplaceClient({ orgId }: { orgId: string }) {
         </div>
       </div>
     );
+  }
+
+  if (runtimeState.status === "error" && runtimeState.error) {
+    return <MarketplaceError error={runtimeState.error} onRetry={retry} />;
   }
 
   return (
@@ -157,8 +198,8 @@ export function MarketplaceClient({ orgId }: { orgId: string }) {
         {successMsg && (
           <div className="bg-green-900/40 border border-green-600 rounded-lg px-4 py-3 text-green-400 text-sm">{successMsg}</div>
         )}
-        {error && (
-          <div className="bg-red-900/40 border border-red-600 rounded-lg px-4 py-3 text-red-400 text-sm">{error}</div>
+        {installError && (
+          <div className="bg-red-900/40 border border-red-600 rounded-lg px-4 py-3 text-red-400 text-sm">{installError}</div>
         )}
         {installed.size > 0 && (
           <div className="text-sm text-gray-500">{installed.size} pack{installed.size !== 1 ? "s" : ""} installed for this organization</div>
@@ -206,6 +247,78 @@ export function MarketplaceClient({ orgId }: { orgId: string }) {
             >
               Clear filters
             </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MarketplaceError({ error, onRetry }: { error: FeatureRuntimeError; onRetry: () => void }) {
+  const [showDetails, setShowDetails] = useState(false);
+  return (
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-8">
+      <div className="max-w-lg w-full bg-gray-900 border border-red-900/50 rounded-2xl p-8 space-y-5">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">⚠️</span>
+          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "Syne, sans-serif" }}>
+            Marketplace temporarily unavailable
+          </h2>
+        </div>
+
+        <p className="text-sm text-gray-400 leading-relaxed">{error.message}</p>
+
+        <div className="bg-gray-950 rounded-xl p-4 space-y-2 text-xs font-mono">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Error Code</span>
+            <span className="text-red-400">{error.code}</span>
+          </div>
+          {error.httpStatus && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">HTTP Status</span>
+              <span className="text-gray-300">{error.httpStatus}</span>
+            </div>
+          )}
+          {error.dependency && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Dependency</span>
+              <span className="text-gray-300">{error.dependency}</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span className="text-gray-500">Correlation ID</span>
+            <span className="text-gray-400 select-all">{error.correlationId}</span>
+          </div>
+          {error.traceId && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Trace ID</span>
+              <span className="text-gray-400 select-all">{error.traceId}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3">
+          {error.retryable && (
+            <button
+              onClick={onRetry}
+              className="flex-1 bg-red-600 hover:bg-red-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
+            >
+              Retry
+            </button>
+          )}
+          <button
+            onClick={() => setShowDetails((v) => !v)}
+            className="px-4 py-2.5 text-sm text-gray-400 border border-gray-700 hover:border-gray-500 rounded-lg transition-colors"
+          >
+            {showDetails ? "Hide Details" : "View Details"}
+          </button>
+        </div>
+
+        {showDetails && (
+          <div className="bg-gray-950 rounded-xl p-4 text-xs text-gray-500 space-y-1">
+            <p>Dependency chain: Session → Organization → {error.dependency ?? "Marketplace"}</p>
+            <p>Retryable: {error.retryable ? "Yes" : "No — please contact support"}</p>
+            <p>Timestamp: {new Date().toISOString()}</p>
           </div>
         )}
       </div>
