@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { apiClient, ApiClientError } from "../../../src/lib/apiClient";
 import { useWorkflowSession } from "../../../src/hooks/useWorkflowSession";
+import { useInactivityTimeout } from "../../../src/hooks/useInactivityTimeout";
 import {
   WizardStep1Schema,
   WizardStep2Schema,
@@ -12,6 +13,8 @@ import {
   allErrors,
 } from "../../../src/lib/validation";
 import "./onboarding.css";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const INDUSTRIES = [
   { key: "home_services", icon: "🏠", name: "Home Services", desc: "Plumbing, HVAC, landscaping, cleaning" },
@@ -26,12 +29,21 @@ const INDUSTRIES = [
 ];
 
 const BUSINESS_TYPES = [
-  { value: "LLC", label: "LLC" },
-  { value: "Sole Proprietor", label: "Sole Proprietor" },
-  { value: "Corporation", label: "Corporation" },
-  { value: "S-Corp", label: "S-Corp" },
-  { value: "Partnership", label: "Partnership" },
-  { value: "Nonprofit", label: "Nonprofit" },
+  { value: "LLC", label: "LLC", desc: "Limited Liability Co." },
+  { value: "Sole Proprietor", label: "Sole Proprietor", desc: "Single owner, full liability" },
+  { value: "Corporation", label: "Corporation", desc: "C-Corp, shareholders" },
+  { value: "S-Corp", label: "S-Corp", desc: "Pass-through taxation" },
+  { value: "Partnership", label: "Partnership", desc: "Two or more owners" },
+  { value: "Nonprofit", label: "Nonprofit", desc: "Tax-exempt mission org" },
+];
+
+const YEARS_OPERATING_PILLS = [
+  { label: "New Business", value: "0" },
+  { label: "< 1 Year", value: "1" },
+  { label: "1–3 Years", value: "2" },
+  { label: "3–5 Years", value: "4" },
+  { label: "5–10 Years", value: "7" },
+  { label: "10+ Years", value: "10" },
 ];
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -51,6 +63,18 @@ const AI_AGENTS = [
   { key: "financial_controller", icon: "💰", name: "Financial Controller", desc: "Forecasts cash flow, tracks expenses, billing health" },
   { key: "hr_coordinator", icon: "👥", name: "HR Coordinator", desc: "Handles scheduling, onboarding, team communications" },
 ];
+
+const PROVISIONING_STEPS = [
+  { label: "Business profile created", delay: 400 },
+  { label: "AI Workforce activated", delay: 1200 },
+  { label: "Running Business MRI...", delay: 2400 },
+  { label: "Mission Control ready", delay: 3600 },
+];
+
+const TOTAL_STEPS = 7;
+const STEP_LABELS = ["Business", "Profile", "Hours", "Services", "Tools", "AI Setup", "Launch"];
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface WizardData {
   businessName: string;
@@ -84,9 +108,6 @@ const INITIAL: WizardData = {
   aiAgents: ["revenue_analyst", "customer_success", "ops_manager"],
 };
 
-const TOTAL_STEPS = 7;
-const STEP_LABELS = ["Business", "Profile", "Hours", "Services", "Tools", "AI Setup", "Launch"];
-
 function validateStep(step: number, data: WizardData): Record<string, string> {
   if (step === 1) return allErrors(WizardStep1Schema, data);
   if (step === 2) return allErrors(WizardStep2Schema, data);
@@ -94,6 +115,8 @@ function validateStep(step: number, data: WizardData): Record<string, string> {
   if (step === 6) return allErrors(WizardStep6Schema, data);
   return {};
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId: string }) {
   const [step, setStep] = useState(1);
@@ -103,23 +126,33 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [provisioningActive, setProvisioningActive] = useState(false);
+  const [provisioningStep, setProvisioningStep] = useState(-1);
 
-  const { saveStatus, resumedSession, save, complete } = useWorkflowSession({
+  const { saveStatus, resumedSession, save, complete, cancel } = useWorkflowSession({
     workflowType: "onboarding",
     userId,
     totalSteps: TOTAL_STEPS,
     onResumed: () => setShowResumePrompt(true),
   });
 
+  const { isWarning, secondsRemaining, dismiss } = useInactivityTimeout({
+    enabled: step < TOTAL_STEPS && !provisioningActive,
+    onTimeout: () => {
+      void cancel();
+      window.location.href = "/auth/sign-in";
+    },
+  });
+
   // Auto-save whenever step or data changes (debounced inside save())
   useEffect(() => {
-    if (step === TOTAL_STEPS) return; // don't save the completion step
+    if (step >= TOTAL_STEPS || provisioningActive) return;
     save({
       currentStep: step,
       completedSteps: Array.from({ length: step - 1 }, (_, i) => i + 1),
       formData: data as unknown as Record<string, unknown>,
     });
-  }, [step, data]); // save stable via useCallback; intentional dependency list
+  }, [step, data]); // save stable via useCallback; intentional dep list
 
   const update = useCallback(<K extends keyof WizardData>(key: K, value: WizardData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }));
@@ -161,14 +194,27 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
       });
       setBusinessId(business.id);
       await complete();
-      setStep(TOTAL_STEPS);
+      // Show provisioning animation before the success screen
+      setSubmitting(false);
+      setProvisioningActive(true);
+      setProvisioningStep(0);
+      PROVISIONING_STEPS.forEach((ps, idx) => {
+        setTimeout(() => {
+          setProvisioningStep(idx + 1);
+          if (idx === PROVISIONING_STEPS.length - 1) {
+            setTimeout(() => {
+              setProvisioningActive(false);
+              setStep(TOTAL_STEPS);
+            }, 800);
+          }
+        }, ps.delay);
+      });
     } catch (err) {
       if (err instanceof ApiClientError) {
         setError(err.body.message ?? "Business creation failed. Please try again.");
       } else {
         setError("Unable to create your business. Please check your connection and try again.");
       }
-    } finally {
       setSubmitting(false);
     }
   }
@@ -182,7 +228,7 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
     setFieldErrors({});
     setError(null);
     if (step === TOTAL_STEPS - 1) {
-      handleFinish();
+      void handleFinish();
     } else {
       setStep((s) => s + 1);
     }
@@ -195,8 +241,43 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
   const progress = (step / TOTAL_STEPS) * 100;
   const isLastDataStep = step === TOTAL_STEPS - 1;
 
+  if (provisioningActive) {
+    return <ProvisioningScreen steps={PROVISIONING_STEPS} currentStep={provisioningStep} businessName={data.businessName} />;
+  }
+
   return (
     <div className="boss-onboarding">
+      {/* Inactivity warning modal */}
+      {isWarning && (
+        <div className="ob-inactivity-overlay" role="dialog" aria-modal="true" aria-labelledby="inactivity-title">
+          <div className="ob-inactivity-modal">
+            <div className="ob-inactivity-icon">⏱</div>
+            <h2 id="inactivity-title" className="ob-inactivity-title">Still there?</h2>
+            <p className="ob-inactivity-body">
+              Your work has been saved. Your session expires in
+            </p>
+            <div className="ob-inactivity-countdown" aria-live="assertive">
+              {secondsRemaining}
+            </div>
+            <p className="ob-inactivity-unit">seconds</p>
+            <div className="ob-inactivity-actions">
+              <button className="ob-inactivity-continue" onClick={dismiss}>
+                Continue session
+              </button>
+              <button
+                className="ob-inactivity-exit"
+                onClick={() => {
+                  void cancel();
+                  window.location.href = "/auth/sign-in";
+                }}
+              >
+                Save &amp; exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="ob-header">
         <Link href="/" className="ob-brand">BOSS</Link>
         <span className="ob-step-label">Step {step} of {TOTAL_STEPS}</span>
@@ -278,10 +359,72 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
   );
 }
 
+// ─── Shared helpers ───────────────────────────────────────────────────────────
+
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return <p className="ob-field-error" role="alert">{msg}</p>;
 }
+
+function Stepper({ value, onChange, min = 1, max = 9999 }: {
+  value: string; onChange: (v: string) => void; min?: number; max?: number;
+}) {
+  const num = parseInt(value, 10) || min;
+  return (
+    <div className="ob-stepper">
+      <button
+        type="button"
+        className="ob-stepper-btn"
+        onClick={() => onChange(String(Math.max(min, num - 1)))}
+        disabled={num <= min}
+        aria-label="Decrease"
+      >−</button>
+      <span className="ob-stepper-value">{num}</span>
+      <button
+        type="button"
+        className="ob-stepper-btn"
+        onClick={() => onChange(String(Math.min(max, num + 1)))}
+        disabled={num >= max}
+        aria-label="Increase"
+      >+</button>
+    </div>
+  );
+}
+
+function CurrencyInput({ value, onChange, label }: {
+  value: string; onChange: (v: string) => void; label: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const raw = value === "" || value === "0" ? "" : value;
+  const [display, setDisplay] = useState(() =>
+    raw ? Number(raw).toLocaleString("en-US") : ""
+  );
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/[^0-9]/g, "");
+    const num = digits === "" ? 0 : parseInt(digits, 10);
+    onChange(String(num));
+    setDisplay(num > 0 ? num.toLocaleString("en-US") : "");
+  };
+
+  return (
+    <div className="ob-currency-wrapper">
+      <span className="ob-currency-symbol">$</span>
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="numeric"
+        value={display}
+        onChange={handleChange}
+        placeholder="0"
+        aria-label={label}
+        className="ob-currency-input"
+      />
+    </div>
+  );
+}
+
+// ─── Step 1 — Business name + industry ────────────────────────────────────────
 
 function Step1({ data, update, errors }: { data: WizardData; update: (k: keyof WizardData, v: string) => void; errors: Record<string, string> }) {
   return (
@@ -296,7 +439,7 @@ function Step1({ data, update, errors }: { data: WizardData; update: (k: keyof W
         onChange={(e) => update("businessName", e.target.value)}
         autoFocus
         maxLength={100}
-        aria-describedby={errors.businessName ? "err-businessName" : undefined}
+        aria-label="Business name"
       />
       <FieldError msg={errors.businessName} />
       <p className="ob-eyebrow" style={{ marginBottom: "0.75rem" }}>Select your industry</p>
@@ -319,47 +462,81 @@ function Step1({ data, update, errors }: { data: WizardData; update: (k: keyof W
   );
 }
 
+// ─── Step 2 — Business profile (smart inputs) ─────────────────────────────────
+
 function Step2({ data, update, errors }: { data: WizardData; update: (k: keyof WizardData, v: string) => void; errors: Record<string, string> }) {
   return (
     <>
       <p className="ob-eyebrow">Step 2 — Business profile</p>
       <h1 className="ob-title">Tell us about your business</h1>
       <p className="ob-subtitle">This helps BOSS benchmark you against peers and generate relevant insights.</p>
+
+      {/* Business structure — card grid */}
       <div className="ob-field">
         <label>Business structure</label>
-        <select value={data.businessType} onChange={(e) => update("businessType", e.target.value)}>
+        <div className="ob-btype-grid">
           {BUSINESS_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+            <button
+              key={t.value}
+              type="button"
+              className={`ob-btype-card ${data.businessType === t.value ? "selected" : ""}`}
+              onClick={() => update("businessType", t.value)}
+            >
+              <span className="ob-btype-label">{t.label}</span>
+              <span className="ob-btype-desc">{t.desc}</span>
+            </button>
           ))}
-        </select>
+        </div>
+        <FieldError msg={errors.businessType} />
       </div>
+
+      {/* Employees + Locations — steppers */}
       <div className="ob-field-row">
         <div className="ob-field">
-          <label>Number of employees</label>
-          <input type="number" min="1" value={data.employeeCount} onChange={(e) => update("employeeCount", e.target.value)} />
+          <label>Employees</label>
+          <Stepper value={data.employeeCount} onChange={(v) => update("employeeCount", v)} min={1} max={9999} />
           <FieldError msg={errors.employeeCount} />
         </div>
         <div className="ob-field">
-          <label>Number of locations</label>
-          <input type="number" min="1" value={data.locationCount} onChange={(e) => update("locationCount", e.target.value)} />
+          <label>Locations</label>
+          <Stepper value={data.locationCount} onChange={(v) => update("locationCount", v)} min={1} max={999} />
           <FieldError msg={errors.locationCount} />
         </div>
       </div>
-      <div className="ob-field-row">
-        <div className="ob-field">
-          <label>Annual revenue ($)</label>
-          <input type="number" min="0" placeholder="0" value={data.annualRevenue} onChange={(e) => update("annualRevenue", e.target.value)} />
-          <FieldError msg={errors.annualRevenue} />
+
+      {/* Revenue — currency formatted */}
+      <div className="ob-field">
+        <label>Annual revenue</label>
+        <CurrencyInput
+          value={data.annualRevenue}
+          onChange={(v) => update("annualRevenue", v)}
+          label="Annual revenue"
+        />
+        <FieldError msg={errors.annualRevenue} />
+      </div>
+
+      {/* Years operating — segmented pills */}
+      <div className="ob-field">
+        <label>Years in business</label>
+        <div className="ob-years-pills">
+          {YEARS_OPERATING_PILLS.map((pill) => (
+            <button
+              key={pill.value}
+              type="button"
+              className={`ob-years-pill ${data.yearsOperating === pill.value ? "selected" : ""}`}
+              onClick={() => update("yearsOperating", pill.value)}
+            >
+              {pill.label}
+            </button>
+          ))}
         </div>
-        <div className="ob-field">
-          <label>Years in business</label>
-          <input type="number" min="0" placeholder="0" value={data.yearsOperating} onChange={(e) => update("yearsOperating", e.target.value)} />
-          <FieldError msg={errors.yearsOperating} />
-        </div>
+        <FieldError msg={errors.yearsOperating} />
       </div>
     </>
   );
 }
+
+// ─── Step 3 — Business hours ──────────────────────────────────────────────────
 
 function Step3({
   data, update, toggleSet, errors,
@@ -402,6 +579,8 @@ function Step3({
   );
 }
 
+// ─── Step 4 — Services ────────────────────────────────────────────────────────
+
 function Step4({ data, update }: { data: WizardData; update: (k: keyof WizardData, v: string) => void }) {
   return (
     <>
@@ -422,12 +601,14 @@ function Step4({ data, update }: { data: WizardData; update: (k: keyof WizardDat
   );
 }
 
+// ─── Step 5 — Tool stack ──────────────────────────────────────────────────────
+
 function Step5({ data, toggleSet }: { data: WizardData; toggleSet: (k: "openDays" | "existingTools" | "aiAgents", v: string) => void }) {
   return (
     <>
       <p className="ob-eyebrow">Step 5 — Your tool stack</p>
       <h1 className="ob-title">What tools are you using?</h1>
-      <p className="ob-subtitle">Select the tools you currently use.</p>
+      <p className="ob-subtitle">Select the tools you currently use. BOSS will integrate and adapt to them.</p>
       <div className="ob-chip-grid">
         {COMMON_TOOLS.map((tool) => (
           <button
@@ -447,12 +628,14 @@ function Step5({ data, toggleSet }: { data: WizardData; toggleSet: (k: "openDays
   );
 }
 
+// ─── Step 6 — AI workforce ────────────────────────────────────────────────────
+
 function Step6({ data, toggleSet, errors }: { data: WizardData; toggleSet: (k: "openDays" | "existingTools" | "aiAgents", v: string) => void; errors: Record<string, string> }) {
   return (
     <>
       <p className="ob-eyebrow">Step 6 — Your AI workforce</p>
       <h1 className="ob-title">Activate your AI team</h1>
-      <p className="ob-subtitle">Choose which AI employees to deploy first.</p>
+      <p className="ob-subtitle">Choose which AI employees to deploy first. You can add more later.</p>
       <div className="ob-agent-grid">
         {AI_AGENTS.map((agent) => (
           <button
@@ -476,6 +659,46 @@ function Step6({ data, toggleSet, errors }: { data: WizardData; toggleSet: (k: "
     </>
   );
 }
+
+// ─── Provisioning screen ──────────────────────────────────────────────────────
+
+function ProvisioningScreen({ steps, currentStep, businessName }: {
+  steps: typeof PROVISIONING_STEPS;
+  currentStep: number;
+  businessName: string;
+}) {
+  const firstName = businessName.split(" ")[0] || "your business";
+  return (
+    <div className="ob-provisioning">
+      <div className="ob-provisioning-inner">
+        <div className="ob-provisioning-spinner" aria-hidden="true">
+          <span />
+        </div>
+        <h2 className="ob-provisioning-title">Launching {firstName}…</h2>
+        <p className="ob-provisioning-sub">Setting up your business operating system</p>
+        <div className="ob-provisioning-steps" role="status" aria-live="polite">
+          {steps.map((s, idx) => {
+            const done = idx < currentStep;
+            const active = idx === currentStep - 1 && !done;
+            return (
+              <div
+                key={s.label}
+                className={`ob-prov-row ${done ? "done" : active ? "active" : "pending"}`}
+              >
+                <span className="ob-prov-icon">
+                  {done ? "✓" : active ? "⟳" : "○"}
+                </span>
+                <span className="ob-prov-label">{s.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Step 7 — Success ─────────────────────────────────────────────────────────
 
 function Step7({ businessId, data }: { businessId: string | null; data: WizardData }) {
   const agentCount = data.aiAgents.length;
@@ -505,7 +728,7 @@ function Step7({ businessId, data }: { businessId: string | null; data: WizardDa
       </div>
       {businessId ? (
         <Link href={`/business/${businessId}/workspace`} className="ob-ready-cta">
-          Open Command Center →
+          Open Mission Control →
         </Link>
       ) : (
         <Link href="/dashboard" className="ob-ready-cta">
