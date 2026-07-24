@@ -119,8 +119,7 @@ export function OnboardingSetupClient({ orgId, userId }: { orgId: string; userId
       completedSteps: Array.from({ length: step - 1 }, (_, i) => i + 1),
       formData: data as unknown as Record<string, unknown>,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, data]);
+  }, [step, data]); // save stable via useCallback; intentional dependency list
 
   const update = useCallback(<K extends keyof WizardData>(key: K, value: WizardData[K]) => {
     setData((prev) => ({ ...prev, [key]: value }));

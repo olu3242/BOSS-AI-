@@ -81,8 +81,7 @@ export function useInactivityTimeout({
         window.removeEventListener(event, handleActivity);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled]); // startTimers/resetTimers captured via ref on each render
 
   return { isWarning, dismissWarning };
 }

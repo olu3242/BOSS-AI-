@@ -74,8 +74,7 @@ export function useWorkflowSession({
       })
       .catch(() => void 0);
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workflowType]);
+  }, [workflowType]); // onResumed intentionally excluded — callers pass inline functions
 
   const flush = useCallback(async (payload: WorkflowSessionPayload) => {
     if (!isMounted.current) return;
